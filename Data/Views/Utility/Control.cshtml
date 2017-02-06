@@ -1,0 +1,166 @@
+﻿@using LNF.Control;
+@using LNF.Web.Mvc;
+@using Data.Models;
+@model UtilityModel
+@{
+    ViewBag.Title = "Control";
+    Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
+
+    var instances = Model.GetInstances();
+
+    string errmsg = string.Empty;
+    PointState pointState = null;
+    string p = Request.QueryString["point"];
+    string d = string.IsNullOrEmpty(Request.QueryString["duration"]) ? "0" : Request.QueryString["duration"];
+
+    int pointId, duration = 0;
+
+    int.TryParse(d, out duration);
+
+    if (int.TryParse(p, out pointId))
+    {
+        var inst = instances.FirstOrDefault(x => x.Point == pointId);
+        if (inst != null)
+        {
+            string state = Request.QueryString["state"];
+            if (!string.IsNullOrEmpty(state))
+            {
+                Model.SetPointState(inst.ActionID, state == "on", duration: duration);
+            }
+
+            try
+            {
+                pointState = Model.GetPointState(pointId);
+            }
+            catch (Exception ex)
+            {
+                errmsg = ex.Message;
+            }
+        }
+    }
+}
+
+@section styles{
+    <style>
+        #instances tr:hover td {
+            background-color: #ffffcc !important;
+            cursor: pointer;
+        }
+
+        .point-state {
+            margin-bottom: 20px;
+        }
+
+        .loader {
+            font-style: italic;
+            color: #808080;
+            padding-left: 10px;
+        }
+    </style>
+}
+
+@if (!string.IsNullOrEmpty(errmsg))
+{
+    <div class="alert alert-danger" role="alert">@errmsg</div>
+}
+
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">@Html.ActionLink("Utility", "Index") / Control</h3>
+    </div>
+    <div class="panel-body">
+        @Html.CreateSubMenu(Model.GetSubMenu())
+        <div class="point-state">
+            @if (pointState != null)
+            {
+                <h3>@Model.GetActionInstance(pointState.PointID).Name [@Model.GetActionInstance(pointState.PointID).ActionID]</h3>
+                <hr />
+                if (pointState.State)
+                {
+                    <div class="alert alert-success" role="alert">Point is ON</div>
+                }
+                else
+                {
+                    <div class="alert alert-danger" role="alert">Point is OFF</div>
+                }
+
+                <form class="form-horizontal point-control-form" role="form" method="GET">
+                    <input type="hidden" name="point" value="@pointState.PointID" />
+                    <div class="form-group">
+                        <label class="col-sm-1 control-label">Block:</label>
+                        <div class="col-sm-11">
+                            <div style="line-height: 38px;">@Model.GetBlock(pointState.PointID).BlockName [@Model.GetBlock(pointState.PointID).BlockID]</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-1 control-label">Point:</label>
+                        <div class="col-sm-11">
+                            <div style="line-height: 38px;">@pointState.PointName [@pointState.PointID]</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-1 control-label" for="duration">Duration:</label>
+                        <div class="col-sm-1">
+                            <input type="tel" class="form-control" id="duration" name="duration" value="@duration">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-offset-1 col-sm-11">
+                            <div style="height: 20px;">
+                                <button type="submit" class="btn btn-default point-control-button">Refresh</button>
+                                <button type="submit" class="btn btn-default point-control-button" name="state" value="on">On</button>
+                                <button type="submit" class="btn btn-default point-control-button" name="state" value="off">Off</button>
+                                <span class="loader" style="display: none;">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <hr />
+            }
+        </div>
+        <input type="text" class="form-control" id="search" placeholder="Search" />
+    </div>
+    <table id="instances" class="table table-striped" data-filter="#search">
+        <thead>
+            <tr>
+                <th>Index</th>
+                <th data-hide="phone">ID</th>
+                <th data-hide="phone,tablet">Action</th>
+                <th>Name</th>
+                <th data-hide="phone,tablet">Point</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in instances)
+            {
+                <tr title="Click to manage this instance" data-point="@item.Point">
+                    <td>@item.Index</td>
+                    <td>@item.ActionID</td>
+                    <td>@item.ActionName</td>
+                    <td>@item.Name</td>
+                    <td>@item.Point</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section scripts{
+    <script>
+
+        $(".point-control-form").on("submit", function (e) {
+            var form = $(this);
+            (".point-control-button", form).prop("disabled", true);
+            $(".loader", form).show();
+        });
+
+        $("#instances").footable().on("click", "tbody td", function (e) {
+            if ($(this).find(".footable-toggle").length == 0) {
+                var pointId = $(this).closest("tr").data("point");
+                window.location = "?point=" + pointId;
+            }
+        });
+    </script>
+}
+

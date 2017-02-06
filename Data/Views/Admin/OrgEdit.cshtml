@@ -1,0 +1,457 @@
+﻿@using LNF.Web.Mvc;
+@using Data.Models.Admin;
+@model OrgModel
+@{
+    ViewBag.Title = "Admin/Org/Edit";
+    Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
+
+    string buttonText = null;
+    object activeHtmlAttr = null;
+
+    if (Model.OrgID == 0)
+    {
+        buttonText = "Add";
+        activeHtmlAttr = new { @style = "margin-left: 5px;", @disabled = "disabled" };
+    }
+    else
+    {
+        buttonText = "Save";
+        activeHtmlAttr = new { @style = "margin-left: 5px;" };
+    }
+}
+
+@section styles{
+    <style>
+        .table > tbody > tr > td.row-controls {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .new-form .form-inline .form-group {
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .address {
+            margin-top: 10px;
+        }
+
+            .address .address-type {
+                font-weight: bold;
+                border: solid 1px #ddd;
+                border-radius: 3px;
+                background-color: #f8f8f8;
+                padding: 3px;
+                margin-bottom: 5px;
+            }
+
+            .address .address-form {
+                padding: 10px;
+            }
+    </style>
+}
+
+@using (Html.BeginForm("OrgEdit", "Admin", FormMethod.Post, new { @role = "form", @class = "form-horizontal" }))
+{
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            @if (Model.OrgID == 0)
+            {
+                <h3 class="panel-title">@Html.ActionLink("Admin", "Index") / @Html.ActionLink("Org", "Org") / New</h3>
+            }
+            else
+            {
+                <h3 class="panel-title">@Html.ActionLink("Admin", "Index") / @Html.ActionLink("Org", "Org") / Edit: @Model.OrgName [@Model.OrgID]</h3>
+            }
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                @Html.LabelFor(x => x.OrgName, "Name", new { @class = "col-sm-1 control-label" })
+                <div class="col-sm-3">
+                    @Html.TextBoxFor(x => x.OrgName, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(x => x.OrgTypeID, "Type", new { @class = "col-sm-1 control-label" })
+                <div class="col-sm-3">
+                    @Html.DropDownListFor(x => x.OrgTypeID, Model.GetOrgTypeSelectItems(), new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(x => x.NNINOrg, "NNIN", new { @class = "col-sm-1 control-label" })
+                <div class="col-sm-3 checkbox">
+                    @Html.CheckBoxFor(x => x.NNINOrg, new { @style = "margin-left: 5px;" })
+                </div>
+            </div>
+            @if (Model.CanEditPrimaryOrg())
+            {
+                <div class="form-group">
+                    @Html.LabelFor(x => x.PrimaryOrg, "Primary", new { @class = "col-sm-1 control-label" })
+                    <div class="col-sm-3 checkbox">
+                        @Html.CheckBoxFor(x => x.PrimaryOrg, new { @style = "margin-left: 5px;" })
+                    </div>
+                </div>
+            }
+            <div class="form-group">
+                @Html.LabelFor(x => x.Active, new { @class = "col-sm-1 control-label" })
+                <div class="col-sm-3 checkbox">
+                    @Html.CheckBoxFor(x => x.Active, activeHtmlAttr)
+                </div>
+            </div>
+            @Model.GetMessage()
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">@Html.Raw(string.Format("{0} Default Addresses", Model.OrgName).Trim())</h3>
+        </div>
+        <div class="panel-body">
+            @if (Model.OrgID == 0)
+            {
+                <em class="text-muted">Please save before adding addresses.</em>
+            }
+            else
+            {
+                <em class="text-muted">Note: changes to addresses take effect immediately.</em>
+                <div class="address" data-apiurl="@Url.Content(string.Format("~/api/org/address?orgId={0}", Model.OrgID))">
+                    @foreach (var addr in Model.GetAddresses())
+                    {
+                        <div class="address-item" data-id="@addr.AddressID" data-type="@addr.AddressType">
+                            <div class="address-type">@addr.AddressType</div>
+                            <div class="address-form">
+                                <div class="new-addr" style="display: none;">
+                                    <button type="button" class="add-addr btn btn-default btn-sm pull-left" style="margin-right: 3px;">Add</button>
+                                    <div class="dropdown pull-left">
+                                        <button id="@string.Format("copyaddr_{0}", addr.AddressType.ToLower())" type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">Copy <span class="caret"></span></button>
+                                        <ul class="dropdown-menu" role="menu" aria-labelledby="@string.Format("copyaddr_{0}", addr.AddressType.ToLower())">
+                                            @foreach (var item in Model.GetCopyAddressDropdownItems(addr.AddressType))
+                                            {
+                                                <li role="presentation">
+                                                    <a href="#" role="menuitem" tabindex="-1" class="copy-addr" data-type="@item.Text">@item.Text</a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                    <div style="clear: both;"></div>
+                                </div>
+                                <div class="display-addr" style="display: none;">
+                                    <div data-property="Attention">@addr.Attention</div>
+                                    <div data-property="StreetAddress1">@addr.StreetAddress1</div>
+                                    <div data-property="StreetAddress2">@addr.StreetAddress2</div>
+                                    <div>
+                                        <span data-property="City">@addr.City</span>,
+                                        <span data-property="State">@addr.State</span>
+                                        <span data-property="Zip">@addr.Zip</span>
+                                    </div>
+                                    <div data-property="Country">@addr.Country</div>
+                                    <div style="margin-top: 10px;" class="edit-delete-controls">
+                                        <button type="button" class="btn btn-default btn-sm edit-addr">Edit</button>
+                                        <button type="button" class="btn btn-default btn-sm delete-addr">Delete</button>
+                                    </div>
+                                </div>
+
+                                <div class="edit-addr-form form-horizontal" style="display: none;">
+                                    <div class="form-group">
+                                        <label for="@string.Format("attention_{0}", addr.AddressID)" class="col-sm-1 control-label">Attention</label>
+                                        <div class="col-sm-3">
+                                            <input type="text" id="@string.Format("attention_{0}", addr.AddressID)" value="@addr.Attention" class="form-control" data-origvalue="@addr.Attention" data-property="Attention" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="@string.Format("address1_{0}", addr.AddressID)" class="col-sm-1 control-label">Address 1</label>
+                                        <div class="col-sm-3">
+                                            <input type="text" id="@string.Format("address1_{0}", addr.AddressID)" value="@addr.StreetAddress1" class="form-control" data-origvalue="@addr.StreetAddress1" data-property="StreetAddress1" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="@string.Format("address2_{0}", addr.AddressID)" class="col-sm-1 control-label">Address 2</label>
+                                        <div class="col-sm-3">
+                                            <input type="text" id="@string.Format("address2_{0}", addr.AddressID)" value="@addr.StreetAddress2" class="form-control" data-origvalue="@addr.StreetAddress2" data-property="StreetAddress2" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="@string.Format("city_{0}", addr.AddressID)" class="col-sm-1 control-label">City</label>
+                                        <div class="col-sm-3">
+                                            <input type="text" id="@string.Format("city_{0}", addr.AddressID)" value="@addr.City" class="form-control" data-origvalue="@addr.City" data-property="City" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="@string.Format("state_{0}", addr.AddressID)" class="col-sm-1 control-label">State</label>
+                                        <div class="col-sm-3">
+                                            <input type="text" id="@string.Format("state_{0}", addr.AddressID)" value="@addr.State" class="form-control" style="width: 60px;" data-origvalue="@addr.State" data-property="State" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="@string.Format("zip_{0}", addr.AddressID)" class="col-sm-1 control-label">Zip</label>
+                                        <div class="col-sm-3">
+                                            <input type="text" id="@string.Format("zip_{0}", addr.AddressID)" value="@addr.Zip" class="form-control" style="width: 100px;" data-origvalue="@addr.Zip" data-property="Zip" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="@string.Format("country_{0}", addr.AddressID)" class="col-sm-1 control-label">Country</label>
+                                        <div class="col-sm-3">
+                                            <input type="text" id="@string.Format("country_{0}", addr.AddressID)" value="@addr.Country" class="form-control" style="width: 100px;" data-origvalue="@addr.Country" data-property="Country" />
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 10px;" class="save-cancel-controls">
+                                        <button type="button" class="btn btn-default btn-sm save-addr">Save</button>
+                                        <button type="button" class="btn btn-default btn-sm cancel-addr">Cancel</button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                @*<div class="addresses2" data-apiurl="@Url.Content(string.Format("~/api/org/address?orgId={0}", Model.OrgID))"></div>*@
+
+                @*<div class="addresses" data-apiurl="@Url.Content(string.Format("~/api/org/address?orgId={0}", Model.OrgID))">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Attention</th>
+                                    <th>Street1</th>
+                                    <th>Street2</th>
+                                    <th>City</th>
+                                    <th>State</th>
+                                    <th>Zip</th>
+                                    <th>Country</th>
+                                    <th style="width: 120px;">&nbsp;</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="2">
+                                        <em class="text-muted">Loading...</em>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>*@
+            }
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">@Html.Raw(string.Format("{0} Departments", Model.OrgName).Trim())</h3>
+        </div>
+        <div class="panel-body">
+            @if (Model.OrgID == 0)
+            {
+                <em class="text-muted">Please save before adding departments.</em>
+            }
+            else
+            {
+                <em class="text-muted">Note: changes to departments take effect immediately.</em>
+                <div class="departments" data-apiurl="@Url.Content(string.Format("~/api/org/department?orgId={0}", Model.OrgID))">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th style="width: 120px;">&nbsp;</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="2">
+                                    <em class="text-muted">Loading...</em>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+    <div style="margin-bottom: 20px;">
+        <button type="submit" name="Command" value="save" class="btn btn-primary btn-lg" style="min-width: 80px;">@buttonText</button>
+        @Html.ActionLink("Cancel", "Org", null, new { @class = "btn btn-default btn-lg" })
+    </div>
+}
+
+@section scripts{
+    <script src="@Url.Content("~/Scripts/jquery.address.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.restgrid.js")"></script>
+    <script>
+        $(".address").address();
+    </script>
+
+
+    <script>
+        $(".departments").restgrid({
+            "onsave": function (e) {
+                e.load();
+                return true; //stops further processing
+            },
+            "columns": [
+                { "property": "DepartmentName", "required": true },
+                { "controls": true }
+            ]
+        });
+
+        $(".addresses2").each(function () {
+            var $this = $(this);
+
+            var opt = $.extend({}, { "apiurl": null }, $this.data());
+
+            var getData = function () {
+                return $.ajax({
+                    "url": opt.apiurl,
+                    "type": "GET",
+                    "dataType": "json"
+                });
+            }
+
+            var getCopyDropdownItems = function (item) {
+                switch (item.AddressType) {
+                    case "Billing":
+                        return [{ "text": "Client" }, { "text": "Shipping" }];
+                    case "Client":
+                        return [{ "text": "Billing" }, { "text": "Shipping" }];
+                    case "Shipping":
+                        return [{ "text": "Billing" }, { "text": "Client" }];
+                }
+            }
+
+            var getFormGroup = function (args) {
+                var result = $("<div/>", { "class": "form-group" });
+
+                $.each(args, function (a, arg) {
+                    var label = $("<label/>", { "class": "control-label", "for": arg.input.id }).html(arg.label.text);
+
+                    if ($.isArray(arg.label.class)) {
+                        $.each(arg.label.class, function (index, item) {
+                            label.addClass(item);
+                        });
+                    }
+
+                    result.append(label);
+
+                    var input = $("<div/>");
+
+                    if ($.isArray(arg.input.class)) {
+                        $.each(arg.input.class, function (index, item) {
+                            input.addClass(item);
+                        });
+                    }
+
+                    input.append($("<input/>", { "id": arg.input.id, "type": arg.input.type, "class": "form-control", "placeholder": arg.input.placeholder }));
+
+                    if (arg.input.css)
+                        $("input", input).css(arg.input.css);
+
+                    result.append(input);
+                });
+
+                return result;
+            }
+
+            var getDropdown = function (args) {
+
+                var result = $("<div/>", { "class": "dropdown" });
+
+                if ($.isArray(args.class)) {
+                    $.each(args.class, function (index, item) {
+                        result.addClass(item);
+                    });
+                }
+
+                var button = $("<button/>", { "id": args.button.id, "type": "button", "class": "btn btn-default dropdown-toggle", "data-toggle": "dropdown" }).append(args.button.text).append($("<span/>", { "class": "caret" }));
+
+                if ($.isArray(args.button.class)) {
+                    $.each(args.button.class, function (index, item) {
+                        button.addClass(item);
+                    });
+                }
+
+                result.append(button);
+
+                var list = $("<ul/>", { "class": "dropdown-menu", "role": "menu", "aria-labelledby": args.button.id });
+
+                $.each(args.items, function (index, item) {
+                    var li = $("<li/>", { "role": "presentation" });
+                    var a = $("<a/>", { "href": "#", "role": "menuitem", "tabindex": "-1" }).html(item.text);
+
+                    if ($.isArray(item.class)) {
+                        $.each(item.class, function (x, i) {
+                            a.addClass(i);
+                        });
+                    }
+
+                    li.append(a);
+                    list.append(li);
+                });
+
+                result.append(list);
+
+                return result;
+            }
+
+            if (opt.apiurl) {
+                getData().done(function (data) {
+                    $.each(data, function (index, item) {
+                        var div = $("<div/>", { "class": "address-item" }).css({ "margin-top": "10px" });
+
+                        div.append($("<div/>", { "class": "address-type" }).html(item.AddressType));
+
+                        if (item.AddressID == 0) {
+                            div.append($("<div/>", { "class": "address-form" }).append(
+                                $("<button/>", { "type": "button", "class": "btn btn-default btn-sm pull-left" }).css({ "margin-right": "5px" }).html("Add")
+                            ).append(
+                                getDropdown({ "items": getCopyDropdownItems(item), "class": ["pull-left"], "button": { "text": "Copy", "class": ["btn-sm"] } })
+                            ).append(
+                                $("<div/>").css("clear", "both")
+                            ));
+                        } else {
+                            div.append($("<div/>", { "class": "address-form form-horizontal" }).append(
+                                getFormGroup([
+                                    { "label": { "text": "Attention", "class": ["col-sm-1"] }, "input": { "id": "attention", "type": "text", "class": ["col-sm-2"] } }
+                                ])
+                            ).append(
+                                getFormGroup([
+                                    { "label": { "text": "Street 1", "class": ["col-sm-1"] }, "input": { "id": "street1", "type": "text", "class": ["col-sm-2"] } },
+                                    { "label": { "text": "Street 2", "class": ["col-sm-1"] }, "input": { "id": "street2", "type": "text", "class": ["col-sm-2"] } }
+                                ])
+                            ).append(
+                                getFormGroup([
+                                    { "label": { "text": "City", "class": ["col-sm-1"] }, "input": { "id": "city", "type": "text", "class": ["col-sm-2"] } },
+                                    { "label": { "text": "State", "class": ["col-sm-1"] }, "input": { "id": "state", "type": "text", "class": ["col-sm-2"], "css": { "width": "60px" } } }
+                                    //{ "label": { "text": "Zip", "class": ["col-sm-1"] }, "input": { "id": "zip", "type": "text", "class": ["col-sm-2"], "css": {"width": "60px"} } }
+                                ])
+                            ).append(
+                                $("<button/>", { "type": "button", "class": "btn btn-default btn-sm" }).css({ "margin-right": "5px" }).html("Delete")
+                            ));
+                        }
+
+                        $this.append(div);
+                    });
+                });
+            }
+        });
+
+        $(".zaddresses").restgrid({
+            "onsave": function (e) {
+                e.load();
+                return true; //stops further processing
+            },
+            "ondelete": function (e) {
+                e.load();
+                return true; //stops further processing
+            },
+            "columns": [
+                { "property": "AddressType", "type": "select", "items": [{ "text": "Client" }, { "text": "Billing" }, { "text": "Shipping" }], "edit": { "css": { "width": "110px" } }, "readonly": true, "duplicates": false, "required": true },
+                { "property": "Attention" },
+                { "property": "StreetAddress1", "required": true },
+                { "property": "StreetAddress2" },
+                { "property": "City", "required": true },
+                { "property": "State", "edit": { "css": { "width": "50px" } }, "required": true },
+                { "property": "Zip", "edit": { "css": { "width": "80px" } }, "required": true },
+                { "property": "Country", "edit": { "css": { "width": "70px" } }, "default": "US", "required": true },
+                { "controls": true }
+            ]
+        });
+    </script>
+}

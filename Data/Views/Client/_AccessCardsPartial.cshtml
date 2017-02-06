@@ -1,0 +1,45 @@
+﻿@model Data.Models.ClientAccessModel
+<div style="margin-bottom: 10px;">
+    Show active users who expire before @Html.TextBoxFor(x => x.ExpireCutoff, new { @class = "datepicker", @style = "width: 80px;" })
+    <input type="submit" value="Search" />
+</div>
+<div style="width: 1200px;">
+    <table class="card-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Last</th>
+                <th>First</th>
+                <th>Card #</th>
+                <th>Badge Issue</th>
+                <th>Badge Expire</th>
+                <th>Card Issue</th>
+                <th>Card Expire</th>
+                <th>Last Access</th>
+                <th>Days</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in Model.GetCards())
+            {
+                <tr>
+                    <td>@c.ClientID</td>
+                    <td>@c.UserName</td>
+                    <td>@c.LastName</td>
+                    <td>@c.FirstName</td>
+                    <td>@c.Number</td>
+                    <td>@Model.FormatDateTime(c.BadgeIssueDate)</td>
+                    <td>@Model.FormatDateTime(c.BadgeExpireDate)</td>
+                    <td>@Model.FormatDateTime(c.CardIssueDate)</td>
+                    <td>@Model.FormatDateTime(c.CardExpireDate)</td>
+                    <td>@Model.FormatDateTime(c.LastAccess, "never")</td>
+                    <td>@Model.DaysSinceLastAccess(c)</td>
+                    <td>@c.Status</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div style="clear: both;"></div>
+</div>

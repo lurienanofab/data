@@ -1,0 +1,259 @@
+﻿@using LNF.Web.Mvc;
+@using LNF.Web.Mvc.UI;
+@using Data.Models.Admin;
+@model ClientModel
+@{
+    ViewBag.Title = "Admin/Client/Edit";
+    Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
+}
+
+@section styles{
+    <style>
+        .table > tbody > tr > td.row-controls {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .new-form .form-inline .form-group {
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .section-title {
+            font-weight: bold;
+            padding: 5px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            border: solid 1px #f0f0f0;
+            border-radius: 2px;
+            background-color: #fafafa;
+        }
+    </style>
+}
+
+@using (Html.BeginForm("ClientEdit", "Admin", FormMethod.Post, new { @role = "form", @class = "form-horizontal" }))
+{
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            @if (Model.ClientID == 0)
+            {
+                <h3 class="panel-title">@Html.ActionLink("Admin", "Index") / @Html.ActionLink("Client", "Client") / New</h3>
+            }
+            else
+            {
+                <h3 class="panel-title">@Html.ActionLink("Admin", "Index") / @Html.ActionLink("Client", "Client") / Edit: @Model.GetDisplayName() [@Model.ClientID]</h3>
+            }
+        </div>
+        <div class="panel-body">
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.UserName, "Username", new { @class = "col-sm-1 control-label" })
+                <div class="col-sm-11">
+
+                    @if (Model.ClientID == 0)
+                    {
+                        <div class="form-inline">
+                            @Html.TextBoxFor(x => x.UserName, new { @class = "form-control", @style = "width: 150px;" })
+                            <button type="button" class="btn btn-sm btn-primary username-lookup" style="width: 50px;">Lookup</button>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="form-inline">
+                            @Html.TextBoxFor(x => x.UserName, new { @class = "form-control", @style = "width: 150px;", @disabled = "disabled" })
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-1 control-label">Name</label>
+                <div class="col-sm-11">
+                    <div class="form-inline">
+                        @Html.TextBoxFor(x => x.FName, new { @class = "form-control", @style = "width: 150px;", @placeholder = "First" })
+                        @Html.TextBoxFor(x => x.MName, new { @class = "form-control", @style = "width: 150px;", @placeholder = "Middle" })
+                        @Html.TextBoxFor(x => x.LName, new { @class = "form-control", @style = "width: 150px;", @placeholder = "Last" })
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(x => x.TechnicalFieldID, "Technical Field", new { @class = "col-sm-1 control-label" })
+                <div class="col-sm-11">
+                    @Html.DropDownListFor(x => x.TechnicalFieldID, Model.GetTechnicalFieldSelectItems(), new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="section-title">Demographics</div>
+            <div class="form-group">
+                @Html.LabelFor(x => x.DemCitizenID, "Citizenship", new { @class = "col-sm-1 control-label" })
+                <div class="col-sm-11">
+                    @Html.DropDownListFor(x => x.DemCitizenID, Model.GetDemographicSelectListItems(DemographicType.Citizen), new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(x => x.DemGenderID, "Gender", new { @class = "col-sm-1 control-label" })
+                <div class="col-sm-11">
+                    @Html.DropDownListFor(x => x.DemGenderID, Model.GetDemographicSelectListItems(DemographicType.Gender), new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(x => x.DemRaceID, "Race", new { @class = "col-sm-1 control-label" })
+                <div class="col-sm-11">
+                    @Html.DropDownListFor(x => x.DemRaceID, Model.GetDemographicSelectListItems(DemographicType.Race), new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(x => x.DemEthnicID, "Ethnicity", new { @class = "col-sm-1 control-label" })
+                <div class="col-sm-11">
+                    @Html.DropDownListFor(x => x.DemEthnicID, Model.GetDemographicSelectListItems(DemographicType.Ethnic), new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(x => x.DemDisabilityID, "Disability", new { @class = "col-sm-1 control-label" })
+                <div class="col-sm-11">
+                    @Html.DropDownListFor(x => x.DemDisabilityID, Model.GetDemographicSelectListItems(DemographicType.Disability), new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="section-title">Privileges</div>
+            @Html.CheckBoxListFor(x => x.PrivFlag, Model.GetPrivCheckBoxListItems(), new CheckBoxListOptions() { ItemsPerRow = 4, CssClass = "privs", ColumnCssClass = "col-sm-2" })
+            <div class="section-title">Communities</div>
+            @Html.CheckBoxListFor(x => x.Communities, Model.GetCommunityCheckBoxListItems(), new CheckBoxListOptions() { ItemsPerRow = 4, CssClass = "communities", ColumnCssClass = "col-sm-2" })
+
+
+
+            <div style="margin-top: 20px;">
+                <button type="submit" name="Command" value="save-client" class="btn btn-primary" style="min-width: 80px;">Save</button>
+                @Html.ActionLink("Cancel", "Client", null, new { @class = "btn btn-default" })
+            </div>
+            @Model.GetMessage()
+        </div>
+    </div> <!-- end of Client panel -->
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">@Model.GetOrgName()</h3>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-sm-3">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            @Html.LabelFor(x => x.DepartmentID, "Department", new { @class = "col-sm-3 control-label" })
+                            <div class="col-sm-5">
+                                @Html.DropDownListFor(x => x.DepartmentID, Model.GetDepartmentSelectItems(), new { @class = "form-control" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(x => x.Email, "Email", new { @class = "col-sm-3 control-label" })
+                            <div class="col-sm-5">
+                                @Html.EmailFor(x => x.Email, new { @class = "form-control" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="form-group">
+                        @Html.LabelFor(x => x.RoleID, "Role", new { @class = "col-sm-1 control-label" })
+                        <div class="col-sm-5">
+                            @Html.DropDownListFor(x => x.RoleID, Model.GetRoleSelectItems(), new { @class = "form-control" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(x => x.Phone, "Phone", new { @class = "col-sm-1 control-label" })
+                        <div class="col-sm-5">
+                            @Html.TextBoxFor(x => x.Phone, new { @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">@Html.Raw(string.Format("{0} Addresses", Model.GetOrgName()).Trim())</h3>
+    </div>
+    <div class="panel-body">
+        @if (Model.ClientOrgID == 0)
+        {
+            <i style="color: #808080;">Please save before adding addresses.</i>
+        }
+        else
+        {
+            <div class="addresses" data-apiurl="@Url.Content(string.Format("~/api/org/address?orgId={0}", Model.OrgID))">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Attention</th>
+                            <th>Street1</th>
+                            <th>Street2</th>
+                            <th>City</th>
+                            <th>State</th>
+                            <th>Zip</th>
+                            <th>Country</th>
+                            <th style="width: 120px;">&nbsp;</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="2">
+                                <i style="color: #808080;">Loading...</i>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@section scripts{
+    <script src="@Url.Content("~/Scripts/jquery.restgrid.js")"></script>
+    <script>
+        $(".departments").restgrid({
+            "onsave": function (e) {
+                e.load();
+                return true; //stops further processing
+            },
+            "columns": [
+                { "property": "DepartmentName", "required": true },
+                { "controls": true }
+            ]
+        });
+
+
+        $(".addresses").restgrid({
+            "onsave": function (e) {
+                e.load();
+                return true; //stops further processing
+            },
+            "ondelete": function (e) {
+                e.load();
+                return true; //stops further processing
+            },
+            "columns": [
+                { "property": "AddressType", "type": "select", "items": [{ "text": "Client" }, { "text": "Billing" }, { "text": "Shipping" }], "edit": { "css": { "width": "110px" } }, "readonly": true, "duplicates": false, "required": true },
+                { "property": "Attention" },
+                { "property": "StreetAddress1", "required": true },
+                { "property": "StreetAddress2" },
+                { "property": "City", "required": true },
+                { "property": "State", "edit": { "css": { "width": "50px" } }, "required": true },
+                { "property": "Zip", "edit": { "css": { "width": "80px" } }, "required": true },
+                { "property": "Country", "edit": { "css": { "width": "70px" } }, "default": "US", "required": true },
+                { "controls": true }
+            ]
+        });
+
+        $(".checkbox-list").each(function () {
+            var cbl = $(this);
+            cbl.on("change", "input[type='checkbox']", function (e) {
+                var value = 0;
+                $("input[type='checkbox']", cbl).each(function () {
+                    var chk = $(this);
+                    if (chk.prop("checked"))
+                        value |= parseInt(chk.val());
+                })
+                $("input[type='hidden']", cbl).val(value);
+            });
+        });
+    </script>
+}

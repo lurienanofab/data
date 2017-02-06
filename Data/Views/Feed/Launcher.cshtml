@@ -1,0 +1,25 @@
+﻿@using LNF.Repository.Data;
+@model Data.Models.FeedModel
+@{
+    ViewBag.Title = "Launcher";
+    Model.CurrentPage = "Feed";
+    Model.CurrentSubMenuItem = "list";
+    var baseurl = Request.Url.GetLeftPart(UriPartial.Authority);
+}
+
+<div class="page">
+    <div class="section">
+        <div class="content feed">
+            @Model.GetError()
+            <input type="hidden" value="@baseurl" class="link-baseurl" />
+            <input type="hidden" value="@Url.Action(Model.App, "Feed")" class="link-href" />
+            Query string: <input type="text" style="width: 500px" class="launcher-querystring" />
+            <div style="margin-top: 10px;">
+                <a href="@Url.Action(Model.App, "Feed")" class="launcher-run">@Html.Raw(baseurl + Url.Action(Model.App, "Feed"))</a>
+            </div>
+            <div style="margin-top: 10px;">
+                <input type="button" value="Cancel" style="width: 60px;" class="launcher-cancel" onclick="window.location='@Url.Action("Index", "Feed")'" />
+            </div>
+        </div>
+    </div>
+</div>

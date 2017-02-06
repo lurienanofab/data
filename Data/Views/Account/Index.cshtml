@@ -1,0 +1,43 @@
+﻿@using LNF.Web.Mvc;
+@using Data.Models;
+@model AccountModel
+@{
+    ViewBag.Title = "Account";
+}
+<div class="page">
+    <h2>Add/Modify Account</h2>
+    @Html.CreateSubMenu(Model.GetSubMenu())
+    <div class="section account">
+        @Html.HiddenFor(x => x.SearchText, new { @class = "search" })
+        <div class="content">
+            <div style="width: 900px;">
+                <table class="account-table">
+                    <thead>
+                        <tr>
+                            <th>AccountID</th>
+                            <th>Organization</th>
+                            <th>Name</th>
+                            <th>ShortCode</th>
+                            <th>Active</th>
+                            <th>Active-search</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var a in Model.GetAllAccounts())
+                        {
+                            <tr>
+                                <td>@a.AccountID</td>
+                                <td>@a.Org.OrgName</td>
+                                <td>@a.Name</td>
+                                <td>@a.ShortCode</td>
+                                <td style="text-align: center;">@Html.Raw(a.Active ? "&#10004;" : "")</td>
+                                <td>@Html.Raw(a.Active ? "is:active" : "isnot:active")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <div style="clear: both;"></div>
+            </div>
+        </div>
+    </div>
+</div>

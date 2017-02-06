@@ -1,0 +1,82 @@
+﻿@using LNF.Web.Mvc;
+@using Data.Models.Admin;
+@model RoomModel
+@{
+    ViewBag.Title = "Administration / Room / Edit";
+    Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="page-header">
+        <h1>@Html.ActionLink("Admin", "Index") / @Html.ActionLink("Room", "Room") / Edit</h1>
+    </div>
+    @Model.GetMessage()
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            @if (Model.RoomID == 0)
+            {
+                <h3 class="panel-title">Add New Room</h3>
+            }
+            else
+            {
+                <h3 class="panel-title">Edit Room (ID: @Model.RoomID)</h3>
+            }
+        </div>
+        <div class="panel-body">
+            @using (Html.BeginForm("RoomEdit", "Admin", FormMethod.Post, new { @role = "form", @class = "form-horizontal" }))
+            {
+                <div class="form-group">
+                    @Html.LabelFor(x => x.RoomName, "Name", new { @class = "col-sm-1 control-label" })
+                    <div class="col-sm-11">
+                        @Html.TextBoxFor(x => x.RoomName, new { @class = "form-control" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(x => x.DisplayName, "Display", new { @class = "col-sm-1 control-label" })
+                    <div class="col-sm-11">
+                        @Html.TextBoxFor(x => x.DisplayName, new { @class = "form-control" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(x => x.ParentID, "Parent", new { @class = "col-sm-1 control-label" })
+                    <div class="col-sm-11">
+                        @Html.DropDownListFor(x => x.ParentID, Model.GetRoomParentSelectItems(), new { @class = "form-control" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(x => x.PassbackRoom, "Passback", new { @class = "col-sm-1 control-label" })
+                    <div class="col-sm-1 checkbox">
+                        @Html.CheckBoxFor(x => x.PassbackRoom, new { @style = "margin-left: 5px;" })
+                    </div>
+                    @Html.LabelFor(x => x.ApportionDailyFee, "Apportion Daily Fee", new { @class = "col-sm-3 control-label" })
+                    <div class="col-sm-1 checkbox">
+                        @Html.CheckBoxFor(x => x.ApportionDailyFee, new { @style = "margin-left: 5px;" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(x => x.Billable, new { @class = "col-sm-1 control-label" })
+                    <div class="col-sm-1 checkbox">
+                        @Html.CheckBoxFor(x => x.Billable, new { @style = "margin-left: 5px;" })
+                    </div>
+                    @Html.LabelFor(x => x.ApportionEntryFee, "Apportion Entry Fee", new { @class = "col-sm-3 control-label" })
+                    <div class="col-sm-1 checkbox">
+                        @Html.CheckBoxFor(x => x.ApportionEntryFee, new { @style = "margin-left: 5px;" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(x => x.Active, new { @class = "col-sm-1 control-label" })
+                    <div class="col-sm-11 checkbox">
+                        @Html.CheckBoxFor(x => x.Active, new { @style = "margin-left: 5px;" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-1 col-sm-11">
+                        <input type="hidden" name="Command" value="save" />
+                        <button type="submit" class="btn btn-primary" style="min-width: 80px;">Save</button>
+                        @Html.ActionLink("Cancel", "Room", null, new { @class = "btn btn-default" })
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

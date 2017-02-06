@@ -1,0 +1,796 @@
+﻿@using LNF.Data;
+@using LNF.PhysicalAccess;
+@model Data.Models.zClientModel
+@{
+    Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
+
+    ViewBag.Title = "Client Edit";
+
+    object userNameAttr;
+
+    if (Model.ClientOrgID > 0)
+    {
+        userNameAttr = new { @style = "width: 200px;", @class = "form-control umich-directory-search-textbox", @maxlength = 20, @disabled = "disabled" };
+    }
+    else
+    {
+        userNameAttr = new { @style = "width: 200px;", @class = "form-control umich-directory-search-textbox", @maxlength = 20 };
+    }
+
+    int privItemsPerRow = 4;
+    var privItems = Model.GetPrivItems().ToList();
+
+    var commItemsPerRow = 4;
+    var commItems = Model.GetCommunityItems().ToList();
+}
+
+@section styles{
+    <link rel="stylesheet" href="@Url.Content("~/Content/client.css")" type="text/css" />
+}
+
+<div class="container-fluid">
+    <div class="client" style="margin-bottom: 20px;">
+        <div class="page-header">
+            @if (Model.ClientID == 0)
+            {
+                <h1>Add New Client</h1>
+            }
+            else
+            {
+                <h1>Configure Client <span style="color: #0033ff;">@Model.GetClientDisplayName()</span></h1>
+            }
+        </div>
+        @using (Html.BeginForm("ClientEdit", "Client", new { ClientOrgID = Model.ClientOrgID }, FormMethod.Post, new { @role = "form" }))
+        {
+            <div class="row">
+                @if (!string.IsNullOrEmpty(Model.SaveErrorMessage))
+                {
+                    <div class="col-md-12">
+                        <div class="alert alert-danger" role="alert">@Html.Raw(Model.SaveErrorMessage)</div>
+                    </div>
+                }
+                <div class="col-md-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Contact</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="names">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <p class="input-group-static" style="color: #808080; font-style: italic; white-space: nowrap;">
+                                                (20 character max)
+                                            </p>
+                                            @Html.LabelFor(x => x.UserName, "Username", new { @class = "sr-only" })
+                                            <div class="input-group">
+                                                <div class="input-group-addon">username</div>
+                                                @Html.TextBoxFor(x => x.UserName, userNameAttr)
+                                                @if (Model.ClientOrgID == 0)
+                                                {
+                                                    <button class="btn btn-sm btn-primary umich-directory-search-button" type="button" title="Fill in form using the UM Directory" style="margin-left: 10px; margin-top: 2px;">UM Directory Search</button>
+                                                    <span class="umich-directory-search-message" style="color: #ff0000;"></span>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr />
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            @Html.LabelFor(x => x.FName, "First name", new { @class = "sr-only" })
+                                            <div class="input-group">
+                                                <div class="input-group-addon" style="width: 90px;">first</div>
+                                                @Html.TextBoxFor(x => x.FName, new { @style = "width: 200px;", @class = "form-control fname-textbox" })
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            @Html.LabelFor(x => x.MName, "Middle name", new { @class = "sr-only" })
+                                            <div class="input-group">
+                                                <div class="input-group-addon" style="width: 90px;">middle</div>
+                                                @Html.TextBoxFor(x => x.MName, new { @style = "width: 200px;", @class = "form-control mname-textbox" })
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            @Html.LabelFor(x => x.LName, "Last name", new { @class = "sr-only" })
+                                            <div class="input-group">
+                                                <div class="input-group-addon" style="width: 90px;">last</div>
+                                                @Html.TextBoxFor(x => x.LName, new { @style = "width: 200px;", @class = "form-control lname-textbox" })
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Demographics</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <h5 style="border-bottom: solid 2px #ccc; padding-bottom: 5px;">US citizen or permanent resident</h5>
+                                    @foreach (var item in Model.GetDemCitizenItems())
+                                    {
+                                        <div>
+                                            <label>
+                                                @Html.RadioButtonFor(x => x.DemCitizenID, item.DemCitizenID)
+                                                @item.DemCitizenValue
+                                            </label>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-md-4">
+                                    <h5 style="border-bottom: solid 2px #ccc; padding-bottom: 5px;">Ethnicity</h5>
+                                    @foreach (var item in Model.GetDemEthnicItems())
+                                    {
+                                        <div>
+                                            <label>
+                                                @Html.RadioButtonFor(x => x.DemEthnicID, item.DemEthnicID)
+                                                @item.DemEthnicValue
+                                            </label>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-md-4">
+                                    <h5 style="border-bottom: solid 2px #ccc; padding-bottom: 5px;">Race</h5>
+                                    @foreach (var item in Model.GetDemRaceItems())
+                                    {
+                                        <div>
+                                            <label>
+                                                @Html.RadioButtonFor(x => x.DemRaceID, item.DemRaceID)
+                                                @item.DemRaceValue
+                                            </label>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <h5 style="border-bottom: solid 2px #ccc; padding-bottom: 5px;">Gender</h5>
+                                    @foreach (var item in Model.GetDemGenderItems())
+                                    {
+                                        <div>
+                                            <label style="white-space: nowrap;">
+                                                @Html.RadioButtonFor(x => x.DemGenderID, item.DemGenderID)
+                                                @item.DemGenderValue
+                                            </label>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-md-4">
+                                    <h5 style="border-bottom: solid 2px #ccc; padding-bottom: 5px;">Disability</h5>
+                                    @foreach (var item in Model.GetDemDisabilityItems())
+                                    {
+                                        <div>
+                                            <label style="white-space: nowrap;">
+                                                @Html.RadioButtonFor(x => x.DemDisabilityID, item.DemDisabilityID)
+                                                @item.DemDisabilityValue
+                                            </label>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Privileges</h3>
+                        </div>
+                        <div class="panel-body">
+                            @Html.Hidden("Privs", (int)Model.Privs, new { @class = "privs" })
+                            <div class="priv-table">
+                                <div class="row">
+                                    @for (int i = 0; i < privItems.Count(); i++)
+                                    {
+                                        @Html.Raw((i % privItemsPerRow == 0 && i > 0) ? "</div><div class=\"row\">" : string.Empty)
+                                        <div class="col-sm-3">
+                                            <label style="white-space: nowrap;">
+                                                <input type="checkbox" class="priv-checkbox" @Html.Raw(Model.HasPriv(privItems[i]) ? "checked" : "") value="@Convert.ToInt32(privItems[i].PrivFlag)" />
+                                                @privItems[i].PrivType
+                                            </label>
+                                        </div>
+                                    }
+                                </div>
+                                @if (Model.ClientID > 0)
+                                {
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <hr />
+                                            <div class="physical-access"></div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Communities</h3>
+                        </div>
+                        <div class="panel-body">
+                            @Html.Hidden("Communities", Model.Communities, new { @class = "communities" })
+                            <div class="community-table">
+                                <div class="row">
+                                    @for (int i = 0; i < commItems.Count(); i++)
+                                    {
+                                        @Html.Raw((i % commItemsPerRow == 0 && i > 0) ? "</div><div class=\"row\">" : string.Empty)
+                                        <div class="col-sm-3">
+                                            <label style="white-space: nowrap;">
+                                                <input type="checkbox" class="community-checkbox" @Html.Raw(Model.HasCommunity(commItems[i]) ? "checked" : "") value="@Convert.ToInt32(commItems[i].CommunityFlag)" />
+                                                @commItems[i].CommunityName
+                                            </label>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Technical Interest</h3>
+                        </div>
+                        <div class="panel-body">
+                            @Html.DropDownListFor(x => x.TechnicalFieldID, Model.GetTechnicalFieldSelectItems(), new { @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="client-org">
+                <div class="page-header">
+                    <h1>For <span style="color: #0033ff;">@Model.GetOrgName()</span></h1>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">User Information</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            @Html.LabelFor(x => x.DepartmentID, "Department", new { @class = "control-label" })
+                                            @Html.DropDownListFor(x => x.DepartmentID, Model.GetDepartmentSelectItems(), new { @style = "width: 250px;", @class = "form-control" })
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            @Html.LabelFor(x => x.RoleID, "Role", new { @class = "control-label" })
+                                            @Html.DropDownListFor(x => x.RoleID, Model.GetRoleSelectItems(), new { @style = "width: 250px;", @class = "form-control" })
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            @Html.LabelFor(x => x.Email, "Email", new { @class = "control-label" })
+                                            <input type="email" id="Email" name="Email" style="width: 250px;" class="form-control email-textbox" value="@Model.Email" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            @Html.LabelFor(x => x.Phone, "Phone", new { @class = "control-label" })
+                                            <input type="tel" id="Phone" name="Phone" style="width: 250px;" class="form-control phone-textbox" value="@Model.Phone" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        <label style="white-space: nowrap;">
+                                            @Html.CheckBoxFor(x => x.IsManager)
+                                            Technical Manager
+                                        </label>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label style="white-space: nowrap;">
+                                            @Html.CheckBoxFor(x => x.IsFinManager)
+                                            Financial Manager
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Billing Information</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label for="" class="control-label">Subsidy Start Date</label>
+                                    <div class="row">
+                                        <div class="col-sm-2">
+                                            <label for="SubsidyStartDateYear" class="sr-only">Subsidy Start Date (Year)</label>
+                                            @Html.DropDownListFor(x => x.SubsidyStartDateYear, new SelectListItem[] { new SelectListItem() { Value = "2003", Text = "2003" } }, new { @style = "margin-bottom: 5px;", @class = "form-control" })
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <label for="SubsidyStartDateMonth" class="sr-only">Subsidy Start Date (Month)</label>
+                                            @Html.DropDownListFor(x => x.SubsidyStartDateMonth, new SelectListItem[] { new SelectListItem() { Value = "1", Text = "January" } }, new { @style = "margin-bottom: 5px;", @class = "form-control" })
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="" class="control-label">New Faculty Start Date</label>
+                                    <div class="row">
+                                        <div class="col-sm-2">
+                                            <label for="NewFacultyStartDateYear" class="sr-only">New Faculty Start Date (Year)</label>
+                                            @Html.DropDownListFor(x => x.NewFacultyStartDateYear, new SelectListItem[] { new SelectListItem() { Value = "2003", Text = "2003" } }, new { @style = "margin-bottom: 5px;", @class = "form-control" })
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <label for="NewFacultyStartDateMonth" class="sr-only">New Faculty Start Date (Month)</label>
+                                            @Html.DropDownListFor(x => x.NewFacultyStartDateMonth, new SelectListItem[] { new SelectListItem() { Value = "1", Text = "January" } }, new { @style = "margin-bottom: 5px;", @class = "form-control" })
+                                        </div>
+                                    </div>
+                                    <div style="color: #777;">
+                                        ONLY applies to UM + Executive
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="asdf" class="control-label">Billing Type</label>
+                                    <div>
+                                        @foreach (var bt in Model.GetBillingTypes())
+                                        {
+                                            <label style="margin-right: 10px;">
+                                                @Html.RadioButton("BillingTypeID", bt.BillingTypeID, bt.BillingTypeID == Model.BillingTypeID)
+                                                @bt.BillingTypeName
+                                            </label>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @if (Model.ClientOrgID > 0)
+                {
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title">Address</h3>
+                                </div>
+                                <div class="panel-body">
+                                    <div style="font-style: italic; color: #808080; margin-bottom: 20px;">
+                                        Changes take effect immediately
+                                    </div>
+                                    <div class="address"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title">Managers</h3>
+                                </div>
+                                <div class="panel-body">
+                                    <div style="font-style: italic; color: #808080; margin-bottom: 20px;">
+                                        Changes take effect immediately
+                                    </div>
+                                    <div class="manager"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title">Accounts</h3>
+                                </div>
+                                <div class="panel-body">
+                                    <div style="font-style: italic; color: #808080; margin-bottom: 20px;">
+                                        Changes take effect immediately
+                                    </div>
+                                    <div class="account"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div style="font-style: italic; color: #808080; margin-bottom: 20px;">The new client must be saved before configuring additional organization details.</div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <button name="Command" value="save" class="btn btn-lg btn-default" type="submit" title="Save and remain on this page">Save</button>
+            <button name="Command" value="save-continue" class="btn btn-lg btn-default" type="submit" title="Save and return to the previous page">Save and Continue</button>
+            <div style="margin-top: 10px; font-size: 12pt;"><a href="@Url.Action("Index")">&larr; Return</a></div>
+        }
+    </div>
+</div>
+@section scripts{
+    <script src="//ssel-apps.eecs.umich.edu/static/scripts/jquery/jquery.uds.js"></script>
+    <script>
+        $.fn.accessCheck = function (option) {
+            return this.each(function () {
+                var $self = $(this);
+
+                var opt = $.extend({}, {
+                    "url": null,
+                    "allowRefresh": true
+                }, option);
+
+                if (opt.url === null) {
+                    $self.html($("<div/>").attr("role", "alert").addClass("alert alert-danger").html("[accessCheck] Missing parameter: url"));
+                    return;
+                }
+
+                var createListItem = function (test, text) {
+                    if (test)
+                        return $("<li/>").css({ "color": "#008000" }).append($("<strong/>").html("&check;")).append("&nbsp;").append(text);
+                    else
+                        return $("<li/>").css({ "color": "#800000" }).append($("<strong/>").html("&times;")).append("&nbsp;").append(text);
+                }
+
+                var load = function () {
+
+                    var result = null;
+
+                    $.ajax({
+                        "url": opt.url,
+                        "success": function (data, textStatus, jqXHR) {
+                            result = { "error": false, "message": null, "data": data };
+                        },
+                        "error": function (jqXHR, textStatus, errorThrown) {
+                            if (jqXHR.responseJSON)
+                                result = { "error": true, "message": jqXHR.responseJSON.ExceptionMessage, "data": null };
+                            else
+                                result = { "error": true, "message": "Unable to retrieve access information.", "data": null };
+                        },
+                        "complete": function (jqXHR, textStatus) {
+                            $self.html("");
+
+                            if (result.error)
+                                $self.html($("<div/>").attr("role", "alert").addClass("alert alert-danger").html(result.message));
+                            else {
+                                var header = $("<h5/>").append($("<strong/>").html("Physical Access"))
+
+                                if (result.data.HasPhysicalAccess)
+                                    header.append($("<span/>").addClass("alert alert-success").attr("role", "alert").css({ "padding": "5px", "margin-left": "5px" }).html("Enabled"));
+                                else
+                                    header.append($("<span/>").addClass("alert alert-danger").attr("role", "alert").css({ "padding": "5px", "margin-left": "5px" }).html("Disabled"));
+
+                                var list = $("<ul/>").css({ "list-style": "none", "padding-left": "5px" });
+
+                                list.append(createListItem(result.data.HasPhysicalAccessPriv, "Physical Access privilege"));
+
+                                if (result.data.HasPhysicalAccessPriv) {
+
+                                    if (result.data.ActiveAccountNotRequired)
+                                        list.append(createListItem(true, "Active account <strong>not</strong> required"));
+                                    else
+                                        list.append(createListItem(result.data.ActiveAccountRequirement, "Active account requirement"));
+
+                                    if (result.data.ActiveAccountNotRequired || result.data.ActiveAccountRequirement) {
+                                        list.append(createListItem(result.data.ActiveBadge, "Active badge" + (result.data.BadgeExpire ? moment(result.data.BadgeExpire).format("[ (expires ]M/D/YYYY h:mm A[)]") : "")));
+                                        list.append(createListItem(result.data.ActiveCard, "Active card"));
+                                    }
+                                }
+
+                                $self.append(header).append(list);
+
+                                header = $("<h5/>").append($("<strong/>").html("Access Cards"));
+
+                                var table = $("<table/>").addClass("table table-striped").append("<thead/>").append("<tbody/>");
+
+                                $("thead", table).append(
+                                    $("<tr/>").append(
+                                        $("<th/>").html("Number")
+                                    ).append(
+                                        $("<th/>").html("Expire")
+                                    ).append(
+                                        $("<th/>").html("Last Access")
+                                    ).append(
+                                        $("<th/>").html("Status")
+                                    )
+                                );
+
+                                if ($.isArray(result.data.Cards) && result.data.Cards.length > 0) {
+                                    $.each(result.data.Cards, function (index, item) {
+                                        $("tbody", table).append(
+                                            $("<tr/>").append(
+                                                $("<td/>").html(item.Number)
+                                            ).append(
+                                                $("<td/>").html(moment(item.Expire).format("M/D/YYYY h:mm A"))
+                                            ).append(
+                                                $("<td/>").html(moment(item.LastAccess).format("M/D/YYYY h:mm:ss A"))
+                                            ).append(
+                                                $("<td/>").html(item.Status)
+                                            )
+                                        );
+                                    });
+                                }
+                                else {
+                                    $("tbody", table).append($("<tr/>").append(
+                                        $("<td/>").attr("colspan", "4").css({ "font-style": "italic", "color": "#808080" }).html("No cards found")
+                                    ));
+                                }
+
+                                $self.append(header).append(table);
+
+                                if (opt.allowRefresh) {
+                                    var button = $("<button/>").attr("type", "button").addClass("btn btn-xs btn-primary access-check-refresh").html("Refresh");
+                                    $self.append(button);
+                                }
+                            }
+                        }
+                    });
+                }
+
+                load();
+
+                $self.on("click", ".access-check-refresh", function (e) {
+                    load();
+                }).on("accesscheck_refresh", function (e) {
+                    load();
+                });
+            });
+        }
+
+        $(document).ready(function () {
+
+            $(".client").each(function () {
+                var $self = $(this);
+
+                var getAddressType = function (item) {
+                    switch (item.AddressType) {
+                        case "billing":
+                            return "Billing";
+                        case "shipping":
+                            return "Shipping";
+                        case "client":
+                            return "Client";
+                        default:
+                            return "[unknown]";
+                    }
+                }
+
+                $(".address", $self).editTable({
+                    "url": "@Url.Content(string.Format("~/api/client/address/current?id={0}", Model.ClientOrgID))",
+                    "className": "edit-table footable",
+                    "editMode": "popup",
+                    "columns": [
+                        {
+                            "key": "AddressType",
+                            "type": "select",
+                            "className": "address-type",
+                            "readonly": true,
+                            "html": getAddressType,
+                            "select": {
+                                "items": [{ "value": "client", "text": "Client" }],
+                                "className": "form-control"
+                            },
+                            "header": { "html": "Type", "width": "60px" },
+                            "data": { "name": "Type" }
+                        },
+                        {
+                            "key": "InternalAddress",
+                            "type": "text",
+                            "className": "attention",
+                            "header": { "html": "Attention", "width": "100px" },
+                            "data": { "hide": "phone,tablet", "name": "Attention" }
+                        },
+                        {
+                            "key": "StrAddress1",
+                            "type": "text",
+                            "className": "address1",
+                            "header": { "html": "Address1" },
+                            "data": { "name": "Address 1" }
+                        },
+                        {
+                            "key": "StrAddress2",
+                            "type": "text",
+                            "className": "address2",
+                            "header": { "html": "Address2", "width": "200px" },
+                            "data": { "hide": "phone,tablet", "name": "Address 2" }
+                        },
+                        {
+                            "key": "City",
+                            "type": "text",
+                            "className": "city",
+                            "header": { "html": "City", "width": "100px" },
+                            "data": { "hide": "phone", "name": "City" }
+                        },
+                        {
+                            "key": "State",
+                            "type": "text",
+                            "className": "state",
+                            "header": { "html": "State", "width": "50px" },
+                            "data": { "hide": "phone", "name": "State" }
+                        },
+                        {
+                            "key": "Zip",
+                            "type": "text",
+                            "className": "zip",
+                            "header": { "html": "Zip", "width": "60px" },
+                            "data": { "hide": "phone,tablet", "name": "Zip" }
+                        },
+                        {
+                            "key": "Country",
+                            "type": "text",
+                            "className": "country",
+                            "header": { "html": "Country", "width": "60px" },
+                            "data": { "hide": "phone,tablet", "name": "Country" }
+                        }
+                    ],
+                    "footer": { "button": { "className": "btn btn-sm btn-primary", "text": "New Address" } },
+                    "nodata": "No addresses assigned to this client",
+                    "canAdd": function (data) {
+                        var result = true;
+                        $.each(data, function (index, item) {
+                            if (item.AddressType == "client") {
+                                result = false;
+                                return false;
+                            }
+                        });
+                        return result;
+                    },
+                    "complete": function (table, data) {
+                        table.footable();
+                    },
+                    "reload": function (table, data) {
+                        table.trigger('footable_redraw');
+                    }
+                });
+
+                $(".manager", $self).editTable({
+                    "url": "@Url.Content(string.Format("~/api/client/manager/current?id={0}", Model.ClientOrgID))",
+                    "className": "edit-table footable",
+                    "columns": [
+                        {
+                            "key": "ClientOrgID",
+                            "type": "select",
+                            "html": function (item) {
+                                return item.DisplayName;
+                            },
+                            "select": {
+                                "className": "form-control",
+                                "items": function (callback) {
+                                    $.ajax({
+                                        "url": "@Url.Content(string.Format("~/api/client/manager/available?id={0}", Model.ClientOrgID))",
+                                        "type": "GET",
+                                        "success": function (data) {
+                                            var result = [];
+                                            $.each(data, function (index, item) {
+                                                result.push({ "value": item.ClientOrgID, "text": item.DisplayName });
+                                            });
+                                            callback(result);
+                                        }
+                                    });
+                                }
+                            },
+                            "header": { "html": "Manager" }
+                        }
+                    ],
+                    "canEdit": false,
+                    "header": { "controls": { "width": "60px" } },
+                    "footer": { "button": { "className": "btn btn-xs btn-primary" } },
+                    "nodata": "@Model.GetClientDisplayName() has no managers",
+                    "complete": function (table, data) {
+                        table.footable();
+                    },
+                    "reload": function (table, data) {
+                        table.trigger('footable_redraw');
+                        $(".account", $self).trigger("editable_reload");
+                    }
+                });
+
+                var getAccountName = function (acct) {
+                    var name = acct.AccountName;
+                    if (new String(acct.ShortCode).trim() != "")
+                        name = "[" + acct.ShortCode + "] " + name;
+                    return name;
+                }
+
+                $(".account", $self).editTable({
+                    "url": "@Url.Content(string.Format("~/api/client/account/current?id={0}", Model.ClientOrgID))",
+                    "className": "edit-table footable",
+                    "columns": [
+                        {
+                            "key": "AccountID",
+                            "type": "select",
+                            "html": getAccountName,
+                            "select": {
+                                "className": "form-control",
+                                "items": function (callback) {
+                                    $.ajax({
+                                        "url": "@Url.Content(string.Format("~/api/client/account/available?id={0}", Model.ClientOrgID))",
+                                        "type": "GET",
+                                        "success": function (data) {
+                                            var result = [];
+                                            $.each(data, function (index, item) {
+                                                result.push({ "value": item.AccountID, "text": getAccountName(item) });
+                                            });
+                                            callback(result);
+                                        }
+                                    });
+                                }
+                            },
+                            "header": { "html": "Account" }
+                        }
+                    ],
+                    "canEdit": false,
+                    "header": { "controls": { "width": "60px" } },
+                    "footer": { "button": { "className": "btn btn-xs btn-primary" } },
+                    "nodata": "@Model.GetClientDisplayName() has no accounts",
+                    "complete": function (table, data) {
+                        table.footable();
+                    },
+                    "reload": function (table, data) {
+                        table.trigger('footable_redraw');
+                        $(".physical-access", $self).trigger("accesscheck_refresh");
+                    }
+                });
+
+                //umich directory search
+                $self.uds();
+
+                $(".physical-access").accessCheck({ "url": "/data/api/client/access/check?id=@Model.ClientID" });
+
+                $self.on("change", ".priv-checkbox", function (e) {
+                    var p = 0;
+
+                    $(".priv-checkbox", $self).each(function () {
+                        var chk = $(this);
+                        if (chk.prop("checked"))
+                            p += parseInt(chk.val());
+                    });
+
+                    $(".privs", $self).val(p);
+                }).on("change", ".community-checkbox", function (e) {
+                    var c = 0;
+
+                    $(".community-checkbox", $self).each(function () {
+                        var chk = $(this);
+                        if (chk.prop("checked"))
+                            c += parseInt(chk.val());
+                    });
+
+                    $(".communities", $self).val(c);
+                });
+            });
+        });
+    </script>
+}

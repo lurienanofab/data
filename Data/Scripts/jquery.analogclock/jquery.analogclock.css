@@ -1,0 +1,33 @@
+﻿.analog-clock {
+    position: relative;
+    width: 600px;
+    height: 600px;
+    margin: 20px auto 0 auto;
+    background: url(images/clockface.jpg) no-repeat;
+    list-style: none;
+}
+
+    .analog-clock .sec,
+    .analog-clock .min,
+    .analog-clock .hour {
+        position: absolute;
+        width: 30px;
+        height: 600px;
+        top: 0px;
+        left: 285px;
+    }
+
+    .analog-clock .sec {
+        background: url(images/sechand.png);
+        z-index: 3;
+    }
+
+    .analog-clock .min {
+        background: url(images/minhand.png);
+        z-index: 2;
+    }
+
+    .analog-clock .hour {
+        background: url(images/hourhand.png);
+        z-index: 1;
+    }

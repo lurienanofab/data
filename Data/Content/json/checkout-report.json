@@ -1,0 +1,32 @@
+﻿{
+    "title": "Checkout Report",
+    "criteria": [
+        {"id": "sd", "label": "Start Date", "type": "date", "required": true, "format": "YYYY-MM-DD"},
+        {"id": "ed", "label": "End Date", "type": "date", "required": true, "format": "YYYY-MM-DD"},
+        {"id": "dir", "label": "Direction", "type": "select", "required": true, "items": [
+            {"text": "Out", "value": "out"},
+            {"text": "In", "value": "in"}
+        ]}
+    ],
+    "feed": "http://ssel-apps.eecs.umich.edu/data/feed/checkout-report/jsonp?sd=[sd]&ed=[ed]&dir=[dir]",
+	"export": [
+		{"url": "http://ssel-apps.eecs.umich.edu/data/feed/checkout-report/csv?sd=[sd]&ed=[ed]&dir=[dir]", "label": "csv"},
+		{"url": "http://ssel-apps.eecs.umich.edu/data/feed/checkout-report/xml?sd=[sd]&ed=[ed]&dir=[dir]", "label": "xml"}
+	],
+	"dataType": "jsonp",
+	"rows": "Data.default",
+	"striped": true,
+	"columns": [
+		{"data": "ItemID"},
+		{"data": "UpdateDateTime", "title": "Updated", "type": "date", "format": "M/D/YYYY[<br />]h:mm:ss A", "headerStyle": "width: 110px"},
+		{"data": "DisplayName", "title": "Name"},
+		{"data": "Description"},
+		{"data": "LocationName", "title": "Location"},
+		{"data": "ParentLocationName", "title": "Parent Location"},
+		{"data": "BeforeQty", "title": "Before", "itemStyle": "text-align: right;"},
+		{"data": "UpdateQty", "title": "Quantity", "itemStyle": "text-align: right;"},
+		{"data": "AfterQty", "title": "After", "itemStyle": "text-align: right;"}
+	],
+	"defaultDateFormat": "M/D/YYYY",
+	"datatables": true
+}

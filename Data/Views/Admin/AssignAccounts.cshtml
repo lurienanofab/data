@@ -1,0 +1,147 @@
+﻿@using LNF.Web.Mvc;
+@using Data.Models.Admin;
+@model ClientModel
+@{
+    ViewBag.Title = "Account Assignment";
+    Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
+}
+
+@section styles{
+    <link href="//ssel-apps.eecs.umich.edu/static/scripts/jquery/jquery.assignaccounts/css/jquery.assignaccounts.css" rel="stylesheet" type="text/css" />
+    <style>
+        .working {
+            color: #808080;
+            padding-top: 5px;
+            line-height: 19px;
+            display: block;
+        }
+    </style>
+}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">@Html.ActionLink("Admin", "Index") / Assign Accounts</h3>
+    </div>
+    <div class="panel-body">
+        <div class="account-assignment">
+            <input type="hidden" class="AjaxURL" value="@Url.Action("Ajax")" />
+            <input type="hidden" class="Command" value="@Model.Command" />
+            <input type="hidden" class="OrgID" value="@Model.OrgID" />
+            <input type="hidden" class="ManagerClientOrgID" value="@Model.ManagerClientOrgID" />
+
+            <div class="form-horizontal">
+                <div class="form-group">
+                    @Html.LabelFor(x => x.OrgID, "Org:", new { @class = "col-sm-1 control-label" })
+                    <div class="col-sm-4">
+                        @Html.DropDownListFor(x => x.OrgID, Model.GetOrgSelectItems(), new { @class = "org-select form-control" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(x => x.ManagerClientOrgID, "Manager:", new { @class = "col-sm-1 control-label" })
+                    <div class="col-sm-4 managers">
+                        <em class="working" style="display: none;">Working...</em>
+                        @Html.DropDownListFor(x => x.ManagerClientOrgID, new SelectListItem[] { }, new { @class = "form-control manager-select" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="message"></div>
+
+            <hr />
+
+            <div style="margin-top: 10px;">
+                <div class="matrix-working" style="display: none;">
+                    <img src="@Url.Content("//ssel-apps.eecs.umich.edu/static/images/ajax-loader.gif")" alt="Working..." />
+                </div>
+                <div class="matrix-container" style="display: none;">
+                    <table class="filter">
+                        <tbody>
+                            <tr>
+                                <th>Display:</th>
+                                <td>
+                                    <label>
+                                        Name
+                                        <input type="radio" name="acct_display" class="acct-display-by" data-key="name" checked="checked" />
+                                    </label>
+                                </td>
+                                <td>
+                                    <label>
+                                        Numbers
+                                        <input type="radio" name="acct_display" class="acct-display-by" data-key="number" />
+                                    </label>
+                                </td>
+                                <td>
+                                    <label>
+                                        Project
+                                        <input type="radio" name="acct_display" class="acct-display-by" data-key="project" />
+                                    </label>
+                                </td>
+                                <td>
+                                    <label>
+                                        ShortCode
+                                        <input type="radio" name="acct_display" class="acct-display-by" data-key="shortcode" />
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Filter:</th>
+                                <td colspan="4">
+                                    <div class="matrix-filter"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table>
+                        <tr>
+                            <td style="vertical-align: top;">
+                                <div class="matrix-table-container"></div>
+                            </td>
+                            <td style="vertical-align: top; padding-left: 10px;">
+                                <div class="edit-items"></div>
+                                <div class="edit-items-control" style="display: none;">
+                                    <input type="button" class="btn btn-primary edit-items-save-button" value="Save All" />
+                                    <input type="button" class="btn btn-default edit-items-cancel-button" value="Cancel All" />
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div style="margin-bottom: 20px;">
+    <a href="@Url.Action("Return", "Home")" class="btn btn-primary btn-lg">&larr; Back to Main Page</a>
+</div>
+
+@section scripts{
+    <script src="//ssel-apps.eecs.umich.edu/static/scripts/jquery/jquery.assignaccounts/js/jquery.assignaccounts.js" type="text/javascript"></script>
+    <script>
+        $(".account-assignment").assignaccounts({
+            "init": function (instance) {
+
+                var initManagerCombo = function () {
+                    //$('.manager-clientorg-id', instance).combobox();
+                };
+
+                var selectedValue = instance.Settings.Data.OrgID;
+                var selectedText = $(".org-select .autodd", instance).find("option[value='" + selectedValue + "']").text();
+
+                $(".org-select .autodd", instance)
+                    //.combobox()
+                    .change(function () {
+                        if (selectedValue != this.value) {
+                            selectedValue = this.value;
+                            instance.Settings.Data.ManagerClientOrgID = null;
+                            instance.UpdateManagers(selectedValue, initManagerCombo);
+                        }
+                    });
+
+                //$(".org-select .ui-combobox-input").css({ "width": $(".autodd", instance).outerWidth() + "px" });
+                $(".org-select .ui-combobox-input").val(selectedText);
+
+                instance.UpdateManagers(selectedValue, initManagerCombo);
+            }
+        });
+    </script>
+}

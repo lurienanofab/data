@@ -1,0 +1,15 @@
+﻿{
+    "title": "Currently In Lab",
+    "feed": "http://ssel-apps.eecs.umich.edu/data/feed/currently-in-lab/jsonp",
+	"autoRun": true,
+	"dataType": "jsonp",
+	"striped": true,
+	"rows": "Data.default",
+	"columns": [
+		{"data": "FullName", "title": "Name"},
+		{"data": "Email"},
+		{"data": "EventTime", "title": "Entry Time", "type": "date" },
+		{"data": "CardNumber", "title": "Card #"},
+		{"data": "AreaName", "title": "Area"}
+	]
+}

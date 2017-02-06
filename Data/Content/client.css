@@ -1,0 +1,15 @@
+﻿@media (min-width: 992px) {
+    .demographics .col-md-4 > .panel > .panel-body {
+        min-height: 220px;
+    }
+}
+
+.command-button {
+    background-color: whitesmoke;
+    border: 1px solid darkblue;
+    color: darkblue;
+    font-family: Arial;
+    font-size: x-small;
+    margin: 1px;
+    text-align: center;
+}

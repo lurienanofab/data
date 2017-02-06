@@ -1,0 +1,82 @@
+﻿@using LNF.Web.Mvc;
+@using Data.Models;
+@model ClientAccessModel
+@{
+    string app = string.Empty;
+    ViewBag.Title = "Access";
+    object routeVals = string.IsNullOrEmpty(app) ? null : new { app };
+}
+<div class="page">
+    <h2>Access</h2>
+    @Html.CreateSubMenu(Model.GetSubMenu())
+    <div class="section client-access">
+        <div class="content">
+            @using (Html.BeginForm("Access", "Client", routeVals, FormMethod.Post, null))
+            {
+                @Html.HiddenFor(x => x.ActiveTab, new { @class = "active-tab" })
+                <div class="tabs">
+                    <ul>
+                        <li><a href="#tabs-1">Badges</a></li>
+                        <li><a href="#tabs-2">Cards</a></li>
+                        <li><a href="#tabs-3">Events</a></li>
+                    </ul>
+                    <div id="tabs-1">
+                        @if (Model.ActiveTab == "badges")
+                        {
+                            Html.RenderPartial("_AccessBadgesPartial");
+                        }
+                        else
+                        {
+                            <img src="//ssel-apps.eecs.umich.edu/static/images/ajax-loader.gif" alt="Loading..." />
+                            if (string.IsNullOrEmpty(app))
+                            {
+                                <input type="hidden" class="redirect-url" value="@Url.Action("Access", new { ActiveTab = "badges" })" />
+                            }
+                            else
+                            {
+                                <input type="hidden" class="redirect-url" value="@Url.Action("Access", new { ActiveTab = "badges", app })" />
+                            }
+
+                        }
+                    </div>
+                    <div id="tabs-2">
+                        @if (Model.ActiveTab == "cards")
+                        {
+                            Html.RenderPartial("_AccessCardsPartial");
+                        }
+                        else
+                        {
+                            <img src="//ssel-apps.eecs.umich.edu/static/images/ajax-loader.gif" alt="Loading..." />
+                            if (string.IsNullOrEmpty(app))
+                            {
+                                <input type="hidden" class="redirect-url" value="@Url.Action("Access", new { ActiveTab = "cards" })" />
+                            }
+                            else
+                            {
+                                <input type="hidden" class="redirect-url" value="@Url.Action("Access", new { ActiveTab = "cards", app })" />
+                            }
+                        }
+                    </div>
+                    <div id="tabs-3">
+                        @if (Model.ActiveTab == "events")
+                        {
+                            Html.RenderPartial("_AccessEventsPartial");
+                        }
+                        else
+                        {
+                            <img src="//ssel-apps.eecs.umich.edu/static/images/ajax-loader.gif" alt="Loading..." />
+                            if (string.IsNullOrEmpty(app))
+                            {
+                                <input type="hidden" class="redirect-url" value="@Url.Action("Access", new { ActiveTab = "events" })" />
+                            }
+                            else
+                            {
+                                <input type="hidden" class="redirect-url" value="@Url.Action("Access", new { ActiveTab = "events", app })" />
+                            }
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,27 @@
+﻿.label {
+    font-weight: bold;
+    background-color: #EAEAFF;
+    border-bottom: solid 1px #DDDDDD;
+    border-right: solid 1px #DDDDDD;
+    padding: 3px;
+    margin-bottom: 3px;
+}
+
+.field {
+    margin-bottom: 10px;
+}
+
+tr.inactive-feed td.alias,
+tr.inactive-feed td.name {
+    color: #AA0000;
+    font-style: italic;
+}
+
+td.links{
+    text-align: center;
+}
+
+.CodeMirror {
+    border-top: solid 1px #aaa;
+    border-bottom: solid 1px #aaa;
+}

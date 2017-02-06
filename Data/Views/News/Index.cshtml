@@ -1,0 +1,56 @@
+﻿@model Data.Models.NewsModel
+@{
+    ViewBag.Title = "LNF News";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@ViewBag.Title</title>
+    <link rel="stylesheet" href="@Url.Content("~/scripts/jquery.news/jquery.news.css")" />
+</head>
+<body>
+    <div class="news">
+
+        <div class="title logo">
+            <div style="padding: 10px;">@Model.Title()</div>
+        </div>
+
+        <div class="title subtitle">
+            <div style="display: inline-block; width: 44%; padding: 10px;">
+                at the University of Michigan
+            </div>
+            <div class="datetime" style="display: inline-block; width: 52%; text-align: right; padding: 10px;">
+            </div>
+        </div>
+
+        <table class="body" style="width: 100%; border-collapse: collapse;">
+            <tr class="header">
+                <td style="width: 50%;">LNF News</td>
+                <td style="width: 10%; text-align: right;">Users in:</td>
+                <td style="width: 20%; text-align: center;">ROBIN</td>
+                <td style="width: 20%; text-align: center;">Clean Room</td>
+            </tr>
+            <tr class="content">
+                <td colspan="2" class="slide"><div class="slide-content"></div></td>
+                <td style="background-color: #a39e97;" class="feed" data-room="ROBIN"></td>
+                <td style="background-color: #dbdad8;" class="feed" data-room="Clean Room"></td>
+            </tr>
+        </table>
+    </div>
+
+    <script src="//ssel-apps.eecs.umich.edu/static/lib/jquery/jquery.min.js"></script>
+    <script src="//ssel-apps.eecs.umich.edu/static/lib/jquery-ui/jquery-ui.min.js"></script>
+    <script src="//ssel-apps.eecs.umich.edu/static/lib/moment/moment.min.js"></script>
+    <script src="@Url.Content("~/Scripts/jquery.news/jquery.bigtext.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.news/jquery.fitText.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.news/jquery.news.js")"></script>
+
+    <script>
+        $('.news').news();
+    </script>
+</body>
+</html>

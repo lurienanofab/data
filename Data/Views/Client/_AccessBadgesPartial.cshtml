@@ -1,0 +1,40 @@
+﻿@model Data.Models.ClientAccessModel
+<div style="margin-bottom: 10px;">
+    <label>
+        <input type="checkbox" class="in-area" />
+        Only show users currently in the lab
+    </label>
+</div>
+<div style="width: 1200px;">
+    <table class="badge-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Last</th>
+                <th>First</th>
+                <th>Issue</th>
+                <th>Expire</th>
+                <th>Access Date</th>
+                <th>Area</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var b in Model.GetBadges())
+            {
+                <tr>
+                    <td>@b.ClientID</td>
+                    <td>@b.UserName</td>
+                    <td>@b.LastName</td>
+                    <td>@b.FirstName</td>
+                    <td>@Model.FormatDateTime(b.IssueDate)</td>
+                    <td>@Model.FormatDateTime(b.ExpireDate)</td>
+                    <td>@Model.FormatDateTime(b.CurrentAccessTime)</td>
+                    <td>@b.CurrentAreaName</td>
+                    <td>@Html.Raw(b.CurrentAccessTime != null ? "inlab" : string.Empty)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div style="clear: both;"></div>
+</div>

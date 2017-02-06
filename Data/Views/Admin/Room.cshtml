@@ -1,0 +1,60 @@
+﻿@using System.Configuration;
+@using LNF.Web.Mvc;
+@using Data.Models.Admin;
+@model RoomModel
+@{
+    ViewBag.Title = "Admin/Room";
+    Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
+
+    bool showSubMenu = string.IsNullOrEmpty(Convert.ToString(Session["return-to"])) && !bool.Parse(ConfigurationManager.AppSettings["AlwaysHideMenus"]);
+
+    bool viewInactive;
+    bool.TryParse(Request.QueryString["inactive"], out viewInactive);
+}
+
+<div class="admin">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">@Html.ActionLink("Admin", "Index") / Room</h3>
+        </div>
+        <div class="panel-body">
+            @if (showSubMenu)
+            {
+                @Html.CreateSubMenu(Model.GetSubMenu())
+            }
+            @Html.ActionLink("Add New Room", "RoomEdit", null, new { @class = "btn btn-primary", @style = "margin-bottom: 10px;" })
+            <label class="control-label" style="display: block; margin-bottom: 20px;">
+                @Html.CheckBox("ViewInactive", Model.ViewInactive, new { @class = "inactive-checkbox" })
+                View Inactive Rooms
+            </label>
+            <table class="table table-hover default">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">RoomID</th>
+                        <th>Name</th>
+                        <th>Passback</th>
+                        <th>Billable</th>
+                        <th>Apportion Daily Fee</th>
+                        <th>Apportion Entry Fee</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.GetRooms(viewInactive))
+                    {
+                        <tr class="@Html.Raw(item.Active ? "" : "inactive")">
+                            <td>@item.RoomID</td>
+                            <td>@Html.ActionLink(item.RoomName, "RoomEdit", new { item.RoomID }, null)</td>
+                            <td style="text-align: center; width: 100px;">@Html.Raw(item.PassbackRoom ? "&#10003;" : "")</td>
+                            <td style="text-align: center; width: 100px;">@Html.Raw(item.Billable ? "&#10003;" : "")</td>
+                            <td style="text-align: center; width: 100px;">@Html.Raw(item.ApportionDailyFee ? "&#10003;" : "")</td>
+                            <td style="text-align: center; width: 100px;">@Html.Raw(item.ApportionEntryFee ? "&#10003;" : "")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div style="margin-bottom: 20px;">
+        <a href="@Url.Action("Return", "Home")" class="btn btn-primary btn-lg">&larr; Back to Main Page</a>
+    </div>
+</div>

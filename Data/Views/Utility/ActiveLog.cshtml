@@ -1,0 +1,201 @@
+﻿@using LNF.Web.Mvc;
+@using Data.Models;
+@model UtilityModel
+@{
+    ViewBag.Title = "ActiveLog";
+    Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
+    string cancelUrl = (Request.UrlReferrer == null) ? string.Empty : Request.UrlReferrer.ToString();
+}
+
+@section styles{
+    <style>
+        table.activelog-table > thead > tr > th,
+        table.activelog-table > tbody > tr > td {
+            vertical-align: middle;
+        }
+
+        span.message {
+            font-weight: bold;
+        }
+
+            span.message.success {
+                color: #008000;
+            }
+
+            span.message.error {
+                color: #ff0000;
+            }
+
+        div.error {
+            margin-top: 10px;
+        }
+    </style>
+}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">@*@Html.ActionLink("Utility", "Index") /*@ActiveLog</h3>
+    </div>
+    <div class="panel-body activelog">
+        @*@Html.CreateSubMenu(Model.GetSubMenu())*@
+        <div class="form-horizontal">
+            <div class="form-group">
+                @Html.LabelFor(x => x.TableName, "Table", new { @class = "col-sm-1 control-label" })
+                <div class="col-sm-2">
+                    @Html.DropDownListFor(x => x.TableName, new SelectListItem[] {
+                        new SelectListItem() { Text = "Client", Value = "client" },
+                        new SelectListItem() { Text = "Account", Value = "account" },
+                        new SelectListItem() { Text = "Org", Value = "org" },
+                        new SelectListItem() { Text = "ClientAccount", Value = "clientaccount" },
+                        new SelectListItem() { Text = "ClientOrg", Value = "clientorg" },
+                        new SelectListItem() { Text = "ClientManager", Value = "clientmanager" }
+                    }, new { @class = "form-control table-select" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(x => x.Record, new { @class = "col-sm-1 control-label" })
+                <div class="col-sm-2">
+                    @Html.TextBoxFor(x => x.Record, new { @class = "form-control record-text", @style = "width: 60px;" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-1 col-sm-11">
+                    <button type="button" class="btn btn-default search-button" style="width: 100px;">Search</button>
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div class="row">
+            <div class="col-sm-8">
+                <strong style="font-size: larger;">Information</strong>
+                <ul>
+                    @foreach (var item in Model.GetUserInfoItems())
+                    {
+                        <li>
+                            <strong>@item.Label:</strong>
+                            @item.Text
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+        <hr />
+        <div class="row">
+            <div class="col-sm-3">
+                <strong style="font-size: larger;">New Enable Date</strong>
+                <input type="text" class="form-control new-enable-date" value="" placeholder="MM/DD/YYYY" />
+                <div class="alert alert-danger alert-sm error" role="alert" style="display: none;"></div>
+            </div>
+        </div>
+        <hr />
+        <strong style="font-size: larger;">Most Recent ActiveLog Entries</strong>
+        <div class="row">
+            <div class="col-sm-8">
+                <table class="table activelog-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 100px;">Table</th>
+                            <th style="width: 80px;">Record</th>
+                            <th style="width: 200px;">EnableDate</th>
+                            <th style="width: 200px;">DisableDate</th>
+                            <th style="width: 20px;">Apply</th>
+                            <th style="width: 80px;">
+                                <div class="btn-group" role="group" aria-label="...">
+                                    <button type="button" class="btn btn-default btn-sm toggle-button" data-command="all">All</button>
+                                    <button type="button" class="btn btn-default btn-sm toggle-button" data-command="none">None</button>
+                                </div>
+                            </th>
+                            <th>&nbsp;</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.GetLastActiveLogs())
+                        {
+                            <tr data-logid="@item.LogID">
+                                <td>@item.TableName</td>
+                                <td>@item.Record</td>
+                                <td class="enable-date">@item.EnableDate</td>
+                                <td>@item.DisableDate</td>
+                                <td colspan="2" style="text-align: center;"><input type="checkbox" class="apply-checkbox" /></td>
+                                <td>
+                                    <img src="//ssel-apps.eecs.umich.edu/static/images/ajax-loader-2.gif" alt="working..." class="working" style="display: none;" />
+                                    <span class="message"></span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-8">
+                <button type="button" class="btn btn-default update-button">Update</button>
+                @if (!string.IsNullOrEmpty(cancelUrl))
+                {
+                    <a href="@cancelUrl" class="btn btn-default">Cancel</a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<div style="margin-bottom: 20px;">
+    <a href="@Url.Action("Return", "Home")" class="btn btn-primary btn-lg">&larr; Back to Main Page</a>
+</div>
+
+@section scripts{
+    <script>
+        $(".activelog").each(function () {
+            var $this = $(this);
+
+            var update = function (logId, enableDate) {
+                return $.ajax({
+                    "url": "/data/api/activelog",
+                    "type": "POST",
+                    "data": { "LogID": logId, "EnableDate": enableDate }
+                });
+            }
+
+            var getEnableDate = function () {
+                return moment(new Date($(".new-enable-date", $this).val()));
+            }
+
+            $this.on("click", ".search-button", function (e) {
+                var url = "/data/utility/activelog/" + $(".table-select", $this).val() + "/" + $(".record-text", $this).val();
+                window.location = url;
+            }).on("click", ".toggle-button", function (e) {
+                var btn = $(this);
+                var command = btn.data("command");
+                $(".apply-checkbox", $this).prop("checked", command == "all")
+            }).on("click", ".update-button", function (e) {
+                var enableDate = getEnableDate();
+                if (enableDate.isValid()) {
+                    $("table.activelog-table > tbody > tr", $this).each(function () {
+                        var row = $(this);
+                        var chk = $(".apply-checkbox", row);
+                        $(".message", row).removeClass("error").removeClass("success").html("");
+                        if (chk.prop("checked")) {
+                            $(".working", row).show();
+                            update(row.data("logid"), enableDate.format("YYYY-MM-DD")).done(function (data, textStatus, jqXHR) {
+                                var enableDate = moment(data.EnableDate);
+                                $(".enable-date", row).text(enableDate.format("M/D/YYYY h:mm:ss A"));
+                                $(".message", row).addClass("success").html("OK");
+                            }).fail(function (jqXHR, textStatus, errorThrown) {
+                                $(".message", row).addClass("error").html(jqXHR.responseJSON.ExceptionMessage);
+                            }).always(function () {
+                                $(".working", row).hide();
+                            });
+                        }
+                    });
+                } else {
+                    $(".error", $this).html("Invalid date.").show();
+                }
+            }).on("update", function (e, logId, enableDate) {
+                update(logId, enableDate).done(function (data, textStatus, jqXHR) {
+                    console.log("ok");
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                    console.log("ERROR: " + jqXHR.responseJSON.ExceptionMessage);
+                });
+            });
+        });
+    </script>
+}

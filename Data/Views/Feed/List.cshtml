@@ -1,0 +1,67 @@
+﻿@using LNF.Data;
+@using LNF.Web.Mvc;
+@using Data.Models;
+@model FeedModel
+@{
+    ViewBag.Title = "Data Feeds";
+    Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
+}
+
+@section styles{
+    <link rel="stylesheet" href="@Url.Content("~/Scripts/jquery.feeds/default.css")" />
+}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">Data Feeds</h3>
+    </div>
+    <div class="panel-body">
+        @Html.CreateSubMenu(Model.GetSubMenu())
+        @Html.ActionLink("Add New Feed", "Console", null, new { @class = "btn btn-primary", @style = "margin-bottom: 20px;" })
+        <label class="control-label" style="display: block; margin-bottom: 20px;">
+            @Html.CheckBox("ViewInactive", Model.ViewInactive, new { @class = "inactive-checkbox" })
+            View Inactive Feeds
+        </label>
+        <table class="table table-hover" style="width: 100%;">
+            <thead>
+                <tr>
+                    <th>Alias</th>
+                    <th>Name</th>
+                    <th>&nbsp;</th>
+                    <th>&nbsp;</th>
+                    <th>&nbsp;</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.GetFeeds())
+                {
+                    <tr class="@Model.GetRowClass(item)">
+                        <td class="alias">@Model.GetFeedAlias(item)</td>
+                        <td class="name">@item.FeedName</td>
+                        <td class="links">@Model.GetLinks(item)</td>
+                        <td>@Model.GetActiveState(item)</td>
+                        <td>@Model.GetPrivateState(item)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div style="margin-bottom: 10px; padding-left: 5px;">
+            <img src="//ssel-apps.eecs.umich.edu/static/images/locked.png" alt="Locked" /> = Private (log in required)
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script src="@Url.Content("~/Scripts/jquery.feeds/jquery.feeds.js")"></script>
+    <script>
+        $(".table").feeds();
+
+        $(".inactive-checkbox").on("change", function (e) {
+            var checked = $(this).prop("checked");
+            if (checked)
+                window.location = "?inactive=true"
+            else
+                window.location = window.location.href.split('?')[0];
+        })
+    </script>
+}

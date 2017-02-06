@@ -1,0 +1,94 @@
+﻿@using LNF.Web.Mvc;
+@using Data.Models.Admin;
+@model ClientModel
+@{
+    ViewBag.Title = "Admin/Client";
+    Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
+}
+
+<div class="admin">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">@Html.ActionLink("Admin", "Index") / Client</h3>
+        </div>
+        <div class="panel-body">
+            @Html.CreateSubMenu(Model.GetSubMenu())
+            @using (Html.BeginForm("Client", "Admin", FormMethod.Post, new { @class = "form-inline org-form", @style = "margin-top: 20px;" }))
+            {
+                <div class="form-group">
+                    @Html.LabelFor(x => x.OrgID, "Organization:", new { @class = "control-label" })
+                    @Html.DropDownListFor(x => x.OrgID, Model.GetOrgSelectItems(), new { @class = "form-control org-select" })
+                </div>
+            }
+            <hr />
+            @Html.ActionLink("Add New Client", "ClientEdit", null, new { @class = "btn btn-primary", @style = "margin-bottom: 20px;" })
+            <label class="control-label" style="display: block; margin-bottom: 20px;">
+                @Html.CheckBox("ViewInactive", Model.ViewInactive, new { @class = "inactive-checkbox" })
+                View Inactive Clients
+            </label>
+            <table class="table table-hover client">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">ClientID</th>
+                        <th>Name</th>
+                        <th>Assigned</th>
+                        <th>Manager</th>
+                        <th>Financial Manager</th>
+                        <th>DryBox</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.GetClients())
+                    {
+                        <tr class="@Html.Raw(item.Active ? "" : "inactive")">
+                            <td style="width: 100px;">@item.ClientID</td>
+                            <td>@Html.ActionLink(item.DisplayName, "ClientEdit", new { item.ClientID, item.OrgID }, new { @title = "Edit" })</td>
+                            <td>
+                                <a href="#" data-toggle="tooltip" title="Accounts assigned to @item.DisplayName">Accounts</a>
+                                @if (item.OrgManager)
+                                {
+                                    <span> | </span>
+                                    <a href="#" data-toggle="tooltip" title="Clients assigned to @item.DisplayName">Clients</a>
+                                }
+                            </td>
+                            <td style="text-align: center; width: 60px;">@Html.Raw(item.OrgManager ? "&#10003;" : "&nbsp;")</td>
+                            <td style="text-align: center; width: 60px;">@Html.Raw(item.OrgFinManager ? "&#10003;" : "&nbsp;")</td>
+                            <td style="text-align: center; width: 60px;">
+                                @if (item.HasDryBox)
+                                {
+                                    <span style="cursor: pointer;" title="Reserved with @item.DryBoxAccount" data-toggle="tooltip">
+                                        &#10003;
+                                    </span>
+                                }
+                                else
+                                {
+                                    @Html.Raw("&nbsp;")
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        $(".admin .table.client").dataTable({
+            "stateSave": true,
+            "columns": [
+                { "width": "60px" },
+                null,
+                { "orderable": false, "searchable": false },
+                { "width": "60px" },
+                { "width": "60px" },
+                { "width": "60px" }
+            ],
+            "drawCallback": function (settings) {
+                $("[data-toggle='tooltip']").tooltip();
+            },
+            "autoWidth": false
+        });
+    </script>
+}

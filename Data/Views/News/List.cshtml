@@ -1,0 +1,14 @@
+﻿@using LNF.Web.Mvc;
+@using Data.Models;
+@model NewsModel
+@{
+    ViewBag.Title = "Add/Modify News";
+}
+<div class="page">
+    <h2>Add/Modify News</h2>
+    @Html.CreateSubMenu(Model.GetSubMenu())
+    <div class="section feed">
+        <div class="content">
+        </div>
+    </div>
+</div>

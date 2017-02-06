@@ -1,0 +1,88 @@
+﻿@using LNF.Web.Mvc;
+@using Data.Models;
+@model FeedModel
+@{
+    Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
+    ViewBag.Title = "Reports";
+    ViewBag.UsePills = true;
+}
+
+@section styles{
+    <style>
+        .no-data {
+            font-style: italic;
+            color: #808080;
+        }
+
+        div.no-data {
+            margin-top: 10px;
+        }
+
+        div.exports {
+            padding: 0 0 20px 0;
+        }
+
+        div.report-url {
+            margin-top: 10px;
+        }
+
+        div.output table {
+            width: 100%;
+        }
+
+            div.output table tbody td {
+                vertical-align: middle;
+            }
+    </style>
+}
+
+@if (!string.IsNullOrEmpty(Model.Alias))
+{
+    <div class="panel panel-default report" style="display: none;" data-url="@Url.Content("~/Content/json/" + Model.Alias + ".json")">
+        <div class="panel-heading">
+            <h3 class="panel-title">Data Feeds</h3>
+        </div>
+        <div class="panel-body">
+            @Html.CreateSubMenu(Model.GetSubMenu())
+            <h3 class="report-title"></h3>
+            <form>
+                <div class="criteria"></div>
+                <button type="button" class="btn btn-primary btn-sm run" style="width: 100px;">Run</button>
+                <a href="@Url.Action("Reports", new { alias = "" })" class="btn btn-default btn-sm">&laquo; Back</a>
+                <div class="report-url"></div>
+            </form>
+            <hr />
+            <div class="exports"></div>
+            <div class="output"></div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="panel panel-default report-list">
+        <div class="panel-heading">
+            <h3 class="panel-title">Data Feeds</h3>
+        </div>
+        <div class="panel-body">
+            @Html.CreateSubMenu(Model.GetSubMenu())
+            <div class="list-group">
+                @foreach (var item in Model.GetReports())
+                {
+                    <a href="@Url.Action("Reports", new { alias = item.Alias })" class="list-group-item">@item.Title</a>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@section scripts{
+    <script src="@Url.Content("~/Scripts/jquery.feeds/jquery.report.js")"></script>
+    <script>
+        $(".report").report({
+            "onRun": function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            }
+        });
+    </script>
+}
+

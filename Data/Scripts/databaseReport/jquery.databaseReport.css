@@ -1,0 +1,67 @@
+﻿.history-header {
+    margin-bottom: 10px;
+    padding: 0px;
+    font-weight: bold;
+    border: solid 1px #ddd;
+    border-radius: 2px;
+    background-color: #f9f9f9;
+}
+
+.history-header-label {
+    float: left;
+    background-color: #eaeaff;
+    color: #111;
+    padding: 5px 10px 5px 5px;
+    line-height: 20px;
+    border-right: solid 1px #bababa;
+}
+
+.history-header-text {
+    float: left;
+    padding: 5px;
+    line-height: 20px;
+}
+
+.filter-group {
+    padding: 0;
+    margin-bottom: 10px;
+    width: 20%;
+}
+
+.filter-group-header {
+    font-weight: bold;
+    padding: 5px;
+    border-bottom: solid 1px #ddd;
+}
+
+.filter-group-body {
+    padding: 10px;
+}
+
+.filter-row {
+    margin-bottom: 10px;
+    white-space: nowrap;
+}
+
+.filter-buttons {
+    display: inline-block;
+    width: 80px;
+    margin-left: 10px;
+}
+
+a.filter-link.selected {
+    background-color: #ffffd0;
+}
+
+.filter-link:focus,
+.filter-link:active {
+    background-color: #fff;
+}
+
+.client-account.filter-group label {
+    width: 50px;
+}
+
+.client-org.filter-group label {
+    width: 100px;
+}

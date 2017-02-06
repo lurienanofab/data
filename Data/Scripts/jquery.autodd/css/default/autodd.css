@@ -1,0 +1,79 @@
+﻿.autodd-wrapper
+{
+    padding: 0;
+    margin: 0;
+    border: none;
+    position: relative;
+}
+.autodd-wrapper .autodd-table
+{
+    border-collapse: collapse;
+}
+.autodd-wrapper .autodd-table td
+{
+    padding: 0;
+    border: none;
+}
+.autodd-wrapper .controls .expand-button
+{
+    background-image: url('images/triangle-down.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    margin-left: 2px;
+    padding: 2px 5px 2px 5px;
+    cursor: pointer;
+    width: 5px;
+    height: 16px;
+}
+.autodd-wrapper .controls .expand-button.off
+{
+    background-color: #EEEEEE;
+    border-top: solid 1px #AAAAAA;
+    border-right: solid 1px #AAAAAA;
+    border-bottom: solid 1px #AAAAAA;
+    border-left: solid 1px #AAAAAA;
+}
+.autodd-wrapper .controls .expand-button.on
+{
+    background-color: #EAEAEA;
+    border-top: solid 1px #99CCFF;
+    border-right: solid 1px #99CCFF;
+    border-bottom: solid 1px #99CCFF;
+    border-left: solid 1px #99CCFF;
+}
+.autodd-wrapper .container .item-list
+{
+    display: none;
+    position: absolute; 
+    background-color: #FAFAFA;
+    border: solid 1px #DDDDDD;
+    margin-top: 1px;
+    overflow: auto;
+    width: 100%;
+}
+.autodd-wrapper .container .item-list .autodd-item
+{
+    padding: 2px;
+    border-bottom: solid 1px #DDDDDD;
+    cursor: pointer;
+
+}
+.autodd-wrapper .container .item-list .autodd-item.off
+{
+    color: #000000;
+    background-color: #FAFAFA;
+}
+.autodd-wrapper .container .item-list .autodd-item.on
+{
+    color: #336699;
+    background-color: #EEEEEE;
+}
+.autodd-wrapper .container .item-list .autodd-item.last
+{
+    border-bottom: none;
+}
+.autodd-wrapper .container .item-list .nodata-container
+{
+    display: none;
+    padding: 2px;
+}

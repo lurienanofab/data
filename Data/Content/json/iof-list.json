@@ -1,0 +1,31 @@
+﻿{
+    "title": "IOF List",
+	"criteria": [
+        {"id": "sd", "label": "Start Date", "type": "date", "required": true, "format": "YYYY-MM-DD", "default": "{{ThisPeriod}}"},
+        {"id": "ed", "label": "End Date", "type": "date", "required": true, "format": "YYYY-MM-DD", "default": "{{NextPeriod}}"}
+	],
+	"autoRun": true,
+    "feed": "http://ssel-apps.eecs.umich.edu/data/feed/iof-list/jsonp?sd=[sd]&ed=[ed]",
+	"export": [
+		{"url": "http://ssel-apps.eecs.umich.edu/data/feed/iof-list/csv?sd=[sd]&ed=[ed]", "label": "csv"},
+		{"url": "http://ssel-apps.eecs.umich.edu/data/feed/iof-list/xml?sd=[sd]&ed=[ed]", "label": "xml"}
+	],
+	"dataType": "jsonp",
+	"striped": true,
+	"rows": "Data.default",
+	"defaultDateFormat": "M/D/YYYY",
+	"columns": [
+		{"data": "POID", "title": "Order #"},
+		{"data": "CreatedDate", "title": "Created", "type": "date"},
+		{"data": "NeededDate", "title": "Needed", "type": "date"},
+		{"data": "LName", "title": "Last Name"},
+		{"data": "FName", "title": "First Name"},
+		{"data": "CatName", "title": "Category"},
+		{"data": "VendorName", "title": "Vendor"},
+		{"data": "PartNum", "title": "Part #"},
+		{"data": "Description"},
+		{"data": "Quantity", "title": "Qty", "itemStyle": "text-align: right;"},
+		{"data": "UnitPrice", "title": "Unit Price", "type": "currency", "itemStyle": "text-align: right;"},
+		{"data": "TotalPrice", "title": "Total Price", "type": "currency", "itemStyle": "text-align: right;"}
+	]
+}

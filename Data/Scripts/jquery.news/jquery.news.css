@@ -1,0 +1,59 @@
+﻿html, body {
+    height: 100%;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    font-family: Verdana;
+}
+
+.news {
+    height: 100%;
+}
+
+.news .title {
+    color: #ffffff;
+    background-color: #080db4;
+    width: 100%;
+}
+
+.news .logo {
+    background-image: url(images/logo.png);
+    background-repeat: no-repeat;
+    background-position: 95%;
+    background-size: 13%;
+    font-size: 64pt;
+}
+
+.news .subtitle{
+    font-size: 24pt;
+}
+
+.news .header {
+    font-size: 20pt;
+    background-color: #181746;
+    color: #fdff00;
+    height: 5%;
+}
+
+.news .header td{
+    padding: 10px;
+}
+
+.news .content td{
+    font-size: 18pt;
+    vertical-align: top;
+}
+
+.news .content td.slide{
+    position: relative;
+}
+
+.news .content td.slide > .slide-content{
+    padding: 60px 20px;
+    font-size: 30px;
+    overflow: hidden;
+    position: absolute;
+}

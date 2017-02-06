@@ -1,0 +1,48 @@
+﻿@model Data.Models.ClientAccessModel
+<div style="margin-bottom: 10px;">
+    <table>
+        <tr>
+            <td style="text-align: right;">Start Date:</td>
+            <td>@Html.TextBox("StartDate", Model.StartDate.Value.ToString("MM/dd/yyyy"), new { @class = "datepicker", @style = "width: 80px;" })</td>
+        </tr>
+        <tr>
+            <td style="text-align: right;">End Date:</td>
+            <td>@Html.TextBox("EndDate", Model.EndDate.Value.ToString("MM/dd/yyyy"), new { @class = "datepicker", @style = "width: 80px;" })</td>
+        </tr>
+    </table>
+    <input type="submit" value="Search" />
+</div>
+<div style="width: 1200px;">
+    <table class="event-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Last</th>
+                <th>First</th>
+                <th>Card #</th>
+                <th>Event Date</th>
+                <th>Event Date Sort</th>
+                <th>Area</th>
+                <th>Event</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var e in Model.GetEvents())
+            {
+                <tr>
+                    <td>@e.ClientID</td>
+                    <td>@e.UserName</td>
+                    <td>@e.LastName</td>
+                    <td>@e.FirstName</td>
+                    <td>@e.CardNumber</td>
+                    <td>@Model.FormatDateTime(e.EventDateTime)</td>
+                    <td>@e.EventDateTime.ToString("YYYYMMDD HH:mm:ss")</td>
+                    <td>@e.DeviceDescription</td>
+                    <td>@e.EventDescription</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div style="clear: both;"></div>
+</div>

@@ -1,0 +1,61 @@
+﻿/*.edit-table {
+    border-collapse: separate;
+    border-spacing: 3px;
+}
+
+    .edit-table thead th {
+        padding: 4px;
+        background-color: #f7f7f7;
+        border: solid 1px #ddd;
+    }
+
+    .edit-table tbody td {
+        padding: 4px;
+        height: 24px;
+        border-bottom: solid 1px #e2e2e2;
+    }
+
+    .edit-table tbody tr.last td {
+        border-bottom: none;
+    }
+
+    .edit-table tfoot td {
+        padding: 4px;
+        background-color: #f7f7f7;
+        border: solid 1px #ddd;
+    }*/
+
+.edit-table tbody td.nodata{
+    font-style: italic;
+    color: #808080;
+}
+
+.edit-table tbody td.row-controls {
+    text-align: center;
+}
+
+.edit-table tbody tr.editing td {
+    background-color: #f0ffff;
+}
+
+.edit-table td.row-controls a {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+}
+
+    .edit-table td.row-controls a.row-delete {
+        background: url('images/delete.png') no-repeat center center;
+    }
+
+    .edit-table td.row-controls a.row-edit {
+        background: url('images/edit.png') no-repeat center center;
+    }
+
+    .edit-table td.row-controls a.row-save {
+        background: url('images/save.png') no-repeat center center;
+    }
+
+    .edit-table td.row-controls a.row-cancel {
+        background: url('images/cancel.png') no-repeat center center;
+    }

@@ -1,0 +1,171 @@
+﻿@using LNF;
+@model Data.Models.DashboardModel
+@{
+    ViewBag.Title = "Dashboard";
+    Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
+}
+<div class="container">
+    <div class="page-header">
+        <h1>@Providers.Email.CompanyName Dashboard</h1>
+    </div>
+    <form class="form-horizontal" role="form">
+        <div class="form-group">
+            @Html.LabelFor(x => x.DefaultStartDate, "Period:", new { @class = "col-sm-1 control-label" })
+            <div class="col-sm-1">
+                @Html.TextBoxFor(x => x.DefaultStartDate, "{0:MMM yyyy}", new { @class = "form-control datepicker", @style = "width: 100px;" })
+            </div>
+            <div class="col-sm-10">
+                <div style="color: #aaa; padding-left: 10px; line-height: 40px;">&larr; Change to refresh data</div>
+            </div>
+        </div>
+    </form>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Reservations Per Day</h3>
+                </div>
+                <div class="panel-body">
+                    <div id="reservations_chart"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Room Entries Per Day</h3>
+                </div>
+                <div class="panel-body">
+                    <div id="room_entries_chart"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+        // Load the Visualization API library and the piechart library.
+        google.load('visualization', '1.0', { 'packages': ['corechart'] });
+        google.setOnLoadCallback(drawChart);
+
+        function reservationChart(p) {
+            var url = "//ssel-apps.eecs.umich.edu/data/feed/reservations-per-day/jsonp?p=" + p.format("YYYY-MM-[01]") + "&callback=?";
+            console.log(url);
+
+            $.ajax({
+                "url": url,
+                "dataType": "json"
+            }).done(function (data) {
+                console.log(data);
+
+                var table = new google.visualization.DataTable();
+                table.addColumn('date', 'Date', 'date');
+                table.addColumn('number', 'Reservations', 'reservations');
+
+                $.each(data.Data.default, function (index, item) {
+                    table.addRow([new Date(item.Date), parseInt(item.Reservations)])
+                });
+
+                table.sort([{ 'column': 0 }]);
+
+                // Set chart options
+                var options = {
+                    'width': 1000,
+                    'height': 300
+                };
+
+                // Instantiate and draw our chart, passing in some options.
+                var chart = new google.visualization.LineChart(document.getElementById('reservations_chart'));
+                chart.draw(table, options);
+            });
+        }
+
+        function roomEntryChart(sd, ed) {
+            var url = "//ssel-apps.eecs.umich.edu/data/feed/room-entries/jsonp?a=daily&sd=" + sd.format("YYYY-MM-[01]") + "&ed=" + ed.format("YYYY-MM-[01]") + "&callback=?";
+            console.log(url);
+
+            $.ajax({
+                "url": url,
+                "dataType": "json"
+            }).done(function (data) {
+                console.log(data);
+
+                // Create the data table.
+                var table = new google.visualization.DataTable();
+                var dates = {};
+                var maxIndex = -1;
+
+                table.addColumn('date', 'Date', 'date');
+
+                //add a column for each room
+                $.each(data.Data.default, function (index, item) {
+                    var index = table.getColumnIndex(item.RoomID);
+
+                    if (index == -1)
+                        index = table.addColumn('number', item.Room, item.RoomID);
+
+                    if (dates[item.Date] == null)
+                        dates[item.Date] = {};
+
+                    dates[item.Date][index] = item.Entries
+
+                    if (index > maxIndex)
+                        maxIndex = index;
+                });
+
+                $.each(dates, function (d, cols) {
+                    var row = []
+
+                    row.push(new Date(d));
+
+                    //c = 0 is the date
+                    for (c = 1; c <= maxIndex; c++) {
+                        if (cols[c])
+                            row.push(parseInt(cols[c]))
+                        else
+                            row.push(0);
+                    }
+
+                    table.addRow(row);
+                });
+
+                table.sort([{ 'column': 0 }]);
+
+                // Set chart options
+                var options = {
+                    'width': 1000,
+                    'height': 300
+                };
+
+                // Instantiate and draw our chart, passing in some options.
+                var chart = new google.visualization.LineChart(document.getElementById('room_entries_chart'));
+                chart.draw(table, options);
+            });
+        }
+
+        // ... draw the chart...
+        function drawChart() {
+
+            var period = $('.datepicker').datepicker('getDate');
+
+            var sd = moment(period);
+            var ed = moment(period);
+            ed.add(1, 'months');
+
+            roomEntryChart(sd, ed);
+            reservationChart(sd);
+        }
+
+        $(".datepicker").datepicker({
+            minViewMode: "months",
+            format: "M yyyy",
+            autoclose: true
+        }).on("changeDate", function (e) {
+            drawChart();
+        });
+    </script>
+}

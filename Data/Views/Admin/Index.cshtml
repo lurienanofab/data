@@ -1,0 +1,21 @@
+﻿@using LNF.Web.Mvc;
+@using Data.Models.Admin;
+@model AdminBaseModel
+@{
+    ViewBag.Title = "Administration";
+    Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
+}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">Administration</h3>
+    </div>
+    <div class="panel-body">
+        <div class="list-group">
+            <a href="#" class="list-group-item">Clients</a>
+            @Html.ActionLink("Organizations", "Org", null, new { @class = "list-group-item" })
+            <a href="#" class="list-group-item">Accounts</a>
+            @Html.ActionLink("Rooms", "Room", null, new { @class = "list-group-item" })
+        </div>
+    </div>
+</div>

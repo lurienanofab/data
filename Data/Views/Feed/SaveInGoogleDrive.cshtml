@@ -1,0 +1,25 @@
+﻿@using Data.Models;
+
+@model FeedModel
+@{
+    ViewBag.Title = "Data Feeds";
+    Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
+}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">Save in Google Drive</h3>
+    </div>
+    <div class="panel-body">
+        <div>
+            <strong>Alias:</strong> @Model.Alias
+        </div>
+        <div>
+            <strong>Token:</strong> @ViewBag.AccessToken
+        </div>
+        <div>
+            <strong>Response:</strong>
+            <pre>@ViewBag.GoogleResponse</pre>
+        </div>
+    </div>
+</div>

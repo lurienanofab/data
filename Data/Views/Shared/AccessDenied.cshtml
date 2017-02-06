@@ -1,0 +1,29 @@
+﻿@using LNF.Web.Mvc;
+@model AccessDeniedModel
+@{
+    ViewBag.Title = "AccessDenied";
+    Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div style="margin-top: 20px;">
+                <div class="alert alert-danger" role="alert">
+                    <h4>Access Denied</h4>
+                    <hr />
+                    <p>You do not have permission to view this page. You may <a href="/login">log out</a> or return to the <a href="#" class="previous-link">previous page</a>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        $(".previous-link").on("click", function (e) {
+            e.preventDefault();
+            history.back();
+        });
+    </script>
+}

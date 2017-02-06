@@ -1,0 +1,49 @@
+﻿.datagrid {
+    border-collapse: separate;
+}
+
+    .datagrid thead td,
+    .datagrid tfoot td {
+        padding: 5px;
+        background-color: #dadada;
+        border-bottom: solid 1px #aaaaaa;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .datagrid tfoot select {
+        width: 100%;
+    }
+
+    .datagrid tbody td {
+        padding: 5px;
+        border-bottom: solid 1px #cacaca;
+    }
+
+        .datagrid tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .datagrid tbody td.row-controls {
+            text-align: center;
+        }
+
+    .datagrid td.row-controls a {
+        margin-right: 10px;
+    }
+
+
+    .datagrid .new-address-state,
+    .datagrid .edit-address-state {
+        width: 40px;
+    }
+
+    .datagrid .new-address-zip,
+    .datagrid .edit-address-zip {
+        width: 50px;
+    }
+
+    .datagrid .new-address-country,
+    .datagrid .edit-address-country {
+        width: 50px;
+    }

@@ -1,0 +1,230 @@
+﻿@using LNF.Web.Mvc;
+@using Data.Models;
+@model UtilityModel
+@{
+    ViewBag.Title = "Data Utility";
+    Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
+}
+
+@section styles{
+    <link rel="stylesheet" href="@Url.Content("~/Scripts/jquery.utility/jquery.utility.css")" />
+}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">Utility</h3>
+    </div>
+    <div class="panel-body data-utility">
+        @Html.CreateSubMenu(Model.GetSubMenu())
+        <input type="hidden" class="ajax-url" value="/services/billing/" />
+
+        <div class="criteria row">
+            <div class="criteria-label">Date Range</div>
+            <div class="criteria-value">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-sm-1 control-label">Start Period</label>
+                        <div class="col-sm-11">
+                            <div class="form-inline">
+                                @Html.DropDownList("StartPeriodYear", Model.GetYearSelectItems(), new { @class = "start-period-year form-control" })
+                                @Html.DropDownList("StartPeriodMonth", Model.GetMonthSelectItems(), new { @class = "start-period-month form-control" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-1 control-label">End Period</label>
+                        <div class="col-sm-11">
+                            <div class="form-inline">
+                                @Html.DropDownList("EndPeriodYear", Model.GetYearSelectItems(), new { @class = "end-period-year form-control" })
+                                @Html.DropDownList("EndPeriodMonth", Model.GetMonthSelectItems(), new { @class = "end-period-month form-control" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="criteria row">
+            <div class="criteria-label">Optional Parameters</div>
+            <div class="criteria-value">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-sm-1 control-label">ClientID</label>
+                        <div class="col-sm-11">
+                            @Html.TextBox("ClientID", "", new { @class = "client-id form-control", @style = "width: 80px;" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-1 control-label">ResourceID</label>
+                        <div class="col-sm-11">
+                            @Html.TextBox("ResourceID", "", new { @class = "resource-id form-control", @style = "width: 80px;" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-1 control-label">RoomID</label>
+                        <div class="col-sm-11">
+                            @Html.TextBox("RoomID", "", new { @class = "room-id form-control", @style = "width: 80px;" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-1 control-label">ItemID</label>
+                        <div class="col-sm-11">
+                            @Html.TextBox("ItemID", "", new { @class = "item-id form-control", @style = "width: 80px;" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-1 control-label">Delete</label>
+                        <div class="col-sm-11" style="padding-top: 4px;">
+                            @Html.CheckBox("Delete", true, new { @class = "delete" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="criteria">
+            <div class="criteria-label">Data Clean</div>
+            <div class="criteria-value">
+                <ul>
+                    <li>
+                        <a href="#" class="command-link" data-command="tool" data-path="process/data/clean">Tool Data Clean:</a>
+                        <span class="nodata">Loads raw data from LNF Scheduler into ToolDataClean.</span>
+                        <div class="info" style="display: none; margin-top: 5px;"></div>
+                    </li>
+                    <li>
+                        <a href="#" class="command-link" data-command="room" data-path="process/data/clean">Room Data Clean:</a>
+                        <span class="nodata">Loads raw data from Prowatch into RoomDataClean.</span>
+                        <div class="info" style="display: none; margin-top: 5px;"></div>
+                    </li>
+                    <li>
+                        <a href="#" class="command-link" data-command="store" data-path="process/data/clean">Store Data Clean:</a>
+                        <span class="nodata">Loads raw data from LNF Store into StoreDataClean.</span>
+                        <div class="info" style="display: none; margin-top: 5px;"></div>
+                    </li>
+                </ul>
+            </div>
+            <div class="criteria-label">Data</div>
+            <div class="criteria-value">
+                <ul>
+                    <li>
+                        <a href="#" class="command-link" data-command="tool" data-path="process/data">Tool Data:</a>
+                        <span class="nodata">Processes raw data from ToolDataClean, loading ToolData.</span>
+                        <div class="info" style="display: none; margin-top: 5px;"></div>
+                    </li>
+                    <li>
+                        <a href="#" class="command-link" data-command="room" data-path="process/data">Room Data:</a>
+                        <span class="nodata">Processes raw data from RoomDataClean, loading RoomData.</span>
+                        <div class="info" style="display: none; margin-top: 5px;"></div>
+                    </li>
+                    <li>
+                        <a href="#" class="command-link" data-command="store" data-path="process/data">Store Data:</a>
+                        <span class="nodata">Processes raw data from StoreDataClean, loading StoreData.</span>
+                        <div class="info" style="display: none; margin-top: 5px;"></div>
+                    </li>
+                </ul>
+            </div>
+            <div class="criteria-label">Billing Step 1</div>
+            <div class="criteria-value">
+                <div style="padding-top: 10px; padding-left: 20px;">
+                    <label>
+                        <input type="checkbox" class="billing-step1-istemp" />
+                        Is Temp?
+                    </label>
+                </div>
+                <ul>
+                    <li>
+                        <a href="#" class="command-link" data-command="tool" data-path="process/step1">Tool:</a>
+                        <span class="nodata">Generates data for ToolBilling using ToolData.</span>
+                        <div class="info" style="display: none; margin-top: 5px;"></div>
+                    </li>
+                    <li>
+                        <a href="#" class="command-link" data-command="room" data-path="process/step1">Room:</a>
+                        <span class="nodata">Generates data for RoomApportionmentInDaysMonthly using RoomData.</span>
+                        <div class="info" style="display: none; margin-top: 5px;"></div>
+                    </li>
+                    <li>
+                        <a href="#" class="command-link" data-command="store" data-path="process/step1">Store:</a>
+                        <span class="nodata">Generates data for StoreBilling using StoreData.</span>
+                        <div class="info" style="display: none; margin-top: 5px;"></div>
+                    </li>
+                </ul>
+            </div>
+            @if (false)
+            {
+                <div class="criteria-label">Billing Step 2</div>
+                <div class="criteria-value">
+                    <ul>
+                        <li>
+                            <a href="#" class="command-link" data-command="tool" data-path="process/step2">Tool:</a>
+                            <span class="nodata">Processes data from ToolBilling, loading ToolBillingByToolOrg and ToolBillingByAccount.</span>
+                            <div class="info" style="display: none; margin-top: 5px;"></div>
+                        </li>
+                        <li>
+                            <a href="#" class="command-link" data-command="room" data-path="process/step2">Room:</a>
+                            <span class="nodata">Processes data from RoomApportionmentInDaysMonthly, loading RoomBillingByRoomOrg and RoomBillingByAccount.</span>
+                            <div class="info" style="display: none; margin-top: 5px;"></div>
+                        </li>
+                        <li>
+                            <a href="#" class="command-link" data-command="store" data-path="process/step2">Store:</a>
+                            <span class="nodata">Processes data from StoreBilling, loading StoreBillingByToolOrg and StoreBillingByAccount.</span>
+                            <div class="info" style="display: none; margin-top: 5px;"></div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="criteria-label">Billing Step 3</div>
+                <div class="criteria-value">
+                    <ul>
+                        <li>
+                            <a href="#" class="command-link" data-command="tool" data-path="process/step3">Tool:</a>
+                            <span class="nodata">Processes data from ToolBillingByToolOrg, loading ToolBillingByOrg.</span>
+                            <div class="info" style="display: none; margin-top: 5px;"></div>
+                        </li>
+                        <li>
+                            <a href="#" class="command-link" data-command="room" data-path="process/step3">Room:</a>
+                            <span class="nodata">Processes data from RoomBillingByToolOrg, loading RoomBillingByOrg.</span>
+                            <div class="info" style="display: none; margin-top: 5px;"></div>
+                        </li>
+                        <li>
+                            <a href="#" class="command-link" data-command="store" data-path="process/step3">Store:</a>
+                            <span class="nodata">Processes data from StoreBillingByToolOrg, loading StoreBillingByOrg.</span>
+                            <div class="info" style="display: none; margin-top: 5px;"></div>
+                        </li>
+                    </ul>
+                </div>
+            }
+            <div class="criteria-label">Billing Step 4</div>
+            <div class="criteria-value">
+                <ul>
+                    <li>
+                        <a href="#" class="command-link" data-command="subsidy" data-path="process/step4">Subsidy:</a>
+                        <span class="nodata">Processes data from ToolBilling and RoomBilling, loading TieredSubsidyBilling.</span>
+                        <div class="info" style="display: none; margin-top: 5px;"></div>
+                    </li>
+                    <li>
+                        <a href="#" class="command-link" data-command="distribution" data-path="process/step4">Distribution:</a>
+                        <span class="nodata">Apply subsidy amounts to ToolBilling, RoomApportionmentInDaysMonthly, and MiscBillingCharge (this is normally called inside the previous step but can be run separately).</span>
+                        <div class="info" style="display: none; margin-top: 5px;"></div>
+                    </li>
+                </ul>
+            </div>
+            <div class="criteria-label">Other</div>
+            <div class="criteria-value">
+                <ul>
+                    <li>
+                        <a href="#" class="command-link" data-command="finalize" data-path="process/data">Finalize Data Tables:</a>
+                        <span class="nodata">This is automatically called after the 3rd business day of the month.</span>
+                        <div class="info" style="display: none; margin-top: 5px;"></div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script src="@Url.Content("~/Scripts/jquery.billing.js?v=20160302")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.utility/jquery.utility.js?v=20160302")"></script>
+    <script>
+        $(".data-utility").utility();
+    </script>
+}

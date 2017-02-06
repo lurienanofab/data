@@ -1,0 +1,17 @@
+﻿@using LNF.Repository;
+@using LNF.Repository.Data;
+@model ActiveLog
+
+<div style="padding: 5px; background-color: #eee; border: solid 1px #ddd; border-radius: 3px; margin-bottom: 5px; font-weight: bold;">
+    Table: @Model.TableName
+</div>
+<div style="padding: 10px;">
+    <div class="form-group">
+        <label for="@string.Format("{0}EnableDate", Model.TableName)">EnableDate</label>
+        <input type="text" class="form-control" id="@string.Format("{0}EnableDate", Model.TableName)" value="@Model.EnableDate" />
+    </div>
+    <div class="form-group">
+        <label for="@string.Format("{0}DisableDate", Model.TableName)">DisableDate</label>
+        <input type="text" class="form-control" id="@string.Format("{0}DisableDate", Model.TableName)" value="@Model.DisableDate" />
+    </div>
+</div>

@@ -1,0 +1,489 @@
+﻿@using Data.Models;
+@using LNF.Web.Mvc;
+
+@model HomeModel
+@{
+    var type = Request.QueryString["type"];
+    Func<bool, IHtmlString> checkMark = b => b ? new HtmlString("&#10003;") : new HtmlString(string.Empty);
+    bool showReturnButton = !string.IsNullOrEmpty(Convert.ToString(Session["return-to"]));
+    bool showEditLink = true;
+}
+
+<div class="database-report" data-type="@type" data-showedit="@showEditLink.ToString().ToLower()">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Historical Database Report</h3>
+        </div>
+        <div class="panel-body">
+            <div class="row historical-report-search">
+                <div class="col-sm-4">
+                    <div class="form-horizontal">
+                        <!-- Client -->
+                        <div class="form-group">
+                            <label for="client_search" class="col-sm-2 control-label">Client</label>
+                            <div class="col-sm-10">
+                                <div class="input-group" data-type="client">
+                                    <input type="text" class="form-control client-search-text search" id="client_search" value="@Model.GetSearch("client")" />
+                                    <span class="input-group-btn">
+                                        <a href="#" class="command btn btn-default" data-command="search">Search</a>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Org -->
+                        <div class="form-group">
+                            <label for="org_search" class="col-sm-2 control-label">Org</label>
+                            <div class="col-sm-10">
+                                <div class="input-group" data-type="org">
+                                    <input type="text" class="form-control org-search-text search" id="org_search" value="@Model.GetSearch("org")" />
+                                    <span class="input-group-btn">
+                                        <a href="#" class="command btn btn-default" data-command="search">Search</a>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Account -->
+                        <div class="form-group">
+                            <label for="account_search" class="col-sm-2 control-label">Account</label>
+                            <div class="col-sm-10">
+                                <div class="input-group" data-type="account">
+                                    <input type="text" class="form-control account-search-text search" id="account_search" value="@Model.GetSearch("account")" />
+                                    <span class="input-group-btn">
+                                        <a href="#" class="command btn btn-default" data-command="search">Search</a>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-5">
+                    <div class="form-horizontal">
+                        <!-- Client Manager -->
+                        <div class="form-group">
+                            <label for="client_manager_search" class="col-sm-3 control-label">Client Manager</label>
+                            <div class="col-sm-8">
+                                <div class="input-group" data-type="client-manager">
+                                    <input type="text" class="form-control client-manager-search-text search" id="client_manager_search" value="@Model.GetSearch("client-manager")" />
+                                    <span class="input-group-btn">
+                                        <a href="#" class="command btn btn-default" data-command="search">Search</a>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Client Org -->
+                        <div class="form-group">
+                            <label for="client_org_search" class="col-sm-3 control-label">Client Org</label>
+                            <div class="col-sm-8">
+                                <div class="input-group" data-type="client-org">
+                                    <input type="text" class="form-control client-org-search-text search" id="client_org_search" value="@Model.GetSearch("client-org")" />
+                                    <span class="input-group-btn">
+                                        <a href="#" class="command btn btn-default" data-command="search">Search</a>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Client Account -->
+                        <div class="form-group">
+                            <label for="client_account_search" class="col-sm-3 control-label">Client Account</label>
+                            <div class="col-sm-8">
+                                <div class="input-group" data-type="client-account">
+                                    <input type="text" class="form-control client-account-search-text search" id="client_account_search" value="@Model.GetSearch("client-account")" />
+                                    <span class="input-group-btn">
+                                        <a href="#" class="command btn btn-default" data-command="search">Search</a>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <a href="?">Reset</a>
+            </div>
+
+            <div class="message"></div>
+
+            <!-- output -->
+            <div class="output">
+                @if (!string.IsNullOrEmpty(Model.Type))
+                {
+                    <div class="section">
+                        <div class="section-content">
+                            <div class="history-header">
+                                <div class="history-header-label">@Model.GetTableName()</div>
+                                <div class="history-header-text">Search Results</div>
+                                <div style="clear:both;"></div>
+                            </div>
+
+                            @if (Model.Type == "client")
+                            {
+                                <div class="client filter-group">
+                                    <div class="filter-group-body">
+                                        <div class="filter-row">
+                                            <label>Active</label>
+                                            <div class="filter-buttons" data-column="4">
+                                                <div class="btn-group" role="group" aria-label="...">
+                                                    <a href="#" data-value="is:active" data-selected="false" class="btn btn-default filter-link">yes</a>
+                                                    <a href="#" data-value="isnot:active" data-selected="false" class="btn btn-default filter-link">no</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <table class="table table-hover client-search-table" style="width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Username</th>
+                                            <th>Name</th>
+                                            <th>Active</th>
+                                            <th>active_search</th>
+                                            <th>&nbsp;</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var c in Model.ClientSearch())
+                                        {
+                                            <tr>
+                                                <td>@c.ClientID</td>
+                                                <td>@c.UserName</td>
+                                                <td><a href="@Model.GetLink("client-org", "client", c.ClientID)" title="View ClientOrgs">@c.DisplayName</a></td>
+                                                <td style="text-align: center;">@checkMark(c.Active)</td>
+                                                <td>@Html.Raw(c.Active ? "is:active" : "isnot:active")</td>
+                                                <td style="text-align: center;"><a href="@Model.GetHistoryLink(c.ClientID)" title="View History">history</a></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                            else if (Model.Type == "client-org")
+                            {
+                                <div class="client-org filter-group">
+                                    <div class="filter-group-body">
+                                        <div class="filter-row">
+                                            <label>Active</label>
+                                            <div class="filter-buttons" data-column="9">
+                                                <div class="btn-group" role="group" aria-label="...">
+                                                    <a href="#" data-value="is:active" data-selected="false" class="btn btn-default filter-link">yes</a>
+                                                    <a href="#" data-value="isnot:active" data-selected="false" class="btn btn-default filter-link">no</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="filter-row">
+                                            <label>Manager</label>
+                                            <div class="filter-buttons" data-column="5">
+                                                <div class="btn-group" role="group" aria-label="...">
+                                                    <a href="#" data-value="is:manager" data-selected="false" class="btn btn-default filter-link">yes</a>
+                                                    <a href="#" data-value="isnot:manager" data-selected="false" class="btn btn-default filter-link">no</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="filter-row">
+                                            <label>Financial Manager</label>
+                                            <div class="filter-buttons" data-column="7">
+                                                <div class="btn-group" role="group" aria-label="...">
+                                                    <a href="#" data-value="is:fin-manager" data-selected="false" class="btn btn-default filter-link">yes</a>
+                                                    <a href="#" data-value="isnot:fin-manager" data-selected="false" class="btn btn-default filter-link">no</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <table class="table table-hover client-org-search-table" style="width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Organization</th>
+                                            <th>Manager</th>
+                                            <th>manager_search</th>
+                                            <th>Financial Mgr</th>
+                                            <th>financial_manager_search</th>
+                                            <th>Active</th>
+                                            <th>active_search</th>
+                                            <th>&nbsp;</th>
+                                            <th>&nbsp;</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var co in Model.ClientOrgSearch())
+                                        {
+                                            <tr>
+                                                <td>@co.ClientOrgID</td>
+                                                <td><a href="@Model.GetLink("client-account", "co", co.ClientOrgID)" title="View ClientAccounts">@co.Client.DisplayName</a></td>
+                                                <td>@co.Email</td>
+                                                <td><a href="@Model.GetLink("org", "org", @co.Org.OrgID)" title="View Organization">@co.Org.OrgName</a></td>
+                                                <td style="text-align: center;">@checkMark(co.IsManager)</td>
+                                                <td>@Html.Raw(co.IsManager ? "is:manager" : "isnot:manager")</td>
+                                                <td style="text-align: center;">@checkMark(co.IsFinManager)</td>
+                                                <td>@Html.Raw(co.IsFinManager ? "is:fin-manager" : "isnot:fin-manager")</td>
+                                                <td style="text-align: center;">@checkMark(co.Active)</td>
+                                                <td>@Html.Raw(co.Active ? "is:active" : "isnot:active")</td>
+                                                <td style="text-align: center;">
+                                                    <a href="@Model.GetLink("client", "client", co.Client.ClientID)" title="View Client">client</a> |
+                                                    <a href="@Model.GetLink("client-manager", "co", co.ClientOrgID)" title="View Users Who Manage This Client">m</a> |
+                                                    <a href="@Model.GetLink("client-manager", "mo", co.ClientOrgID)" title="View Users Managed By This Client">mb</a>
+                                                </td>
+                                                <td style="text-align: center;"><a href="@Model.GetHistoryLink(co.ClientOrgID)" title="View History">history</a></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                            else if (Model.Type == "client-account")
+                            {
+                                <div class="client-account filter-group">
+                                    <div class="filter-group-body">
+                                        <div class="filter-row">
+                                            <label>Active</label>
+                                            <div class="filter-buttons" data-column="8">
+                                                <div class="btn-group" role="group" aria-label="...">
+                                                    <a href="#" data-value="is:active" data-selected="false" class="btn btn-default filter-link">yes</a>
+                                                    <a href="#" data-value="isnot:active" data-selected="false" class="btn btn-default filter-link">no</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="filter-row">
+                                            <label>Manager</label>
+                                            <div class="filter-buttons" data-column="6">
+                                                <div class="btn-group" role="group" aria-label="...">
+                                                    <a href="#" data-value="is:manager" data-selected="false" class="btn btn-default filter-link">yes</a>
+                                                    <a href="#" data-value="isnot:manager" data-selected="false" class="btn btn-default filter-link">no</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <table class="table table-hover client-account-search-table" style="width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Account</th>
+                                            <th>ShortCode</th>
+                                            <th>Organization</th>
+                                            <th>Manager</th>
+                                            <th>manager_search</th>
+                                            <th>Active</th>
+                                            <th>active_search</th>
+                                            <th>&nbsp;</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var ca in Model.ClientAccountSearch())
+                                        {
+                                            <tr>
+                                                <td>@ca.ClientAccountID</td>
+                                                <td><a href="@Model.GetLink("client-org", "co", ca.ClientOrg.ClientOrgID)" title="View ClientOrg">@ca.ClientOrg.Client.DisplayName</a></td>
+                                                <td><a href="@Model.GetLink("account", "acct", ca.Account.AccountID)" title="View Account">@ca.Account.Name</a></td>
+                                                <td>@ca.Account.ShortCode</td>
+                                                <td><a href="@Model.GetLink("org", "org", ca.ClientOrg.Org.OrgID)" title="View Organization">@ca.ClientOrg.Org.OrgName</a></td>
+                                                <td style="text-align: center;">@checkMark(ca.Manager)</td>
+                                                <td>@Html.Raw(ca.Manager ? "is:manager" : "isnot:manager")</td>
+                                                <td style="text-align: center;">@checkMark(ca.Active)</td>
+                                                <td>@Html.Raw(ca.Active ? "is:active" : "isnot:active")</td>
+                                                <td style="text-align: center;"><a href="@Model.GetHistoryLink(ca.ClientAccountID)" title="View History">history</a></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                            else if (Model.Type == "client-manager")
+                            {
+                                <div class="filter-group">
+                                    <div class="filter-group-body">
+                                        <div class="filter-row">
+                                            <label>Active</label>
+                                            <div class="filter-buttons" data-column="4">
+                                                <div class="btn-group" role="group" aria-label="...">
+                                                    <a href="#" data-value="is:active" data-selected="false" class="btn btn-default filter-link">yes</a>
+                                                    <a href="#" data-value="isnot:active" data-selected="false" class="btn btn-default filter-link">no</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <table class="table table-hover client-manager-search-table" style="width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Manager</th>
+                                            <th>Active</th>
+                                            <th>active_search</th>
+                                            <th>&nbsp;</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var cm in Model.ClientManagerSearch())
+                                        {
+                                            <tr>
+                                                <td>@cm.ClientManagerID</td>
+                                                <td><a href="@Model.GetLink("client-org", "co", cm.ClientOrg.ClientOrgID)" title="View ClientOrg">@cm.ClientOrg.Client.DisplayName</a></td>
+                                                <td><a href="@Model.GetLink("client-org", "co", cm.ManagerOrg.ClientOrgID)" title="View ClientOrg">@cm.ManagerOrg.Client.DisplayName</a></td>
+                                                <td style="text-align: center;">@checkMark(cm.Active)</td>
+                                                <td>@Html.Raw(cm.Active ? "is:active" : "isnot:active")</td>
+                                                <td style="text-align: center;"><a href="@Model.GetHistoryLink(cm.ClientManagerID)" title="View History">history</a></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                            else if (Model.Type == "org")
+                            {
+                                <div class="filter-group">
+                                    <div class="filter-group-body">
+                                        <div class="filter-row">
+                                            <label>Active</label>
+                                            <div class="filter-buttons" data-column="4">
+                                                <div class="btn-group" role="group" aria-label="...">
+                                                    <a href="#" data-value="is:active" data-selected="false" class="btn btn-default filter-link">yes</a>
+                                                    <a href="#" data-value="isnot:active" data-selected="false" class="btn btn-default filter-link">no</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <table class="table table-hover org-search-table" style="width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Active</th>
+                                            <th>active_search</th>
+                                            <th>&nbsp;</th>
+                                            <th>&nbsp;</th>
+                                            @if (showEditLink)
+                                            {
+                                                <th>&nbsp;</th>
+                                            }
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var org in Model.OrgSearch())
+                                        {
+                                            <tr>
+                                                <td>@org.OrgID</td>
+                                                <td><a href="@Model.GetLink("client-org", "org", org.OrgID)" title="View ClientOrgs">@org.OrgName</a></td>
+                                                <td>@org.OrgType.OrgTypeName</td>
+                                                <td style="text-align: center;">@checkMark(org.Active)</td>
+                                                <td>@Html.Raw(org.Active ? "is:active" : "isnot:active")</td>
+                                                <td style="text-align: center;"><a href="@Model.GetLink("account","org",org.OrgID)" title="View Accounts">accounts</a></td>
+                                                <td style="text-align: center;"><a href="@Model.GetHistoryLink(org.OrgID)" title="View History">history</a></td>
+                                                @if (showEditLink)
+                                                {
+                                                    <td style="text-align: center;">@Html.ActionLink("edit", "OrgEdit", "Admin", new { OrgID = org.OrgID }, new { @title = "Edit Org" })</td>
+                                                }
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                            else if (Model.Type == "account")
+                            {
+                                <div class="filter-group">
+                                    <div class="filter-group-body">
+                                        <div class="filter-row">
+                                            <label>Active</label>
+                                            <div class="filter-buttons" data-column="7">
+                                                <div class="btn-group" role="group" aria-label="...">
+                                                    <a href="#" data-value="is:active" data-selected="false" class="btn btn-default filter-link">yes</a>
+                                                    <a href="#" data-value="isnot:active" data-selected="false" class="btn btn-default filter-link">no</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <table class="table table-hover account-search-table" style="width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Number</th>
+                                            <th>ShortCode</th>
+                                            <th>Type</th>
+                                            <th>Organization</th>
+                                            <th>Active</th>
+                                            <th>active_search</th>
+                                            <th>&nbsp;</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var acct in Model.AccountSearch())
+                                        {
+                                            <tr>
+                                                <td>@acct.AccountID</td>
+                                                <td><a href="@Model.GetLink("client-account", "acct", acct.AccountID)" title="View ClientAccounts">@acct.Name</a></td>
+                                                <td>@acct.Number</td>
+                                                <td>@acct.ShortCode</td>
+                                                <td>@acct.AccountType.AccountTypeName</td>
+                                                <td><a href="@Model.GetLink("org", "org", acct.Org.OrgID)" title="View Organization">@acct.Org.OrgName</a></td>
+                                                <td style="text-align: center;">@checkMark(acct.Active)</td>
+                                                <td>@Html.Raw(acct.Active ? "is:active" : "isnot:active")</td>
+                                                <td style="text-align: center;"><a href="@Model.GetHistoryLink(acct.AccountID)" title="View History">history</a></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+
+                            @if (Model.ShowHistory())
+                            {
+                                var history = Model.GetHistory();
+                                var length = history.Length;
+                                <a name="history"></a>
+                                <hr />
+                                <div class="history-header" style="margin-top: 20px;">
+                                    <div class="history-header-label">@Model.GetTableName()</div>
+                                    <div class="history-header-text">History of Record #@Model.History</div>
+                                    <div style="clear:both;"></div>
+                                </div>
+                                <table class="table table-striped history-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Record</th>
+                                            <th>Table Name</th>
+                                            <th>Enable Date</th>
+                                            <th>Disable Date</th>
+                                            <th>&nbsp;</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @for (int index = 0; index < length; index++)
+                                        {
+                                            <tr>
+                                                <td>@history[index].Record</td>
+                                                <td>@history[index].TableName</td>
+                                                <td>@history[index].EnableDate.ToString("M/d/yyyy h:mm tt")</td>
+                                                <td>@Html.FormatNullableDate(history[index].DisableDate, "M/d/yyyy h:mm tt")</td>
+                                                @if (index == length - 1)
+                                                {
+                                                    <td>@Html.ActionLink("edit", "ActiveLog", "Utility", new { TableName = @history[index].TableName.ToLower(), Record = @history[index].Record }, null)</td>
+                                                }
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    @if (showReturnButton)
+    {
+        <div style="margin-bottom: 20px;">
+            <a href="@Url.Action("Return", "Home")" class="btn btn-primary btn-lg">&larr; Back to Main Page</a>
+        </div>
+    }
+</div>

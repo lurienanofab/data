@@ -1,0 +1,136 @@
+﻿@model Data.Models.ClockModel
+@{
+    Layout = null;
+    ViewBag.Title = "Clock";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>@ViewBag.Title</title>
+
+    <!-- Bootstrap -->
+    <link href="//ssel-apps.eecs.umich.edu/static/styles/bootstrap/themes/lnf/bootstrap.css" rel="stylesheet">
+    <link href="//ssel-apps.eecs.umich.edu/static/lib/bootstrap/plugins/bootstrap-datepicker/css/bootstrap-datepicker.min.css" rel="stylesheet">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+            font-family: Arial;
+            background-color: #fff;
+        }
+
+        h4 {
+            font-weight: bold;
+            font-style: italic;
+            color: #003366;
+            background-color: #e7e7e7;
+            border-top: solid 1px #808080;
+            border-bottom: solid 1px #808080;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .digital {
+            text-align: center;
+            font-size: 12vw;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        .inlab {
+        }
+
+        .inlab-list {
+        }
+
+        .inlab-item {
+            border: solid 1px #dfdfdf;
+            min-width: 100px;
+            white-space: nowrap;
+            overflow: hidden;
+            font-size: 10pt;
+            padding: 3px;
+            margin-top: 5px;
+            background-color: #fafaff;
+            font-weight: bold;
+        }
+
+        .inlab-time {
+            font-style: italic;
+            font-weight: normal;
+            text-align: right;
+        }
+
+        .inlab-nodata {
+            font-style: italic;
+            color: #808080;
+        }
+    </style>
+
+    @*<link rel="stylesheet" href="@Url.Content("~/Scripts/jquery.analogclock/jquery.analogclock.css")" />*@
+</head>
+<body>
+
+    <div class="container-fluid">
+        <div class="inlab" data-mode="ajax" data-interval="120000" data-url="//ssel-apps.eecs.umich.edu/data/feed/currently-in-lab/jsonp/?callback=?" data-room="@Model.Room"></div>
+        <h4>LNF Server Time</h4>
+        <div class="html5clock" style="display: none;">
+            <canvas id="clock"></canvas>
+        </div>
+        @foreach (var item in Model.GetItems())
+        {
+            @item.GetHtml()
+        }
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="//ssel-apps.eecs.umich.edu/static/lib/jquery/jquery.min.js"></script>
+
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="//ssel-apps.eecs.umich.edu/static/lib/bootstrap/js/bootstrap.min.js"></script>
+    <script src="//ssel-apps.eecs.umich.edu/static/lib/moment/moment.js"></script>
+    <script src="@Url.Content("~/Scripts/jquery.querystring.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.analogclock.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.servertime.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.inlab.js")"></script>
+
+    <script>
+        //var analogClock = $(".analog-clock").analogclock();
+        $(".inlab").inlab();
+
+        $(".digital-clock").servertime({
+            "url": "//ssel-sched.eecs.umich.edu/time.aspx",
+            "interval": 1000 * 60 * 10,
+            "format": ('@Model.Format' == '24') ? "HH:mm:ss" : "hh:mm:ss A",
+            "ontick": function (m) {
+                //analogClock.trigger("set", m);
+            }
+        });
+
+        var redirectUrl = "https://ssel-apps.eecs.umich.edu/login";
+
+        var redirect = function () {
+            window.top.location = redirectUrl;
+        }
+
+        if ('login' == '@ViewBag.Redirect') {
+            $(window).on("mousemove keydown", function (e) {
+                redirect();
+            });
+        }
+    </script>
+</body>
+</html>

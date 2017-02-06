@@ -1,0 +1,27 @@
+﻿{
+    "title": "IOF Store Manager Report",
+	"autoRun": true,
+    "feed": "http://ssel-apps.eecs.umich.edu/data/feed/iof-store-manager-report/jsonp",
+	"export": [
+		{"url": "http://ssel-apps.eecs.umich.edu/data/feed/iof-store-manager-report/csv", "label": "csv"},
+		{"url": "http://ssel-apps.eecs.umich.edu/data/feed/iof-store-manager-report/xml", "label": "xml"}
+	],
+	"dataType": "jsonp",
+	"striped": true,
+	"rows": "Data.default",
+	"defaultDateFormat": "M/D/YYYY",
+	"columns": [
+		{"data": "ItemID", "itemStyle": "text-align: right;"},
+		{"data": "Description"},
+		{"data": "VendorName", "title": "Vendor"},
+        {"data": "UnitPrice", "title": "Unit Price", "type": "currency", "itemStyle": "text-align: right;"},
+        {"data": "Unit"},
+		{"data": "LastOrdered", "title": "Last Ordered", "type": "date"},
+		{"data": "StoreItemID", "title": "Store ItemID", "itemStyle": "text-align: right;"},
+		{"data": "StoreDescription", "title": "Store Description"},
+		{"data": "StorePackagePrice", "title": "Store Pkg Price", "type": "currency", "itemStyle": "text-align: right;"},
+		{"data": "StorePackageQty", "title": "Store Pkg Qty", "itemStyle": "text-align: right;"},
+		{"data": "StoreUnitPrice", "title": "Store Unit Price", "type": "currency", "itemStyle": "text-align: right;"}
+	],
+	"datatables": true
+}

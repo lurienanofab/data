@@ -1,0 +1,42 @@
+﻿@using LNF.GoogleApi;
+@using Data.Models;
+
+@model GoogleModel
+@{
+    ViewBag.Title = "Google Data";
+    Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
+    string app = "Google";
+}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">Google Data</h3>
+    </div>
+    <div class="panel-body">
+        Welcome Google user
+        <strong>@Model.UserInfo.DisplayName [@Model.UserInfo.Emails.First().Value]</strong>
+        <hr />
+        <h3>Files</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>MimeType</th>
+                    <th>Created</th>
+                    <th>Modified</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(var df in Model.Files)
+                {
+                    <tr>
+                        <td>@df.Title</td>
+                        <td>@df.MimeType</td>
+                        <td>@(df.Created.HasValue ? df.Created.Value.ToString("M/d/yyyy h:mm:ss tt") : "[never]")</td>
+                        <td>@(df.Modified.HasValue ? df.Modified.Value.ToString("M/d/yyyy h:mm:ss tt") : "[never]")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

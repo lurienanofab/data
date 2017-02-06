@@ -1,0 +1,60 @@
+﻿@using Data.Models;
+@model LNF.Web.Mvc.BaseModel
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag.Title</title>
+    
+    <link href="//ssel-apps.eecs.umich.edu/static/lib/jquery-ui/themes/smoothness/jquery-ui.min.css" rel="stylesheet" />
+    <link href="//ssel-apps.eecs.umich.edu/static/lib/codemirror/codemirror.css" rel="stylesheet" />
+    <link href="//ssel-apps.eecs.umich.edu/static/scripts/jquery/jquery.assignaccounts/css/jquery.assignaccounts.css" rel="stylesheet" />
+    <link href="@Url.Content("~/Scripts/jquery.ui.combobox/default.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Scripts/jquery.feeds/default.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Scripts/jquery.datagrid/default.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Scripts/jquery.utility/jquery.utility.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Scripts/jquery.news/jquery.news.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Scripts/jquery.editTable/jquery.editTable.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/site.css")" rel="stylesheet" />
+
+    <script src="//ssel-apps.eecs.umich.edu/static/lib/jquery-ui/jquery-ui.min.js"></script>
+    <script src="//ssel-apps.eecs.umich.edu/static/lib/codemirror/codemirror.js"></script>
+    <script src="//ssel-apps.eecs.umich.edu/static/lib/codemirror/mode/sql/sql.js"></script>
+    <script src="//ssel-apps.eecs.umich.edu/static/lib/codemirror/mode/python/python.js"></script>
+    <script src="//ssel-apps.eecs.umich.edu/static/scripts/jquery/jquery.assignaccounts/js/jquery.assignaccounts.js"></script>
+    <script src="@Url.Content("~/Scripts/jquery.ui.combobox/jquery.ui.combobox.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.feeds/jquery.feeds.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.news/jquery.news.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.datagrid/jquery.datagrid.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.servicelog.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.billing.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.utility/jquery.utility.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.services/jquery.services.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.access.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.editTable/jquery.editTable.js")"></script>
+    <script src="@Url.Content("~/Scripts/main.js")"></script>
+    @if (!string.IsNullOrEmpty("asdf"))
+    {
+        <style type="text/css">
+            .layout .left-panel {
+                display: none !important;
+            }
+        </style>
+    }
+</head>
+<body>
+    <div class="app">
+        <table class="layout">
+            <tr>
+                <td class="left-panel" style="vertical-align: top;">
+                    @Html.Partial("_PageMenuPartial")
+                </td>
+                <td class="right-panel" style="vertical-align: top;">
+                    @RenderBody()
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

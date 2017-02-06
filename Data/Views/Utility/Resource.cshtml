@@ -1,0 +1,112 @@
+﻿@model Data.Models.UtilityModel
+@{
+    ViewBag.Title = "Resource";
+    Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
+}
+
+<div class="container">
+    <div class="page-header">
+        <h2>Resource</h2>
+    </div>
+
+    <div style="margin-bottom: 10px;">
+        <input type="text" id="search" class="form-control" placeholder="Search" />
+    </div>
+
+    <table id="resources" class="table table-striped" data-filter="#search">
+        <thead>
+            <tr>
+                <th data-sort-initial="true">ID</th>
+                <th>Resource</th>
+                <th data-hide="phone,tablet">Lab</th>
+                <th data-hide="phone,tablet">Process Tech</th>
+                <th data-hide="phone">Status</th>
+                <th data-sort-ignore="true" style="width: 100px;">&nbsp;</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.GetResources())
+            {
+                <tr data-point="@item.PointID">
+                    <td>@item.ResourceID</td>
+                    <td>@item.ResourceName</td>
+                    <td>@item.LabName</td>
+                    <td>@item.ProcessTechName</td>
+                    <td>
+                        @if (item.InterlockError)
+                        {
+                            <span class="status" style="color: #ff0000;">@item.InterlockStatus</span>
+                        }
+                        else
+                        {
+                            if (item.IsInterlocked)
+                            {
+                                <span class="status">@item.InterlockStatus</span>
+                            }
+                            else
+                            {
+                                <span class="status" style="font-style: italic; color: #808080;">@item.InterlockStatus</span>
+                            }
+                        }
+                    </td>
+                    <td style="text-align: center;">
+                        @if (item.IsInterlocked && !item.InterlockError)
+                        {
+                            if (item.InterlockState)
+                            {
+                                <a href="#" class="btn btn-default btn-xs point-control-link" data-state="off" data-point="@item.PointID">Turn Off</a>
+                            }
+                            else
+                            {
+                                <a href="#" class="btn btn-default btn-xs point-control-link" data-state="on" data-point="@item.PointID">Turn On</a>
+                            }
+                            <div class="loader" style="display: none; height: 22px;">
+                                <img src="//ssel-apps.eecs.umich.edu/static/images/ajax-loader-2.gif" alt="loading..." />
+                            </div>
+                        }
+                        else
+                        {
+                            @Html.Raw("&nbsp;")
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section scripts{
+    <script>
+        var client = new ControlClient();
+
+        $("#resources").footable();
+
+        $(".point-control-link").on("click", function (e) {
+            e.preventDefault();
+            var button = $(this);
+            var pointId = button.data("point");
+            var state = button.data("state");
+            var row = button.closest("tr");
+            var status = $(".status", row);
+            var loader = $(".loader", row);
+
+            button.hide();
+            loader.show();
+
+            client[state](pointId, 0, function (response) {
+                client.pointState(pointId, function (ps) {
+                    if (ps.State) {
+                        button.data("state", "off").html("Turn Off");
+                        status.html("Tool Enabled");
+                    } else {
+                        button.data("state", "on").html("Turn On");
+                        status.html("Tool Disabled");
+                    }
+
+                    loader.hide();
+                    button.show();
+                })
+            });
+        });
+    </script>
+}

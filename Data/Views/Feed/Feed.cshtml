@@ -1,0 +1,78 @@
+﻿@using System.Data;
+@model Data.Models.FeedModel
+@{
+
+    Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
+
+    var feed = Model.GetFeed();
+    System.Data.DataSet ds = null;
+    System.Data.DataTable[] tables = null;
+    string errorMessage = string.Empty;
+
+    if (feed != null)
+    {
+        try
+        {
+            ds = Model.ExecuteQuery(feed);
+            tables = Model.GetTables(ds);
+            ViewBag.Title = feed.FeedName;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+    else
+    {
+        ViewBag.Title = "Data Feed";
+    }
+
+    string qs = string.IsNullOrEmpty(Request.QueryString.ToString()) ? string.Empty : "?" + Request.QueryString.ToString();
+}
+
+<div class="container-fluid">
+    @if (feed == null)
+    {
+        <div class="alert alert-danger" role="alert">Feed not found!</div>
+    }
+    else
+    {
+        <div class="page-header">
+            <h1>@feed.FeedName</h1>
+            <div><a href="@Url.Content("~/feed/" + feed.FeedAlias + "/csv/" + qs)">CSV</a> | <a href="@Url.Content("~/feed/" + feed.FeedAlias + "/xml/" + qs)">XML</a></div>
+        </div>
+
+        if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger" role="alert">@errorMessage</div>
+        }
+        else
+        {
+            foreach (var tbl in tables)
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            @foreach (DataColumn col in tbl.Columns)
+                            {
+                                <th>@col.ColumnName</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (DataRow dr in tbl.Rows)
+                        {
+                            <tr>
+                                @foreach (DataColumn col in tbl.Columns)
+                                {
+                                    <td>@dr[col.ColumnName]</td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        }
+
+    }
+</div>

@@ -1,0 +1,13 @@
+﻿@using LNF.Data;
+@using LNF.Web.Mvc;
+@using LNF.Web.Mvc.UI;
+@model BaseModel
+<div class="nav">
+    @Html.PageMenuLink("Home", "Index", "Home", Model.CurrentPage)
+    @Html.PageMenuLink("Client", "Index", "Client", Model.CurrentPage, ClientPrivilege.Developer | ClientPrivilege.Administrator)
+    @Html.PageMenuLink("Account", "Index", "Account", Model.CurrentPage, ClientPrivilege.Developer | ClientPrivilege.Administrator)
+    @Html.PageMenuLink("Feed", "List", "Feed", Model.CurrentPage, ClientPrivilege.Developer)
+    @Html.PageMenuLink("News", "List", "News", Model.CurrentPage, ClientPrivilege.Developer | ClientPrivilege.Administrator | ClientPrivilege.Staff)
+    @Html.PageMenuLink("Utility", "Index", "Utility", Model.CurrentPage, ClientPrivilege.Developer | ClientPrivilege.Administrator)
+    @Html.PageMenuLink("Services", "Index", "Service", Model.CurrentPage, ClientPrivilege.Developer | ClientPrivilege.Administrator)
+</div>

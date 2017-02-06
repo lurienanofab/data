@@ -1,0 +1,30 @@
+﻿{
+    "title": "Badge/Card/Client",
+    "feed": "http://ssel-apps.eecs.umich.edu/data/feed/badge-card-client/jsonp",
+	"export": [
+		{"url": "http://ssel-apps.eecs.umich.edu/data/feed/badge-card-client/csv", "label": "csv"},
+		{"url": "http://ssel-apps.eecs.umich.edu/data/feed/badge-card-client/xml", "label": "xml"}
+	],
+	"dataType": "jsonp",
+	"autoRun": true,
+	"striped": true,
+	"rows": "Data.default",
+	"columns": [
+		{"data": "CARD_NO", "title": "Card#"},
+		{"data": "BADGE_EXPIRE_DATE", "title": "Badge Expires", "type": "date", "format": "M/D/YYYY[<br />]h:mm:ss A"},
+		{"data": "CARD_EXPIRE_DATE", "title": "Card Expires", "type": "date", "format": "M/D/YYYY[<br />]h:mm:ss A"},
+		{"data": "CARD_STATUS", "title": "Status", "itemStyle": "text-align: center;"},
+		{"data": "DisplayName", "title": "Name"},
+		{"data": "Email"},
+		{"data": "LabUser", "itemStyle": "text-align: center;"},
+		{"data": "Staff", "itemStyle": "text-align: center;"},
+		{"data": "PhysicalAccess", "itemStyle": "text-align: center;"},
+		{"data": "Active", "itemStyle": "text-align: center;"}
+	],
+	"datatables": {
+		"order": [2, "asc"],
+		"columnDefs": [
+			{"width": "110", "targets": [1, 2]}
+		]
+	}
+}

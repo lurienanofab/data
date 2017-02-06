@@ -1,0 +1,18 @@
+﻿@model Data.Models.HomeModel
+@{
+    ViewBag.Title = "Data";
+    Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
+}
+
+@section styles{
+    <link rel="stylesheet" href="@Url.Content("~/Scripts/databaseReport/jquery.databaseReport.css?v=20160127")" />
+}
+
+@Html.Partial("_DatabaseReportPartial", Model)
+
+@section scripts{
+    <script src="@Url.Content("~/Scripts/databaseReport/jquery.databaseReport.js?v=20160127")"></script>
+    <script type="text/javascript">
+        $(".database-report").databaseReport();
+    </script>
+}

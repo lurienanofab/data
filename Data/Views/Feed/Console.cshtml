@@ -1,0 +1,164 @@
+﻿@using LNF.Repository.Data;
+@using LNF.Web.Mvc;
+@using Data.Models;
+@model FeedModel
+@{
+
+    Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
+    ViewBag.Title = "Console";
+    ViewBag.UsePills = true;
+}
+@section styles{
+    <link href="//ssel-apps.eecs.umich.edu/static/lib/codemirror/codemirror.css" rel="stylesheet" />
+    <link href="@Url.Content("~/Scripts/jquery.feeds/default.css")" rel="stylesheet" />
+    <style>
+        .CodeMirror {
+            /* Bootstrap Settings */
+            box-sizing: border-box;
+            margin: 0;
+            font: inherit;
+            overflow: auto;
+            font-family: inherit;
+            display: block;
+            width: 100%;
+            padding: 6px 12px;
+            font-size: 14px;
+            line-height: 1.42857143;
+            color: #555;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+            transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+            /* Code Mirror Settings */
+            font-family: monospace;
+            position: relative;
+            overflow: hidden;
+            height: 320px;
+        }
+
+        .CodeMirror-focused {
+            /* Bootstrap Settings */
+            border-color: #66afe9;
+            outline: 0;
+            box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, .6);
+            transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+        }
+
+        .CodeMirror-scroll {
+            overflow-x: hidden;
+        }
+
+        .CodeMirror-gutters {
+            background-color: #fff;
+        }
+
+        .working {
+            color: #808080;
+            font-style: italic;
+            padding-left: 16px;
+            background-image: url(//ssel-apps.eecs.umich.edu/static/images/ajax-loader-2.gif);
+            background-repeat: no-repeat;
+            background-position: 0% 50%;
+            background-size: 14px 14px;
+        }
+    </style>
+}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">Data Feeds</h3>
+    </div>
+    <div class="panel-body">
+        @Html.CreateSubMenu(Model.GetSubMenu())
+        <div class="feed" data-console="true" data-ajaxurl="@Url.Action("Ajax", "Feed")">
+            @using (Html.BeginForm("Save", "Feed", null, FormMethod.Post, null))
+            {
+                @Html.HiddenFor(x => x.Guid)
+                <div class="form-group">
+                    @Html.LabelFor(x => x.Alias)
+                    @Html.TextBoxFor(x => x.Alias, new { @class = "form-control" })
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(x => x.Name)
+                    @Html.TextBoxFor(x => x.Name, new { @class = "form-control" })
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(x => x.Description)
+                    @Html.TextBoxFor(x => x.Description, new { @class = "form-control" })
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(x => x.Link)
+                    @Html.TextBoxFor(x => x.Link, new { @class = "form-control" })
+                </div>
+                <div class="checkbox">
+                    <label>
+                        @Html.CheckBoxFor(x => x.Private) Private
+                    </label>
+                </div>
+                <div class="checkbox">
+                    <label>
+                        @Html.CheckBoxFor(x => x.Active) Active
+                    </label>
+                </div>
+                <div class="form-inline" style="margin-bottom: 10px;">
+                    <div class="radio feed-types">
+                        <label>
+                            @Html.RadioButtonFor(x => x.FeedType, DataFeedType.SQL) SQL
+                        </label>
+                        <label>
+                            @Html.RadioButtonFor(x => x.FeedType, DataFeedType.Python) Python
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.TextAreaFor(x => x.Query, 15, 100, new { @class = "feed-query form-control", @spellcheck = "false" })
+                </div>
+                <div style="margin-top: 10px;">
+                    <button type="submit" name="Command" value="save-feed" class="btn btn-primary save-feed" style="width: 90px;">Save Feed</button>
+                    <button type="button" class="btn btn-default cancel-feed" style="width: 90px;" onclick="window.location='@Url.Action("List", "Feed")'">Cancel</button>
+                </div>
+            }
+            <hr />
+            <div class="form-inline">
+                <div class="form-group">
+                    <label for="queryString">Query String:</label>
+                    <input type="text" id="queryString" class="query-string form-control" style="width: 500px;" />
+                    <button type="button" class="run-feed btn btn-default">Run</button>
+                </div>
+                <div class="form-group working"></div>
+            </div>
+            <a name="output"></a>
+            <div class="run-output" style="margin: 10px 0 40px 0;"></div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script src="//ssel-apps.eecs.umich.edu/static/lib/codemirror/codemirror.js"></script>
+    <script src="//ssel-apps.eecs.umich.edu/static/lib/codemirror/mode/sql/sql.js"></script>
+    <script src="//ssel-apps.eecs.umich.edu/static/lib/codemirror/mode/python/python.js"></script>
+    <script src="@Url.Content("~/Scripts/jquery.feeds/jquery.feeds.js")"></script>
+    <script>
+        $(".feed").feeds();
+
+        $(".feed-query").on("keydown", function (e) {
+            var keyCode = e.keyCode || e.which;
+            if (keyCode == 9) {
+                e.preventDefault();
+
+                var start = this.selectionStart;
+                var end = this.selectionEnd;
+
+                var self = $(this);
+
+                // set textarea value to: text before caret + tab + text after caret
+                self.val(self.val().substring(0, start) + "\t" + self.val().substring(end));
+
+                // put caret at right position again
+                this.selectionStart = this.selectionEnd = start + 1;
+            }
+        });
+    </script>
+}

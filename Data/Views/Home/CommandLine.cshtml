@@ -1,0 +1,27 @@
+﻿@model Data.Models.CommandLineModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Command Line</title>
+    <link href="@Url.Content("~/Content/commandline.css")" rel="stylesheet" />
+    <script src="//ssel-apps.eecs.umich.edu/static/lib/jquery/jquery.min.js"></script>
+    <script src="@Url.Content("~/Scripts/jquery.commandLine.js")"></script>
+    <script>
+        $(document).ready(function () {
+            $(".command-line").commandLine();
+        });
+    </script>
+</head>
+<body>
+    <div class="command-line">
+        <div class="processed-commands"></div>
+        &gt;<input type="text" class="current-line" />
+    </div>
+</body>
+</html>

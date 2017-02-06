@@ -1,0 +1,11 @@
+.vs/
+bin/
+obj/
+packages/
+TestResults/
+*.suo
+*.user
+Data/Web.config
+Data/Web.Debug.config
+Data/Web.Release.config
+Data.Tests/App.config

@@ -1,0 +1,99 @@
+﻿@using Data.Models;
+@model ClientModel
+@{
+    ViewBag.Title = "Account Assignment";
+}
+<div class="page">
+    <h2>Account Assignment</h2>
+    @Html.Partial("_SubMenuPartial")
+    <div class="section account-assignment">
+        <div class="content">
+            <input type="hidden" class="RootURL" value="@Url.Content("~")" />
+            <input type="hidden" class="BaseURL" value="@Url.Content("~/client/account-assignment")" />
+            <input type="hidden" class="AjaxURL" value="@Url.Content("~/client/ajax")" />
+            <input type="hidden" class="Command" value="@Model.Command" />
+            <input type="hidden" class="OrgID" value="@Model.OrgID" />
+            <input type="hidden" class="ManagerClientOrgID" value="@Model.ManagerClientOrgID" />
+            <div style="padding-bottom: 10px; border-bottom: solid 1px #9999AA;">
+                <table class="control-table">
+                    <tr>
+                        <th style="vertical-align: middle;">Organization:</th>
+                        <td style="vertical-align: middle;">
+                            @Html.DropDownList("active_orgs", Model.GetOrgSelectItems(), new { @class = "org-select" })
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Manager:</th>
+                        <td>
+                            <div class="managers-select"></div>
+                        </td>
+                    </tr>
+                </table>
+                <div class="message">
+                </div>
+            </div>
+            <div style="margin-top: 10px;">
+                <div class="matrix-working" style="display: none;">
+                    <img src="@Url.Content("/common/images/ajax-loader.gif")" alt="Working..." />
+                </div>
+                <div class="matrix-container" style="display: none;">
+                    <table style="border-collapse: separate;">
+                        <tr>
+                            <td style="padding: 5px; border: none; text-align: right;">
+                                <strong>Display:</strong>
+                            </td>
+                            <td style="padding: 5px; border: solid 1px #AAAAAA; background-color: #EAEAFF;">
+                                <label>
+                                    Name
+                                    <input type="radio" name="acct_display" class="acct-display-by" data-key="name" checked="checked" />
+                                </label>
+                            </td>
+                            <td style="padding: 5px; border: solid 1px #AAAAAA; background-color: #EAEAFF;">
+                                <label>
+                                    Numbers
+                                    <input type="radio" name="acct_display" class="acct-display-by" data-key="number" />
+                                </label>
+                            </td>
+                            <td style="padding: 5px; border: solid 1px #AAAAAA; background-color: #EAEAFF;">
+                                <label>
+                                    Project
+                                    <input type="radio" name="acct_display" class="acct-display-by" data-key="project" />
+                                </label>
+                            </td>
+                            <td style="padding: 5px; border: solid 1px #AAAAAA; background-color: #EAEAFF;">
+                                <label>
+                                    ShortCode
+                                    <input type="radio" name="acct_display" class="acct-display-by" data-key="shortcode" />
+                                </label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px; border: none; text-align: right;">
+                                <strong>Filter:</strong>
+                            </td>
+                            <td style="padding: 5px; border: solid 1px #AAAAAA; background-color: #EAEAFF;" colspan="4">
+                                <div class="matrix-filter"></div>
+                            </td>
+                        </tr>
+                    </table>
+                    <table>
+                        <tr>
+                            <td style="vertical-align: top;">
+                                <div class="matrix">
+                                </div>
+                            </td>
+                            <td style="vertical-align: top; padding-left: 10px;">
+                                <div class="edit-items">
+                                </div>
+                                <div class="edit-items-control" style="display: none;">
+                                    <input type="button" class="edit-items-save-button" value="Save All" />
+                                    <input type="button" class="edit-items-cancel-button" value="Cancel All" />
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

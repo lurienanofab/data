@@ -1,0 +1,418 @@
+﻿@using Data.Models;
+@model ClientModel
+@{
+    Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
+    ViewBag.Title = "Client";
+}
+
+@section styles{
+    <style>
+        .dataTables_wrapper {
+            margin-top: 10px;
+        }
+
+        .dataTables_length label {
+            font-weight: normal;
+            white-space: nowrap;
+        }
+
+            .dataTables_length label select {
+                display: inline;
+                width: 70px;
+            }
+
+        .dataTables_filter label {
+            width: 100%;
+            font-weight: normal;
+            text-align: right;
+        }
+
+        .dataTables_info {
+            margin-top: 10px;
+        }
+
+        .dataTables_paginate {
+            margin-top: 10px;
+        }
+
+            .dataTables_paginate ul {
+                margin: 0;
+            }
+    </style>
+}
+
+<div class="container-fluid">
+    <div class="client" style="margin-bottom: 20px;">
+        <div class="page-header">
+            <h1>Configure Clients for <span style="color: #0033ff;">@Model.GetOrgName()</span></h1>
+        </div>
+        <form role="form">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        @Html.LabelFor(x => x.OrgID, "Organization", new { @class = "control-label" })
+                        @Html.DropDownListFor(x => x.OrgID, Model.GetOrgSelectItems(), new { @class = "form-control org-select" })
+                        <div class="org-error" style="color: #ff0000"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div style="border: solid 1px #ccc; border-radius: 4px; padding: 15px;">
+                        <table class="table table-striped client-list" style="margin-bottom: 0;">
+                            <thead>
+                                <tr>
+                                    <th>Client Name</th>
+                                    <th style="width: 90px;">&nbsp;</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var c in Model.GetClientListItems())
+                                {
+                                    <tr data-index="@c.PageIndex">
+                                        @if (c.ClientID > 0)
+                                        {
+                                            <td>@c.DisplayName</td>
+                                            <td style="white-space: nowrap;">
+                                                <a href="@Url.Action("ClientEdit", new { ClientOrgID = c.ClientOrgID })" style="margin-right: 5px;"><img src="@Url.Content("~/Content/images/edit.png")" border="0" title="Edit @c.DisplayName" /></a>
+                                                <a href="@Url.Action("ClientDelete", new { ClientOrgID = c.ClientOrgID })"><img src="@Url.Content("~/Content/images/delete.png")" border="0" title="Delete @c.DisplayName" /></a>
+                                                @if (c.HasDryBox)
+                                                {
+                                                    <img src="@Url.Content("~/Content/images/drybox.png")" border="0" title="DryBox reserved with account: @c.DryBoxAccount" style="margin-left: 5px;" />
+                                                }
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td colspan="2">&nbsp;</td>
+                                        }
+                                    </tr>
+                                }
+                                @*@if (Model.GetClientListItems().Count() == 0)
+                                    {
+                                        <tr>
+                                            <td colspan="2" style="font-style: italic; color: #606060;">
+                                                No active clients found
+                                            </td>
+                                        </tr>
+                                    }*@
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="2">
+                                        <div style="float: left;">
+                                            <button type="button" class="btn btn-xs btn-primary add-existing-client" style="width: 80px;">Add Existing</button>
+                                        </div>
+                                        <div style="float: right;">
+                                            <button type="button" class="btn btn-xs btn-primary add-new-client" style="width: 80px;" onclick="window.location = '@Url.Action("ClientEdit")'; return false;">Add New</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <div style="margin-top: 10px;">
+            <a href="@Url.Action("Index", "Home")">&larr; Return to Main Page</a>
+        </div>
+    </div>
+</div>
+@section scripts{
+    <script>
+        $.fn.dataTableExt.oApi.fnExtStylePagingInfo = function (oSettings) {
+            return {
+                "iStart": oSettings._iDisplayStart,
+                "iEnd": oSettings.fnDisplayEnd(),
+                "iLength": oSettings._iDisplayLength,
+                "iTotal": oSettings.fnRecordsTotal(),
+                "iFilteredTotal": oSettings.fnRecordsDisplay(),
+                "iPage": oSettings._iDisplayLength === -1 ?
+                    0 : Math.ceil(oSettings._iDisplayStart / oSettings._iDisplayLength),
+                "iTotalPages": oSettings._iDisplayLength === -1 ?
+                    0 : Math.ceil(oSettings.fnRecordsDisplay() / oSettings._iDisplayLength)
+            };
+        };
+
+        $.fn.dataTableExt.oPagination.bootstrap = {
+            "fnInit": function (oSettings, nPaging, fnCallbackDraw) {
+
+                var numPages = 3; //this is the number of page buttons to display between the back and forward buttons
+
+                var oPaging = oSettings.oInstance.fnExtStylePagingInfo();
+
+                var node = $(nPaging);
+                var list = $("<ul/>", { "class": "pagination" });
+
+                //previous
+                list.append($("<li/>", { "class": "paginate_button previous" }).append($("<a/>", { "href": "#", "title": "Previous" }).html("&larr;").on("click", function (e) {
+                    e.preventDefault();
+                    oSettings.oApi._fnPageChange(oSettings, "previous");
+                    fnCallbackDraw(oSettings);
+                })));
+
+                //first page
+                list.append($("<li/>", { "class": "paginate_button first" }).append($("<a/>", { "href": "#", "title": "First" }).html("1").on("click", function (e) {
+                    e.preventDefault();
+                    oSettings.oApi._fnPageChange(oSettings, "first");
+                    fnCallbackDraw(oSettings);
+                })));
+
+                //back
+                list.append($("<li/>", { "class": "paginate_button back" }).append($("<a/>", { "href": "#", "title": "Back" }).html("...").on("click", function (e) {
+                    e.preventDefault();
+                })));
+
+                //pages
+                for (var x = 0; x < numPages; x++) {
+                    list.append($("<li/>", { "class": "paginate_button page" }).append($("<a/>", { "href": "#", "data-index": x + 1 }).html(x + 2).on("click", function (e) {
+                        e.preventDefault();
+                        oSettings.oApi._fnPageChange(oSettings, $(this).data("index"));
+                        fnCallbackDraw(oSettings);
+                    })));
+                }
+
+                //forward
+                list.append($("<li/>", { "class": "paginate_button forward" }).append($("<a/>", { "href": "#", "title": "Forward" }).html("...").on("click", function (e) {
+                    e.preventDefault();
+                })));
+
+                //last page
+                list.append($("<li/>", { "class": "paginate_button last" }).append($("<a/>", { "href": "#", "title": "Last" }).html(oPaging.iTotalPages).on("click", function (e) {
+                    e.preventDefault();
+                    oSettings.oApi._fnPageChange(oSettings, "last");
+                    fnCallbackDraw(oSettings);
+                })));
+
+                //next
+                list.append($("<li/>", { "class": "paginate_button next" }).append($("<a/>", { "href": "#", "title": "Next" }).html("&rarr;").on("click", function (e) {
+                    e.preventDefault();
+                    oSettings.oApi._fnPageChange(oSettings, "next");
+                    fnCallbackDraw(oSettings);
+                })));
+
+                node.append(list);
+
+                node.append($("<div/>", { "class": "now-showing" }).css({ "color": "#808080", "font-style": "italic" }));
+            },
+            "fnUpdate": function (oSettings, fnCallbackDraw) {
+
+                var numPages = 3; //the number of page buttons to display between the back and forward buttons
+
+                var oPaging = oSettings.oInstance.fnExtStylePagingInfo();
+
+                var an = oSettings.aanFeatures.p;
+
+                if ($.isArray(an)) {
+                    $.each(an, function (index, item) {
+                        var node = $(item);
+
+                        var list = $("ul.pagination", node);
+
+                        if (oPaging.iTotalPages > 1) {
+
+                            //display the last button and change it's text to current iTotalPages
+                            $("li.last", list).show().find("a").html(oPaging.iTotalPages);
+
+                            //we want to show the first and last buttons and pageNum additional buttons, if there are pageNum additional pages
+                            //or fewer then we don't need to show the forward button. If there are less than pageNum additional pages than we
+                            //need to hide the appropriate number of page buttons.
+
+                            var pageCount = oPaging.iTotalPages - 2 //the # of pages not including first and last
+
+                            //console.log({ pageCount: pageCount, numPages: numPages, iPage: oPaging.iPage });
+
+                            //everything must be based on iPage which is the current page index
+                            if (oPaging.iPage <= numPages)
+                                $("li.back", list).hide();
+                            else
+                                $("li.back", list).show();
+
+                            if (oPaging.iPage >= oPaging.iTotalPages - numPages + 1)
+                                $("li.forward", list).hide();
+                            else
+                                $("li.forward", list).show();
+
+                            //check to see if we should hide any page buttons
+                            if (pageCount <= numPages) {
+                                for (var x = 0; x < numPages; x++) {
+                                    if (x < pageCount)
+                                        $("li.page", list).eq(x).show();
+                                    else
+                                        $("li.page", list).eq(x).hide();
+                                }
+                            }
+                            else
+                                $("li.page", list).show(); //show them all
+
+                            //re-number the page buttons
+
+                            //need some special case handling when iPage is the first or last
+                            if (oPaging.iPage == 0) {
+
+                            } else if (oPaging.iPage == oPaging.iTotalPages - 1) {
+
+                            } else {
+                                var m = oPaging.iPage % (numPages + 1);
+                                var startIndex = oPaging.iPage - m + 1;
+                                var pages = [];
+                                for (var x = 0; x < numPages; x++)
+                                    pages.push(startIndex + x);
+                                console.log({ "m": m, "iPage": oPaging.iPage, "pages": pages.join(',') });
+                            }
+
+                            var m = oPaging.iPage % numPages;
+                            //console.log({ 'iPage': oPaging.iPage, 'm': m });
+
+                            var startIndex = oPaging.iPage - m + 1;
+                            
+
+                            //for (var x = 0; x < numPages; x++) {
+
+                            //    var num = 0;
+
+                            //    if (m == 0) {
+                            //        num = oPaging.iPage + x + 2;
+                            //    }
+                               
+
+
+                                
+                            //    //if (oPaging.iPage < numPages) {
+                            //    //    console.log('a');
+                            //    //    num = oPaging.iPage + x + 2 - m;
+                            //    //} else {
+                            //    //    console.log('b');
+                            //    //    if (m == 0)
+                            //    //        num = oPaging.iPage + x - 1 + m;
+                            //    //    else
+                            //    //        num = oPaging.iPage + x + m;
+                            //    //}
+
+                            //    console.log(num);
+                            //    $("li.page", list).eq(x).find("a").html(num);
+                            //}
+
+                            //if (pageCount <= numPages) {
+                            //    $("li.back", list).hide();
+                            //    $("li.forward", list).hide();
+
+                            //    //check to see if we should hide any page buttons
+                            //    for (var x = 0; x < numPages; x++) {
+                            //        if (x < pageCount)
+                            //            $("li.page", list).eq(x).show();
+                            //        else
+                            //            $("li.page", list).eq(x).hide();
+                            //    }
+                            //}
+                            //else {
+                            //    //pageCount is greater than numPages, so we should show the forward button unless we are close to the last page
+                            //    //and also make sure all the page buttons are visible
+
+                            //    if (oPaging.iPage < oPaging.iTotalPages - numPages)
+                            //        $("li.forward", list).show();
+                            //    else
+                            //        $("li.forward", list).hide();
+
+                            //    $("li.page", list).show();
+
+                            //    if (oPaging.iPage > pageCount)
+                            //        $("li.back", list).show();
+                            //    else
+                            //        $("li.back", list).hide();
+                            //}
+
+
+                        }
+                        else {
+                            $("li.back", list).hide();
+                            $("li.forward", list).hide();
+                            $("li.page", list).hide();
+                            $("li.last", list).hide();
+                        }
+
+                        $("div.now-showing", node).html("page " + (oPaging.iPage + 1) + "/" + oPaging.iTotalPages);
+                    })
+                }
+
+            }
+        }
+
+        $(".client").each(function () {
+            var $self = $(this);
+
+            var index = 0;
+
+            var selectGroup = function (index) {
+                $(".client-list tbody tr", $self).hide();
+                $(".client-list tbody tr[data-index='" + index + "']", $self).show();
+            }
+
+            $(".client-list", $self).dataTable({
+                "pagingType": "bootstrap",
+                "columns": [null, { "sortable": false, "width": "100px" }],
+                "language": { "search": "", "emptyTable": '<span style="color: #808080; font-style: italic;">No active clients were found</span>' },
+                "dom": "<'row'<'col-xs-7'l><'col-xs-5'f>><'row'<'col-md-12't>><'row'<'col-md-12'i>><'row'<'col-md-12'p>>",
+                "lengthMenu": [[2, 3, 4, 5, 10, 25, 50, 100, -1], [2, 3, 4, 5, 10, 25, 50, 100, "All"]],
+                "initComplete": function () {
+
+                    $(".dataTables_length select", $self).addClass("form-control");
+                    $(".dataTables_filter label", $self).css({ "font-weight": "normal", "width": "100%", "text-align": "right" });
+                    $(".dataTables_filter label [type='search']", $self).addClass("form-control").attr("placeholder", "Search").css({ "width": "100%" });
+                }
+            });
+
+            $self.on("change", ".org-select", function (e) {
+                var select = $(this);
+                var id = select.val();
+                var err = false;
+                $.ajax({
+                    "url": "@Url.Content("~/client/session")",
+                    "type": "POST",
+                    "data": { "OrgID": id, "Command": "SetOrgID" },
+                    "error": function (jqXHR, textStatus, errorThrown) {
+                        err = true;
+                        var response = $(jqXHR.responseText)
+                        var message = "";
+
+                        $.each(response, function (index, value) {
+                            if (value.localName == "title") {
+                                message = $(value).text();
+                                return false;
+                            }
+                        });
+
+                        $(".org-error", $self).html($("<div/>").css("margin-top", "5px").html(message));
+                    },
+                    "complete": function (jqXHR, textStatus) {
+                        if (!err)
+                            window.location.reload();
+                    }
+                });
+            }).on("change", ".paging-select", function (e) {
+                index = $(this).val();
+                selectGroup(index);
+            }).on("click", ".pager .previous", function (e) {
+                e.preventDefault();
+                index--;
+                if (index < 0)
+                    index = $(".paging-select option").length - 1;
+                $(".paging-select", $self).val(index);
+                selectGroup(index);
+            }).on("click", ".pager .next", function (e) {
+                e.preventDefault();
+                index++;
+                if (index >= $(".paging-select option").length)
+                    index = 0;
+                $(".paging-select", $self).val(index);
+                selectGroup(index);
+            });
+
+            if ($(".paging-select option", $self).length > 0)
+                selectGroup(index);
+            else
+                $(".paging", $self).hide();
+        });
+    </script>
+}

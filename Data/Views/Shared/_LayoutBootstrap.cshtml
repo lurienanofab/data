@@ -1,0 +1,126 @@
+﻿@using LNF.Web.Mvc;
+@using System.Configuration;
+
+@model BaseModel
+@{
+    bool showMenu = string.IsNullOrEmpty(Convert.ToString(Session["return-to"])) && !bool.Parse(ConfigurationManager.AppSettings["AlwaysHideMenus"]);
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>@ViewBag.Title</title>
+
+    <!-- Bootstrap -->
+    <link href="//ssel-apps.eecs.umich.edu/static/styles/bootstrap/themes/lnf/bootstrap.css" rel="stylesheet" />
+    <link href="//ssel-apps.eecs.umich.edu/static/lib/bootstrap/plugins/bootstrap-datepicker/css/bootstrap-datepicker.min.css" rel="stylesheet" />
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <link href="//ssel-apps.eecs.umich.edu/static/lib/footable/css/footable.core.bootstrap.css" rel="stylesheet">
+    <link href="//ssel-apps.eecs.umich.edu/static/lib/datatables/css/dataTables.bootstrap.min.css" rel="stylesheet">
+    <link href="@Url.Content("~/Scripts/jquery.editTable/jquery.editTable.css")" rel="stylesheet">
+
+    <style>
+        .inactive,
+        .inactive a {
+            color: #990000;
+            font-style: italic;
+        }
+    </style>
+
+    @RenderSection("styles", false)
+</head>
+<body>
+    <div class="container-fluid">
+        @if (showMenu)
+        {
+            <div class="page-header">
+                <h1>LNF Data</h1>
+            </div>
+            <div class="row">
+                <div class="col-sm-2" style="margin-bottom: 10px;">
+                    <nav class="navbar navbar-default custom">
+                        <div class="navbar-header">
+                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar-collapse-1">
+                                <span class="sr-only">Toggle navigation</span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                        </div>
+                        <div class="collapse navbar-collapse" id="bs-navbar-collapse-1">
+                            <ul class="nav nav-pills nav-stacked">
+                                @Html.NavigationLink("Home", "Index", "Home")
+                                @Html.NavigationLink("Admin", "Index", "Admin")
+                                @Html.NavigationLink("Feeds", "Index", "Feed")
+                                @Html.NavigationLink("News", "Index", "News")
+                                @Html.NavigationLink("Utility", "Index", "Utility")
+                                @Html.NavigationLink("Service", "Index", "Service")
+                            </ul>
+                        </div><!-- /.navbar-collapse -->
+                    </nav>
+                </div>
+                <div class="col-sm-10">
+                    @RenderBody()
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="row" style="margin-top: 20px;">
+                <div class="col-sm-12">
+                    @RenderBody()
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="//ssel-apps.eecs.umich.edu/static/lib/jquery/jquery.min.js"></script>
+
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="//ssel-apps.eecs.umich.edu/static/lib/bootstrap/js/bootstrap.min.js"></script>
+    <script src="//ssel-apps.eecs.umich.edu/static/lib/bootstrap/plugins/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
+
+    <script src="//ssel-apps.eecs.umich.edu/static/lib/footable/js/footable.min.js"></script>
+    <script src="//ssel-apps.eecs.umich.edu/static/lib/footable/js/footable.sorting.min.js"></script>
+    <script src="//ssel-apps.eecs.umich.edu/static/lib/footable/js/footable.filtering.min.js"></script>
+    <script src="//ssel-apps.eecs.umich.edu/static/lib/datatables/js/jquery.dataTables.min.js"></script>
+    <script src="//ssel-apps.eecs.umich.edu/static/lib/datatables/js/dataTables.bootstrap.min.js"></script>
+    <script src="//ssel-apps.eecs.umich.edu/static/lib/moment/moment.min.js"></script>
+    <script src="//ssel-apps.eecs.umich.edu/static/scripts/api/control.js"></script>
+    <script src="@Url.Content("~/Scripts/jquery.editTable/jquery.editTable.js")"></script>
+
+    <script>
+        $(".admin").each(function () {
+            var $admin = $(this);
+
+            $(".table.default", $admin).dataTable({
+                "stateSave": true
+            });
+
+            $admin.on("change", ".inactive-checkbox", function (e) {
+                if ($(this).prop("checked"))
+                    window.location = "?inactive=true"
+                else
+                    window.location = window.location.href.split('?')[0];
+            }).on("change", ".org-select", function (e) {
+                $("form.org-form", $admin).submit();
+            });
+
+        });
+    </script>
+
+    @RenderSection("scripts", false)
+</body>
+</html>
