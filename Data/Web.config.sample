@@ -41,15 +41,15 @@
   <appSettings>
     <add key="NtpServer" value="ntp.itd.umich.edu"/>
     <add key="ClockOption" value="digital-12"/>
-    <add key="as:AudienceId" value="xxxxx" />
-    <add key="as:AudienceSecret" value="xxxxx" />
+    <add key="as:AudienceId" value="xxxxx"/>
+    <add key="as:AudienceSecret" value="xxxxx"/>
     <add key="ApiHost" value="http://lnf-dev.eecs.umich.edu/webapi/"/>
     <add key="ControlClient" value="LNF.Web.Api.ControlClient, LNF.Web.Api"/>
     <add key="SchedulerServiceHost" value="net.tcp://127.0.0.1:3334"/>
     <add key="MonthlyFinancialEmailRecipients" value="sandrine@umich.edu"/>
     <add key="UseParentRooms" value="true"/>
     <add key="AlwaysHideMenus" value="false"/>
-    <add key="MongoConnectionString" value="mongodb://xxxxx:xxxxx@localhost" />
+    <add key="MongoConnectionString" value="mongodb://xxxxx:xxxxx@localhost"/>
     <add key="webpages:Version" value="3.0.0.0"/>
     <add key="webpages:Enabled" value="false"/>
     <add key="ClientValidationEnabled" value="true"/>
@@ -68,7 +68,7 @@
       <deny users="?"/>
     </authorization>
 
-    <machineKey validationKey="xxxxx" decryptionKey="xxxxx" validation="SHA1" decryption="3DES" compatibilityMode="Framework20SP2"/>
+    <machineKey compatibilityMode="Framework20SP2" validationKey="xxxxx" decryptionKey="xxxxx" validation="SHA1" decryption="3DES"/>
 
     <customErrors mode="Off"/>
   </system.web>
@@ -133,6 +133,7 @@
     <modules runAllManagedModulesForAllRequests="true">
       <add name="LnfScriptingModule" type="LNF.Scripting.ScriptingModule" preCondition="managedHandler"/>
     </modules>
+
     <handlers>
       <remove name="ExtensionlessUrlHandler-Integrated-4.0"/>
       <remove name="OPTIONSVerbHandler"/>
@@ -140,49 +141,49 @@
       <add name="ExtensionlessUrlHandler-Integrated-4.0" path="*." verb="*" type="System.Web.Handlers.TransferRequestHandler" preCondition="integratedMode,runtimeVersionv4.0"/>
     </handlers>
   </system.webServer>
-  
-	<runtime>
-		<assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
-			<dependentAssembly>
-				<assemblyIdentity name="System.Runtime.InteropServices.RuntimeInformation" publicKeyToken="B03F5F7F11D50A3A" culture="neutral"/>
-				<bindingRedirect oldVersion="0.0.0.0-4.0.1.0" newVersion="4.0.1.0"/>
-			</dependentAssembly>
-			<dependentAssembly>
-				<assemblyIdentity name="Microsoft.Owin.Security.OAuth" publicKeyToken="31BF3856AD364E35" culture="neutral"/>
-				<bindingRedirect oldVersion="0.0.0.0-3.0.1.0" newVersion="3.0.1.0"/>
-			</dependentAssembly>
-			<dependentAssembly>
-				<assemblyIdentity name="NHibernate" publicKeyToken="AA95F207798DFDB4" culture="neutral"/>
-				<bindingRedirect oldVersion="0.0.0.0-4.1.0.4000" newVersion="4.1.0.4000"/>
-			</dependentAssembly>
-			<dependentAssembly>
-				<assemblyIdentity name="Microsoft.Owin.Security.Cookies" publicKeyToken="31BF3856AD364E35" culture="neutral"/>
-				<bindingRedirect oldVersion="0.0.0.0-3.0.1.0" newVersion="3.0.1.0"/>
-			</dependentAssembly>
-			<dependentAssembly>
-				<assemblyIdentity name="Microsoft.Owin.Security" publicKeyToken="31BF3856AD364E35" culture="neutral"/>
-				<bindingRedirect oldVersion="0.0.0.0-3.0.1.0" newVersion="3.0.1.0"/>
-			</dependentAssembly>
-			<dependentAssembly>
-				<assemblyIdentity name="System.Net.Http.Formatting" publicKeyToken="31BF3856AD364E35" culture="neutral"/>
-				<bindingRedirect oldVersion="0.0.0.0-5.2.3.0" newVersion="5.2.3.0"/>
-			</dependentAssembly>
-			<dependentAssembly>
-				<assemblyIdentity name="Newtonsoft.Json" publicKeyToken="30AD4FE6B2A6AEED" culture="neutral"/>
-				<bindingRedirect oldVersion="0.0.0.0-9.0.0.0" newVersion="9.0.0.0"/>
-			</dependentAssembly>
-			<dependentAssembly>
-				<assemblyIdentity name="System.Web.Http" publicKeyToken="31BF3856AD364E35" culture="neutral"/>
-				<bindingRedirect oldVersion="0.0.0.0-5.2.3.0" newVersion="5.2.3.0"/>
-			</dependentAssembly>
-			<dependentAssembly>
-				<assemblyIdentity name="Microsoft.Owin" publicKeyToken="31BF3856AD364E35" culture="neutral"/>
-				<bindingRedirect oldVersion="0.0.0.0-3.0.1.0" newVersion="3.0.1.0"/>
-			</dependentAssembly>
-			<dependentAssembly>
-				<assemblyIdentity name="System.Web.Mvc" publicKeyToken="31BF3856AD364E35" culture="neutral"/>
-				<bindingRedirect oldVersion="0.0.0.0-5.2.3.0" newVersion="5.2.3.0"/>
-			</dependentAssembly>
-		</assemblyBinding>
-	</runtime>
+
+  <runtime>
+    <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+      <dependentAssembly>
+        <assemblyIdentity name="System.Runtime.InteropServices.RuntimeInformation" publicKeyToken="B03F5F7F11D50A3A" culture="neutral"/>
+        <bindingRedirect oldVersion="0.0.0.0-4.0.1.0" newVersion="4.0.1.0"/>
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="Microsoft.Owin.Security.OAuth" publicKeyToken="31BF3856AD364E35" culture="neutral"/>
+        <bindingRedirect oldVersion="0.0.0.0-3.0.1.0" newVersion="3.0.1.0"/>
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="NHibernate" publicKeyToken="AA95F207798DFDB4" culture="neutral"/>
+        <bindingRedirect oldVersion="0.0.0.0-4.1.0.4000" newVersion="4.1.0.4000"/>
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="Microsoft.Owin.Security.Cookies" publicKeyToken="31BF3856AD364E35" culture="neutral"/>
+        <bindingRedirect oldVersion="0.0.0.0-3.0.1.0" newVersion="3.0.1.0"/>
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="Microsoft.Owin.Security" publicKeyToken="31BF3856AD364E35" culture="neutral"/>
+        <bindingRedirect oldVersion="0.0.0.0-3.0.1.0" newVersion="3.0.1.0"/>
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="System.Net.Http.Formatting" publicKeyToken="31BF3856AD364E35" culture="neutral"/>
+        <bindingRedirect oldVersion="0.0.0.0-5.2.3.0" newVersion="5.2.3.0"/>
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="Newtonsoft.Json" publicKeyToken="30AD4FE6B2A6AEED" culture="neutral"/>
+        <bindingRedirect oldVersion="0.0.0.0-9.0.0.0" newVersion="9.0.0.0"/>
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="System.Web.Http" publicKeyToken="31BF3856AD364E35" culture="neutral"/>
+        <bindingRedirect oldVersion="0.0.0.0-5.2.3.0" newVersion="5.2.3.0"/>
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="Microsoft.Owin" publicKeyToken="31BF3856AD364E35" culture="neutral"/>
+        <bindingRedirect oldVersion="0.0.0.0-3.0.1.0" newVersion="3.0.1.0"/>
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="System.Web.Mvc" publicKeyToken="31BF3856AD364E35" culture="neutral"/>
+        <bindingRedirect oldVersion="0.0.0.0-5.2.3.0" newVersion="5.2.3.0"/>
+      </dependentAssembly>
+    </assemblyBinding>
+  </runtime>
 </configuration>
