@@ -76,14 +76,15 @@ namespace Data.Controllers
             }
         }
 
-        private InLabClient GetInLabClient(Badge b)
+        private Models.Api.InLabClient GetInLabClient(Badge b)
         {
-            InLabClient result = new InLabClient()
+            var result = new Models.Api.InLabClient()
             {
                 LastName = b.LastName,
                 FirstName = b.FirstName,
                 AccessEventTime = b.CurrentAccessTime.Value
             };
+
             return result;
         }
     }
