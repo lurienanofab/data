@@ -57,7 +57,6 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Net" />
-    <Reference Include="System.Net.Http" />
     <Reference Include="System.Net.Http.Extensions">
       <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\net45\System.Net.Http.Extensions.dll</HintPath>
     </Reference>
@@ -120,10 +119,6 @@
     <ProjectReference Include="..\..\lnf\LNF.Models\LNF.Models.csproj">
       <Project>{98c7f73d-ef9d-4a87-8b79-a1208085cfbd}</Project>
       <Name>LNF.Models</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\LNF\LNF.Scripting\LNF.Scripting.csproj">
-      <Project>{9a06d3ab-b920-44ca-b880-ed6e955e9f71}</Project>
-      <Name>LNF.Scripting</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\LNF\LNF.Web\LNF.Web.csproj">
       <Project>{f79683ff-e524-4107-a6e1-29579ee544e1}</Project>
