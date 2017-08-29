@@ -1,31 +1,44 @@
+/// <reference path="//ssel-apps.eecs.umich.edu/static/lib/jquery/jquery.js" />
+/// <reference path="//ssel-apps.eecs.umich.edu/static/lib/moment/moment.js" />
+
 (function ($) {
     $.fn.servertime = function (options) {
         return this.each(function () {
             var $this = $(this);
 
             var opt = $.extend({}, { "url": null, "interval": 1000 * 60 * 10, "format": "h:mm:ss A", "ontick": null }, $this.data(), options);
+            
+            var getServerTime = function () {
+                /// <summary>Gets the current server time.</summary>
+                /// <returns value="jQuery.Deferred().promise()"></returns>
 
-            var getTime = function () {
                 return $.ajax({
                     "url": opt.url,
                     "dataType": "jsonp"
                 });
             };
-
+            
             var diff = null;
             var clockInterval = 250;
             var clockTimer = null;
             var refreshTimer = null;
 
             var getAdjustedTime = function () {
+                /// <summary>Adjusts local time</summary>
+                /// <returns value="moment()"></returns>
+
                 return moment().add(diff, 'ms');
             }
+            
+            var displayTime = function () {
+                /// <summary>Displays the server time in this html element.</summary>
+                /// <returns value="jQuery.Deferred().promise()"></returns>
 
-            var displayTime = function (callback) {
+                var def = $.Deferred();
                 var adjusted = getAdjustedTime();
                 $this.html(adjusted.format(opt.format));
-                if (typeof callback == "function")
-                    callback(adjusted);
+                def.resolve(adjusted);
+                return def.promise();
             };
 
             var stop = function () {
@@ -41,7 +54,7 @@
                 if (clockTimer != null)
                     clearInterval(clockTimer);
 
-                getTime().done(function (data) {
+                getServerTime().done(function (data) {
                     //use the time from the server
                     diff = moment(data.ServerTime).diff(moment(), 'ms');
                 }).fail(function () {
@@ -50,20 +63,21 @@
                     console.log("using local system time");
                 }).always(function () {
                     //show the time
-                    displayTime(opt.ontick);
+                    displayTime().done(opt.ontick);
 
                     //start incrementing by one second
                     clockTimer = setInterval(function () {
-                        displayTime(opt.ontick);
+                        displayTime().done(opt.ontick);
                     }, clockInterval);
                 });
             };
 
-            var updateLocalTime = function (callback) {
+            var updateLocalTime = function () {
+                var def = $.Deferred();
                 var m = moment();
                 $this.html(m.format(opt.format));
-                if (typeof callback == "function")
-                    callback(m);
+                def.resolve();
+                return def.promise();
             }
 
             var start = function () {
@@ -71,7 +85,7 @@
                     console.log("local time mode");
                     updateLocalTime();
                     clockTimer = setInterval(function () {
-                        updateLocalTime(opt.ontick);
+                        updateLocalTime().done(opt.ontick);
                     }, clockInterval);
                 } else {
                     //clear the refreshTimer only
