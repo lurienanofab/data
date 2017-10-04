@@ -1,5 +1,6 @@
 ﻿@using LNF.Web.Mvc;
 @using Data.Models;
+
 @model UtilityModel
 @{
     ViewBag.Title = "Data Utility";
@@ -14,7 +15,7 @@
     <div class="panel-heading">
         <h3 class="panel-title">Utility</h3>
     </div>
-    <div class="panel-body data-utility">
+    <div class="panel-body data-utility" data-api-url="@Url.Content("~/utility/api/")">
         @Html.CreateSubMenu(Model.GetSubMenu())
         <input type="hidden" class="ajax-url" value="/services/billing/" />
 
@@ -217,13 +218,26 @@
                     </li>
                 </ul>
             </div>
+            <div class="criteria-label">Email</div>
+            <div class="criteria-value">
+                <ul>
+                    <li>
+                        <a href="#" class="email-link" data-email-type="financial-manager">Send Financial Manager Emails</a>
+                        <div class="info" style="display: none; margin-top: 5px;"></div>
+                    </li>
+                    <li>
+                        <a href="#" class="email-link" data-email-type="card-expiration">Send Card Expiration Emails</a>
+                        <div class="info" style="display: none; margin-top: 5px;"></div>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 </div>
 
 @section scripts{
     <script src="@Url.Content("~/Scripts/jquery.billing.js?v=20160302")"></script>
-    <script src="@Url.Content("~/Scripts/jquery.utility/jquery.utility.js?v=20160302")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.utility/jquery.utility.js?v=20171002")"></script>
     <script>
         $(".data-utility").utility();
     </script>

@@ -1,6 +1,3 @@
-/// <reference path="//ssel-apps.eecs.umich.edu/static/lib/jquery/jquery.js" />
-/// <reference path="//ssel-apps.eecs.umich.edu/static/lib/moment/moment.js" />
-
 (function ($) {
     $.fn.servertime = function (options) {
         return this.each(function () {
@@ -28,7 +25,7 @@
                 /// <returns value="moment()"></returns>
 
                 return moment().add(diff, 'ms');
-            }
+            };
             
             var displayTime = function () {
                 /// <summary>Displays the server time in this html element.</summary>
@@ -43,15 +40,15 @@
 
             var stop = function () {
                 //clear both timers
-                if (clockTimer != null)
+                if (clockTimer !== null)
                     clearInterval(clockTimer);
-                if (refreshTimer != null)
+                if (refreshTimer !== null)
                     clearInterval(refreshTimer);
             };
 
             var refresh = function () {
                 //clear the clockTimer only
-                if (clockTimer != null)
+                if (clockTimer !== null)
                     clearInterval(clockTimer);
 
                 getServerTime().done(function (data) {
@@ -78,10 +75,10 @@
                 $this.html(m.format(opt.format));
                 def.resolve();
                 return def.promise();
-            }
+            };
 
             var start = function () {
-                if (opt.url == null) {
+                if (opt.url === null) {
                     console.log("local time mode");
                     updateLocalTime();
                     clockTimer = setInterval(function () {
@@ -89,7 +86,7 @@
                     }, clockInterval);
                 } else {
                     //clear the refreshTimer only
-                    if (refreshTimer != null)
+                    if (refreshTimer !== null)
                         clearInterval(refreshTimer);
 
                     //get the server time and display

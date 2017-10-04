@@ -1,24 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Web;
-using System.Web.Http;
+﻿using Data.Models.Api;
 using LNF;
-using LNF.Data;
-using LNF.WebApi;
-using LNF.Repository;
-using LNF.Repository.Billing;
 using LNF.CommonTools;
 using LNF.Logging;
-using Data.Models.Api;
+using LNF.Repository;
+using LNF.Repository.Billing;
+using LNF.WebApi;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Http;
 
 namespace Data.Controllers
 {
     public class ApiBillingController : ApiController
     {
-        [ApiAuthorize]
+        [MultipleAuthentication(typeof(BasicAuthenticationAttribute), typeof(FormsAuthenticationAttribute))]
         public IList<ToolBilling> GetToolBilling(DateTime period, int clientId = 0, int limit = 0)
         {
             IList<ToolBilling> query = DA.Current.Query<ToolBilling>().Where(x => x.Period == period).ToList();
@@ -29,7 +26,7 @@ namespace Data.Controllers
                 return result.Take(limit).ToList();
         }
 
-        [ApiAuthorize]
+        [MultipleAuthentication(typeof(BasicAuthenticationAttribute), typeof(FormsAuthenticationAttribute))]
         public BillingResult Post([FromBody] BillingModel model, bool delete = true)
         {
             HttpContext.Current.Server.ScriptTimeout = 1800;

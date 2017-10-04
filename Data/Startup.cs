@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Mvc;
-using System.Web.Http;
-using System.Web.Routing;
-using Microsoft.AspNet.Identity;
+﻿using LNF.Impl;
 using Microsoft.Owin;
-using Microsoft.Owin.Security.Cookies;
 using Owin;
-using LNF.Impl;
+using System.Web.Http;
+using System.Web.Mvc;
+using System.Web.Routing;
 
-[assembly:OwinStartup(typeof(Data.Startup))]
+[assembly: OwinStartup(typeof(Data.Startup))]
 
 namespace Data
 {

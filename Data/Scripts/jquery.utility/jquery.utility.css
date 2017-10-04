@@ -19,6 +19,8 @@
     border: solid 1px #CCCCCC;
     padding: 5px;
     margin-bottom: 5px;
+    overflow: auto;
+    font-family: 'Courier New';
 }
 
     .api-message.success {

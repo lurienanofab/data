@@ -3,14 +3,12 @@ using LNF.Repository;
 using LNF.Repository.Data;
 using LNF.Web.Mvc;
 using LNF.Web.Mvc.UI;
-using OnlineServices.Api;
+using OnlineServices.Api.Scheduler;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
-using System.Web.Security;
 
 namespace Data.Models
 {
@@ -50,15 +48,7 @@ namespace Data.Models
             if (Task == "interlock-test")
                 return HandleInterlockTest();
 
-            var cookieValue = HttpContext.Current.Request.Cookies[FormsAuthentication.FormsCookieName].Value;
-            var opt = new ApiClientOptions()
-            {
-                AccessToken = cookieValue,
-                Host = new Uri(ConfigurationManager.AppSettings["ApiHost"]),
-                TokenType = "Forms"
-            };
-
-            using (var ssc = await ApiProvider.NewSchedulerServiceClient())
+            using (var ssc = new SchedulerServiceClient())
             {
                 string command = "task-" + Task;
                 GenericResult result = new GenericResult();
