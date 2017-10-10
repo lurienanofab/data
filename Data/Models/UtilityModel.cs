@@ -1,20 +1,19 @@
-﻿using System.Threading.Tasks;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Mvc;
-using System.Data;
-using LNF;
-using LNF.Data;
-using LNF.Control;
-using LNF.Repository;
-using LNF.Repository.Data;
-using LNF.Repository.Control;
-using LNF.Repository.Scheduler;
+﻿using LNF;
 using LNF.CommonTools;
+using LNF.Control;
+using LNF.Models.Data.Utility.BillingChecks;
+using LNF.Repository;
+using LNF.Repository.Control;
+using LNF.Repository.Data;
+using LNF.Repository.Scheduler;
 using LNF.Web.Mvc;
 using LNF.Web.Mvc.UI;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Web.Mvc;
 
 namespace Data.Models
 {
@@ -24,7 +23,10 @@ namespace Data.Models
         public string TableName { get; set; }
         public ActiveLog ActiveLog { get; set; }
         public DateTime EnableDate { get; set; }
-        //public override string App { get; set; }
+        public string Command { get; set; }
+        public DateTime? Period { get; set; }
+        public int ReservationID { get; set; }
+        public IEnumerable<AutoEndProblem> AutoEndProblems { get; set; }
 
         public IEnumerable<SelectListItem> GetYearSelectItems()
         {
@@ -47,7 +49,8 @@ namespace Data.Models
                 .Add(new SubMenu.MenuItem() { LinkText = "Utility", ActionName = "Index", ControllerName = "Utility" })
                 .Add(new SubMenu.MenuItem() { LinkText = "Control", ActionName = "Control", ControllerName = "Utility" })
                 .Add(new SubMenu.MenuItem() { LinkText = "Fees", ActionName = "Fees", ControllerName = "Utility" })
-                .Add(new SubMenu.MenuItem() { LinkText = "ActiveLog", ActionName = "ActiveLog", ControllerName = "Utility" }); ;
+                .Add(new SubMenu.MenuItem() { LinkText = "ActiveLog", ActionName = "ActiveLog", ControllerName = "Utility" })
+                .Add(new SubMenu.MenuItem() { LinkText = "Billing Checks", ActionName = "BillingChecks", ControllerName = "Utility" });
         }
 
         public ActionInstance[] GetInstances()
@@ -90,7 +93,7 @@ namespace Data.Models
             return p.Block;
         }
 
-        public ResourceState[] GetResources()
+        public async Task<ResourceState[]> GetResources()
         {
             DataTable dt = new DataTable();
             dt.Columns.Add("ResourceID", typeof(int));
@@ -103,7 +106,7 @@ namespace Data.Models
             foreach (var r in query)
                 dt.Rows.Add(r.ResourceID, r.ResourceName, r.BuildingName, r.LabName, r.ProcessTechName);
 
-            WagoInterlock.AllToolStatus(dt);
+            await WagoInterlock.AllToolStatus(dt);
 
             ResourceState[] result = dt.AsEnumerable().Select(x => new ResourceState()
             {
@@ -134,37 +137,41 @@ namespace Data.Models
             return DA.Current.Single<ClientAccount>(clientAccountId);
         }
 
-        public UserInfoItem[] GetUserInfoItems()
+        public UserInfoItem[] GetUserInfoItems(int currentUserClientId)
         {
             List<UserInfoItem> list = new List<UserInfoItem>();
 
-            switch (TableName.ToLower())
+            string tableName = !string.IsNullOrEmpty(TableName) ? TableName.ToLower() : "client";
+
+            int id = Record != 0 ? Record : currentUserClientId;
+
+            switch (tableName)
             {
                 case "client":
-                    var client = DA.Current.Single<Client>(Record);
+                    var client = DA.Current.Single<Client>(id);
                     list.Add(new UserInfoItem() { Label = "Client", Text = client.DisplayName });
                     break;
                 case "account":
-                    var acct = DA.Current.Single<Account>(Record);
+                    var acct = DA.Current.Single<Account>(id);
                     list.Add(new UserInfoItem() { Label = "Account", Text = GetAccountName(acct) });
                     break;
                 case "org":
-                    var org = DA.Current.Single<Org>(Record);
+                    var org = DA.Current.Single<Org>(id);
                     list.Add(new UserInfoItem() { Label = "Org", Text = org.OrgName });
                     break;
                 case "clientaccount":
-                    var ca = DA.Current.Single<ClientAccount>(Record);
+                    var ca = DA.Current.Single<ClientAccount>(id);
                     list.Add(new UserInfoItem() { Label = "Client", Text = ca.ClientOrg.Client.DisplayName });
                     list.Add(new UserInfoItem() { Label = "Account", Text = GetAccountName(ca.Account) });
                     list.Add(new UserInfoItem() { Label = "Org", Text = ca.ClientOrg.Org.OrgName });
                     break;
                 case "clientorg":
-                    var co = DA.Current.Single<ClientOrg>(Record);
+                    var co = DA.Current.Single<ClientOrg>(id);
                     list.Add(new UserInfoItem() { Label = "Client", Text = co.Client.DisplayName });
                     list.Add(new UserInfoItem() { Label = "Org", Text = co.Org.OrgName });
                     break;
                 case "clientmanager":
-                    var cm = DA.Current.Single<ClientManager>(Record);
+                    var cm = DA.Current.Single<ClientManager>(id);
                     list.Add(new UserInfoItem() { Label = "Client", Text = cm.ClientOrg.Client.DisplayName });
                     list.Add(new UserInfoItem() { Label = "Manager", Text = cm.ManagerOrg.Client.DisplayName });
                     list.Add(new UserInfoItem() { Label = "Org", Text = cm.ClientOrg.Org.OrgName });
@@ -182,15 +189,18 @@ namespace Data.Models
             return result;
         }
 
-        public ActiveLog[] GetLastActiveLogs()
+        public ActiveLog[] GetLastActiveLogs(int currentUserClientId)
         {
             List<ActiveLog> list = new List<ActiveLog>();
 
-            var current = DA.Current.Query<ActiveLog>().Where(x => x.TableName.ToLower() == TableName.ToLower() && x.Record == Record).OrderByDescending(x => x.LogID).FirstOrDefault();
+            string tableName = !string.IsNullOrEmpty(TableName) ? TableName.ToLower() : "client";
+            int id = Record != 0 ? Record : currentUserClientId;
+
+            var current = DA.Current.Query<ActiveLog>().Where(x => x.TableName.ToLower() == tableName && x.Record == id).OrderByDescending(x => x.LogID).FirstOrDefault();
 
             list.Add(current);
 
-            switch (TableName.ToLower())
+            switch (tableName)
             {
                 case "clientaccount":
                     var ca = DA.Current.Single<ClientAccount>(Record);

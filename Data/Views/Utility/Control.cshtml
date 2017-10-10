@@ -1,6 +1,7 @@
 ﻿@using LNF.Control;
 @using LNF.Web.Mvc;
 @using Data.Models;
+
 @model UtilityModel
 @{
     ViewBag.Title = "Control";
@@ -30,7 +31,7 @@
 
             try
             {
-                pointState = Model.GetPointState(pointId);
+                pointState = Model.GetPointState(pointId).Result;
             }
             catch (Exception ex)
             {

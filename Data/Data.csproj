@@ -192,6 +192,7 @@
     <Compile Include="Controllers\ApiClockController.cs" />
     <Compile Include="Controllers\FeedController.cs" />
     <Compile Include="Controllers\GoogleController.cs" />
+    <Compile Include="HtmlHelperExtensions.cs" />
     <Compile Include="Models\Admin\AjaxModel.cs" />
     <Compile Include="Models\Admin\ClientModel.cs" />
     <Compile Include="Models\Admin\OrgModel.cs" />
@@ -311,7 +312,6 @@
     <Content Include="Scripts\jquery.utility\jquery.utility.js" />
     <Content Include="Scripts\jquery.analogclock\CSS3Clock\photoshop\Clock.psd" />
     <Content Include="Scripts\main.js" />
-    <None Include="Scripts\_references.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -351,6 +351,7 @@
     <Content Include="Views\Utility\_ActiveLogPartial.cshtml" />
     <Content Include="Views\Feed\SaveInGoogleDrive.cshtml" />
     <Content Include="Views\Google\Index.cshtml" />
+    <Content Include="Views\Utility\BillingChecks.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

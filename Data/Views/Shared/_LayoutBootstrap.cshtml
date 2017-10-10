@@ -1,10 +1,6 @@
 ﻿@using LNF.Web.Mvc;
-@using System.Configuration;
 
 @model BaseModel
-@{
-    bool showMenu = string.IsNullOrEmpty(Convert.ToString(Session["return-to"])) && !bool.Parse(ConfigurationManager.AppSettings["AlwaysHideMenus"]);
-}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -42,7 +38,7 @@
 </head>
 <body>
     <div class="container-fluid">
-        @if (showMenu)
+        @if (Html.ShowMenu())
         {
             <div class="page-header">
                 <h1>LNF Data</h1>

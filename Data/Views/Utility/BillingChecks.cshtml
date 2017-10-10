@@ -1,0 +1,91 @@
+﻿@using Data.Models;
+@using LNF.Web.Mvc;
+
+@model UtilityModel
+@{
+    ViewBag.Title = "BillingChecks";
+    Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
+    string fixAutoEndMessage = ViewBag.FixAutoEndMessage;
+}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">@Html.ActionLink("Utility", "Index") / Billing Checks</h3>
+    </div>
+    <div class="panel-body">
+        @Html.CreateSubMenu(Model.GetSubMenu())
+
+        <div style="margin-bottom: 20px;">
+            @using (Html.BeginForm("BillingChecks", "Utility", FormMethod.Get, new { @class = "form-inline" }))
+            {
+                <div class="form-group">
+                    @Html.LabelFor(x => x.Period, "Period:")
+                    @Html.TextBoxFor(x => x.Period, "{0:yyyy-MM-dd}", new { @class = "form-control", @placeholder = "YYYY-MM-DD" })
+                </div>
+                <button type="submit" class="btn btn-primary">OK</button>
+            }
+        </div>
+
+        @if (Model.Period.HasValue)
+        {
+            <div style="margin-top: 30px;">
+                <h4>Auto End Problems</h4>
+
+                <hr />
+
+                @if (!string.IsNullOrEmpty(fixAutoEndMessage))
+                {
+                    <div class="alert alert-success" role="alert" style="margin-bottom: 20px;">
+                        @fixAutoEndMessage
+                    </div>
+                }
+
+                @if (Model.AutoEndProblems != null && Model.AutoEndProblems.Count() > 0)
+                {
+                    @Html.ActionLink("Fix All", "BillingChecks", new { Period = Model.Period.Value.ToString("yyyy-MM-dd"), Command = "fix-all-auto-end-problems" }, new { @class = "btn btn-default" })
+
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ReservationID</th>
+                                <th>Type</th>
+                                <th>Auto-End<br />Reservation?</th>
+                                <th>Resource<br />Auto-End Time</th>
+                                <th>Duration</th>
+                                <th>Scheduled End</th>
+                                <th>Actual End</th>
+                                <th>Diff</th>
+                                <th>Corrected<br />Actual End</th>
+                                <th>Forgiven</th>
+                                <th>&nbsp;</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var i in Model.AutoEndProblems)
+                            {
+                                <tr>
+                                    <td>@i.ReservationID</td>
+                                    <td>@i.AutoEndType</td>
+                                    <td>@i.AutoEndReservation</td>
+                                    <td>@i.AutoEndResource</td>
+                                    <td>@i.Duration</td>
+                                    <td>@string.Format("{0:M/d/yyyy h:mm tt}", i.EndDateTime)</td>
+                                    <td>@string.Format("{0:M/d/yyyy h:mm tt}", i.ActualEndDateTime)</td>
+                                    <td>@i.Diff</td>
+                                    <td>@string.Format("{0:M/d/yyyy h:mm tt}", i.ActualEndDateTimeCorrected)</td>
+                                    <td>@string.Format("{0:0.00%}", 1 - i.ChargeMultiplier)</td>
+                                    <td>@Html.ActionLink("fix", "BillingChecks", new { Period = string.Format("{0:yyyy-MM-dd}", Model.Period), ReservationID = i.ReservationID, Command = "fix-auto-end-problem" }, null)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <em class="text-muted">No auto-end problems were found.</em>
+                }
+            </div>
+
+        }
+    </div>
+</div>

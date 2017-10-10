@@ -1,10 +1,14 @@
-﻿@using LNF.Web.Mvc;
-@using Data.Models;
+﻿@using Data.Models;
+@using LNF.Cache;
+@using LNF.Web.Mvc;
+
 @model UtilityModel
 @{
     ViewBag.Title = "ActiveLog";
     Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
     string cancelUrl = (Request.UrlReferrer == null) ? string.Empty : Request.UrlReferrer.ToString();
+    int currentUserClientId = CacheManager.Current.CurrentUser.ClientID;
+    bool showMenu = Html.ShowMenu();
 }
 
 @section styles{
@@ -34,10 +38,20 @@
 
 <div class="panel panel-default">
     <div class="panel-heading">
-        <h3 class="panel-title">@*@Html.ActionLink("Utility", "Index") /*@ActiveLog</h3>
+        @if (showMenu)
+        {
+            <h3 class="panel-title">@Html.ActionLink("Utility", "Index") / Active Log</h3>
+        }
+        else
+        {
+            <h3 class="panel-title">Active Log</h3>
+        }
     </div>
     <div class="panel-body activelog">
-        @*@Html.CreateSubMenu(Model.GetSubMenu())*@
+        @if (showMenu)
+        {
+            @Html.CreateSubMenu(Model.GetSubMenu())
+        }
         <div class="form-horizontal">
             <div class="form-group">
                 @Html.LabelFor(x => x.TableName, "Table", new { @class = "col-sm-1 control-label" })
@@ -69,7 +83,7 @@
             <div class="col-sm-8">
                 <strong style="font-size: larger;">Information</strong>
                 <ul>
-                    @foreach (var item in Model.GetUserInfoItems())
+                    @foreach (var item in Model.GetUserInfoItems(currentUserClientId))
                     {
                         <li>
                             <strong>@item.Label:</strong>
@@ -109,7 +123,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var item in Model.GetLastActiveLogs())
+                        @foreach (var item in Model.GetLastActiveLogs(currentUserClientId))
                         {
                             <tr data-logid="@item.LogID">
                                 <td>@item.TableName</td>
@@ -138,9 +152,13 @@
         </div>
     </div>
 </div>
-<div style="margin-bottom: 20px;">
-    <a href="@Url.Action("Return", "Home")" class="btn btn-primary btn-lg">&larr; Back to Main Page</a>
-</div>
+
+@if (!showMenu)
+{
+    <div style="margin-bottom: 20px;">
+        <a href="@Url.Action("Return", "Home")" class="btn btn-primary btn-lg">&larr; Back to Main Page</a>
+    </div>
+}
 
 @section scripts{
     <script>
