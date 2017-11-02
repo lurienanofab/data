@@ -313,7 +313,9 @@ namespace Data.Models
 
             if (ClientOrgID > 0)
             {
-                ClientUtility.UpdatePhysicalAccess(c);
+                string alert;
+                var check = AccessCheck.Create(c);
+                ClientUtility.UpdatePhysicalAccess(check, out alert);
             }
 
             return true;
@@ -572,9 +574,9 @@ namespace Data.Models
 
         public void UpdateClientAccess(ClientAccount ca)
         {
-            var c = ca.ClientOrg.Client;
-            var checks = ClientUtility.UpdatePhysicalAccess(c);
-            DA.Current.SaveOrUpdate(c);
+            string alert;
+            var check = AccessCheck.Create(ca.ClientOrg.Client);
+            var checks = ClientUtility.UpdatePhysicalAccess(check, out alert);
         }
 
         public object HandleAjaxCommand()

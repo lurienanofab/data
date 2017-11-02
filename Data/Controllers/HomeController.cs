@@ -42,7 +42,7 @@ namespace Data.Controllers
                 case "assign-accounts":
                     action = "AssignAccounts";
                     controller = "Admin";
-                    routeValues = new {OrgID = int.Parse(Request.QueryString["OrgID"])};
+                    routeValues = new { OrgID = int.Parse(Request.QueryString["OrgID"]) };
                     break;
                 default:
                     Session.Remove("return-to");
@@ -90,16 +90,10 @@ namespace Data.Controllers
         }
 
         [Route("screensaver/clock/{room}"), AllowAnonymous]
-        public ActionResult Clock(ClockModel model, string v = null, string redirect = null)
+        public ActionResult Clock(ClockModel model, string v = null)
         {
-            if (string.IsNullOrEmpty(v))
-                return RedirectToAction("Clock", new { Room = model.Room, v = 1 });
-            else
-            {
-                ViewBag.Redirect = redirect;
-                model.ApplyOption();
-                return View(model);
-            }
+            model.ApplyOption();
+            return View(model);
         }
 
         [Route("dashboard"), AllowAnonymous]

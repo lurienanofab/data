@@ -1,4 +1,6 @@
-﻿@model Data.Models.ClockModel
+﻿@using System.Configuration;
+
+@model Data.Models.ClockModel
 @{
     Layout = null;
     ViewBag.Title = "Clock";
@@ -81,6 +83,18 @@
     </style>
 
     @*<link rel="stylesheet" href="@Url.Content("~/Scripts/jquery.analogclock/jquery.analogclock.css")" />*@
+
+    <script src="//ssel-apps.eecs.umich.edu/static/scripts/screensaver.js"></script>
+    <script>
+        //var redirectUrl = "http://ssel-apps.eecs.umich.edu/login";
+        //var redirectUrl = "http://ssel-apps.eecs.umich.edu/login?ReturnUrl=%2Fsselonline%3Fview%3D%252Fsselscheduler%253Fmode%253Dkiosk%2526timeout%253D60";
+        //var redirectUrl = "http://ssel-apps.eecs.umich.edu/login?mode=screensaver";
+        var redirectUrl = '@Model.GetScreesaverRedirect()';
+
+        if ('login' === '@Model.Redirect') {
+            Screensaver(redirectUrl);
+        }
+    </script>
 </head>
 <body>
 
@@ -119,19 +133,6 @@
                 //analogClock.trigger("set", m);
             }
         });
-
-        var redirectUrl = "http://ssel-apps.eecs.umich.edu/login/";
-
-        var redirect = function () {
-            window.top.location = redirectUrl;
-        }
-
-        if ('login' == '@ViewBag.Redirect') {
-            $(window).on("mousemove keydown", function (e) {
-                $(this).off("mousemove keydown");
-                redirect();
-            });
-        }
     </script>
 </body>
 </html>

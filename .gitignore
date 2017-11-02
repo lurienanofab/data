@@ -5,7 +5,8 @@ packages/
 TestResults/
 *.suo
 *.user
-Data/Web.config
-Data/Web.Debug.config
-Data/Web.Release.config
-Data.Tests/App.config
+[wW]eb.config
+[wW]eb.*.config
+[aA]pp.config
+!Views/[wW]eb.config
+Data/test

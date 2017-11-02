@@ -55,9 +55,12 @@ namespace Data.Controllers
                     ca.Enable();
 
                     //may need to restore physical access because there is now an active acct and other requirements are met
-                    ClientUtility.UpdatePhysicalAccess(ca.ClientOrg.Client);
+                    string alert;
+                    var check = AccessCheck.Create(ca.ClientOrg.Client);
+                    ClientUtility.UpdatePhysicalAccess(check, out alert);
 
                     result = ApiUtility.CreateAccountModel(ca.Account);
+
                     break;
             }
 
@@ -77,7 +80,9 @@ namespace Data.Controllers
                         ca.Disable();
 
                         //may not have physical access any more if there are no more active accounts
-                        ClientUtility.UpdatePhysicalAccess(ca.ClientOrg.Client);
+                        string alert;
+                        var check = AccessCheck.Create(ca.ClientOrg.Client);
+                        ClientUtility.UpdatePhysicalAccess(check, out alert);
 
                         return true;
                     }

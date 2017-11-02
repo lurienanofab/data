@@ -118,10 +118,12 @@ namespace Data.Models.Admin
 
             ca.Enable();
 
-            ClientUtility.UpdatePhysicalAccess(ca.ClientOrg.Client);
+            string alert;
+            var check = AccessCheck.Create(ca.ClientOrg.Client);
+            ClientUtility.UpdatePhysicalAccess(check, out alert);
 
             //A final check...
-            if (ca.ClientOrg.ClientOrgID != (int)UserClientOrgID)
+            if (ca.ClientOrg.ClientOrgID != UserClientOrgID)
                 throw new Exception(string.Format("EnableClientAccount failed. Expected ClientOrgID: {0}, Actual ClientOrgID: {1}", (int)UserClientOrgID, ca.ClientOrg.ClientOrgID));
         }
 
@@ -134,7 +136,9 @@ namespace Data.Models.Admin
 
             ca.Disable();
 
-            ClientUtility.UpdatePhysicalAccess(ca.ClientOrg.Client);
+            string alert;
+            var check = AccessCheck.Create(ca.ClientOrg.Client);
+            ClientUtility.UpdatePhysicalAccess(check, out alert);
         }
 
         public ClientAccount GetClientAccount()

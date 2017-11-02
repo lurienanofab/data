@@ -47,7 +47,9 @@ namespace Data.Controllers
         [LNFAuthorize(ClientPrivilege.Developer)]
         public ActionResult ReadStoreDataClean(DateTime sd, DateTime ed, int clientId = 0, int itemId = 0, ReadStoreDataManager.StoreDataCleanOption option = ReadStoreDataManager.StoreDataCleanOption.AllItems)
         {
-            var dt = ReadStoreDataManager.Create(sd, ed, clientId, itemId).ReadStoreDataClean(option);
+            
+            var mgr = new ReadStoreDataManager();
+            var dt = mgr.ReadStoreDataClean(option, sd, ed, clientId, itemId);
 
             var result = dt.AsEnumerable().Select(dr => new
             {

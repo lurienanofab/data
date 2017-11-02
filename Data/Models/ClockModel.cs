@@ -13,6 +13,8 @@ namespace Data.Models
 
         public string Option { get; set; }
         public string Room { get; set; }
+        public string Redirect { get; set; }
+        public int Timeout { get; set; }
         public string Format { get; set; }
 
         public ClockModel()
@@ -21,18 +23,6 @@ namespace Data.Models
             items.Add(new ClockItem("<div class=\"analog row\" style=\"display: {0};\"><ul class=\"col-md-12 analog-clock\"><li class=\"sec\"></li><li class=\"hour\"></li><li class=\"min\"></li></ul></div>") { Type = "analog", Order = 0, Visible = false });
             items.Add(new ClockItem("<div class=\"digital row\" style=\"display: {0};\"><div class=\"col-md-12 digital-clock\"></div></div>") { Type = "digital", Order = 0, Visible = false });
         }
-
-        //public override string App
-        //{
-        //    get
-        //    {
-        //        return "clock";
-        //    }
-        //    set
-        //    {
-        //        //do nothing
-        //    }
-        //}
 
         public void ApplyOption()
         {
@@ -76,6 +66,11 @@ namespace Data.Models
         public IEnumerable<ClockItem> GetItems()
         {
             return items.OrderBy(x => x.Order);
+        }
+
+        public string GetScreesaverRedirect()
+        {
+            return string.Format(ConfigurationManager.AppSettings["ScreensaverRedirect"], Timeout, Room);
         }
     }
 

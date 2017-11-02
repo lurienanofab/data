@@ -355,6 +355,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="test\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />

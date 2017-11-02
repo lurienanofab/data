@@ -440,7 +440,7 @@ namespace Data.Models.CommandLine
                     return result;
             }
 
-            var query = DA.Current.QueryBuilder().SqlQuery(sql).List<TaskCheck>();
+            var query = DA.Current.SqlQuery(sql).List<TaskCheck>();
 
             result.Success = true;
             result.Message = null;
