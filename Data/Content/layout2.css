@@ -1,0 +1,17 @@
+﻿.container-fluid {
+    margin-top: 20px;
+}
+
+.page-title {
+    font-size: 18px;
+    color: #0000cc;
+    font-weight: bold;
+}
+
+.orgs {
+    min-width: 400px;
+}
+
+.account-edit hr {
+    margin-top: 5px;
+}

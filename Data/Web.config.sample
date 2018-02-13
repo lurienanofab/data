@@ -51,6 +51,10 @@
         <add key="MonthlyFinancialEmailRecipients" value="*****"/>
         <add key="UseParentRooms" value="true"/>
         <add key="AlwaysHideMenus" value="false"/>
+        <add key="UmichApiHost" value="*****"/>
+        <add key="UmichApiClientId" value="*****"/>
+        <add key="UmichApiClientSecret" value="*****"/>
+        <add key="UmichApiScope" value="*****"/>
         <add key="MongoConnectionString" value="*****"/>
         <add key="webpages:Version" value="3.0.0.0"/>
         <add key="webpages:Enabled" value="false"/>

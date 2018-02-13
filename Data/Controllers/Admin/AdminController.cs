@@ -87,7 +87,7 @@ namespace Data.Controllers.Admin
 
         [Route("admin/org")]
         [LNFAuthorize(ClientPrivilege.Administrator)]
-        public ActionResult Org(OrgModel model)
+        public ActionResult Org(Models.Admin.OrgModel model)
         {
             SetViewInactive(model);
             return View(model);
@@ -95,7 +95,7 @@ namespace Data.Controllers.Admin
 
         [Route("admin/org/edit/{OrgID}")]
         [LNFAuthorize(ClientPrivilege.Administrator)]
-        public ActionResult OrgEdit(OrgModel model)
+        public ActionResult OrgEdit(Models.Admin.OrgModel model)
         {
             if (model.Command == "save")
             {

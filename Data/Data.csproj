@@ -91,13 +91,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Security.Cryptography.Algorithms, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Security.Cryptography.Algorithms.4.3.0\lib\net461\System.Security.Cryptography.Algorithms.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\System.Security.Cryptography.Algorithms.4.3.1\lib\net461\System.Security.Cryptography.Algorithms.dll</HintPath>
     </Reference>
     <Reference Include="System.Security.Cryptography.Encoding, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Security.Cryptography.Encoding.4.3.0\lib\net46\System.Security.Cryptography.Encoding.dll</HintPath>
@@ -107,8 +107,8 @@
       <HintPath>..\packages\System.Security.Cryptography.Primitives.4.3.0\lib\net46\System.Security.Cryptography.Primitives.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Security.Cryptography.X509Certificates, Version=4.1.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.3.1\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
+    <Reference Include="System.Security.Cryptography.X509Certificates, Version=4.1.1.2, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.3.2\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
@@ -174,6 +174,7 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\Admin\AdminController.cs" />
+    <Compile Include="Controllers\AjaxController.cs" />
     <Compile Include="Controllers\ApiActiveLogController.cs" />
     <Compile Include="Controllers\ApiClientAccountController.cs" />
     <Compile Include="Controllers\ApiClientAddressController.cs" />
@@ -187,17 +188,26 @@
     <Compile Include="Controllers\ApiNewsController.cs" />
     <Compile Include="Controllers\ApiSchedulerController.cs" />
     <Compile Include="Controllers\ApiSubsidyController.cs" />
+    <Compile Include="Controllers\Api\OrgController.cs" />
+    <Compile Include="Controllers\Api\ShortCodeController.cs" />
     <Compile Include="Controllers\Api\UtilityController.cs" />
     <Compile Include="Controllers\ClientController.cs" />
     <Compile Include="Controllers\ApiClockController.cs" />
     <Compile Include="Controllers\FeedController.cs" />
     <Compile Include="Controllers\GoogleController.cs" />
     <Compile Include="HtmlHelperExtensions.cs" />
+    <Compile Include="Models\AccountChartFieldEdit.cs" />
+    <Compile Include="Models\AccountEdit.cs" />
+    <Compile Include="Models\AccountEditModel.cs" />
+    <Compile Include="Models\AccountEditUtility.cs" />
+    <Compile Include="Models\AccountManagerEdit.cs" />
+    <Compile Include="Models\AddressEdit.cs" />
     <Compile Include="Models\Admin\AjaxModel.cs" />
     <Compile Include="Models\Admin\ClientModel.cs" />
     <Compile Include="Models\Admin\OrgModel.cs" />
     <Compile Include="Models\Admin\AccountModel.cs" />
     <Compile Include="Models\Admin\RoomModel.cs" />
+    <Compile Include="Models\Api\UmichApiClient.cs" />
     <Compile Include="Models\FeeItem.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\NewsController.cs" />
@@ -208,7 +218,7 @@
     </Compile>
     <Compile Include="Models\AccountInfo.cs" />
     <Compile Include="Models\GoogleModel.cs" />
-    <Compile Include="Models\zAccountModel.cs" />
+    <Compile Include="Models\AccountModel.cs" />
     <Compile Include="Models\Admin\AdminBaseModel.cs" />
     <Compile Include="Models\Api\AccountModel.cs" />
     <Compile Include="Models\Api\AddressModel.cs" />
@@ -246,6 +256,8 @@
     <Content Include="Content\commandline.css" />
     <Content Include="Content\datatables-bootstrap.css" />
     <Content Include="Content\fees\fees.js" />
+    <Content Include="Content\layout2.css" />
+    <Content Include="Scripts\account.js" />
     <Content Include="Scripts\databaseReport\jquery.databaseReport.css" />
     <Content Include="Content\images\drybox.png" />
     <Content Include="Content\images\ajax-loader-bw.gif" />
@@ -352,6 +364,8 @@
     <Content Include="Views\Feed\SaveInGoogleDrive.cshtml" />
     <Content Include="Views\Google\Index.cshtml" />
     <Content Include="Views\Utility\BillingChecks.cshtml" />
+    <Content Include="Views\Shared\_Layout2.cshtml" />
+    <Content Include="Views\Account\Edit.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -1,43 +1,139 @@
-﻿@using LNF.Web.Mvc;
+﻿@using LNF.Data;
 @using Data.Models;
+
 @model AccountModel
 @{
+    Layout = "~/Views/Shared/_Layout2.cshtml";
     ViewBag.Title = "Account";
 }
-<div class="page">
-    <h2>Add/Modify Account</h2>
-    @Html.CreateSubMenu(Model.GetSubMenu())
-    <div class="section account">
-        @Html.HiddenFor(x => x.SearchText, new { @class = "search" })
-        <div class="content">
-            <div style="width: 900px;">
-                <table class="account-table">
+
+<div class="page-title">
+    Configure Accounts for @Model.CurrentOrg.OrgName
+</div>
+<hr />
+<div class="account" data-baseurl="@Url.Content("~/account/")" data-use-chartfields="@(Model.IsChartFieldOrg ? "true" : "false")">
+    <div class="form-inline" style="margin-bottom: 30px;">
+        <div class="form-group">
+            <label id="orgs1">Organization</label>
+            @Html.DropDownList("orgs1", Model.ActiveOrgs.Select(x => new SelectListItem() { Text = x.OrgName, Value = x.OrgID.ToString(), Selected = x.OrgID == Model.CurrentOrg.OrgID }), new { @class = "form-control orgs" })
+            [<a href="@Url.Content("~/account")">select primary org</a>]
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-7">
+            <table class="table data-table">
+                @if (Model.IsChartFieldOrg)
+                {
                     <thead>
                         <tr>
-                            <th>AccountID</th>
-                            <th>Organization</th>
-                            <th>Name</th>
-                            <th>ShortCode</th>
-                            <th>Active</th>
-                            <th>Active-search</th>
+                            <th style="width: 35%;">Account Name</th>
+                            <th>Account Number</th>
+                            <th>Project Grant</th>
+                            <th>Short Code</th>
+                            <th>&nbsp;</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @foreach (var a in Model.GetAllAccounts())
+                    <tbody style="visibility: hidden;">
+                        @foreach (var cf in Model.ActiveAccounts.Select(x => AccountChartFields.Create(x)))
                         {
                             <tr>
-                                <td>@a.AccountID</td>
-                                <td>@a.Org.OrgName</td>
-                                <td>@a.Name</td>
-                                <td>@a.ShortCode</td>
-                                <td style="text-align: center;">@Html.Raw(a.Active ? "&#10004;" : "")</td>
-                                <td>@Html.Raw(a.Active ? "is:active" : "isnot:active")</td>
+                                <td>@cf.AccountName</td>
+                                <td>@cf</td>
+                                <td>@cf.Project</td>
+                                <td>@cf.ShortCode</td>
+                                <td style="text-align: right;">
+                                    <a href="@Url.Action("Edit", new { orgId = Model.CurrentOrg.OrgID, accountId = cf.AccountID })"><img src="~/Content/images/im_edit.gif" /></a>
+                                    <a href="@Url.Action("Delete", new { orgId = Model.CurrentOrg.OrgID, accountId = cf.AccountID })" style="margin-left: 3px;"><img src="~/Content/images/im_delete.gif" /></a>
+                                </td>
                             </tr>
                         }
                     </tbody>
-                </table>
-                <div style="clear: both;"></div>
-            </div>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2">
+                                <button type="button" class="btn btn-default btn-xs">Add Existing</button>
+                            </td>
+                            <td colspan="3" style="text-align: right;">
+                                @Html.ActionLink("Add New", "Edit", new { orgId = Model.CurrentOrg.OrgID, accountId = 0 }, new { @class = "btn btn-default btn-xs" })
+                            </td>
+                        </tr>
+                    </tfoot>
+                }
+                else
+                {
+                    <thead>
+                        <tr>
+                            <th>Account Name</th>
+                            <th>Account Number</th>
+                            <th>&nbsp;</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var acct in Model.ActiveAccounts)
+                        {
+                            <tr>
+                                <td>@acct.Name</td>
+                                <td>@acct.Number</td>
+                                <td style="text-align: right;">
+                                    <a href="@Url.Action("Edit", new { orgId = Model.CurrentOrg.OrgID, accountId = acct.AccountID })"><img src="~/Content/images/im_edit.gif" /></a>
+                                    <a href="@Url.Action("Delete", new { orgId = Model.CurrentOrg.OrgID, accountId = acct.AccountID })" style="margin-left: 3px;"><img src="~/Content/images/im_delete.gif" /></a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="1">
+                                <button type="button" class="btn btn-default btn-sm">ADD EXISTING</button>
+                            </td>
+                            <td colspan="2" style="text-align: right;">
+                                <button type="button" class="btn btn-default btn-sm">ADD NEW</button>
+                            </td>
+                        </tr>
+                    </tfoot>
+                }
+            </table>
         </div>
     </div>
 </div>
+
+@section scripts{
+    <script>
+        $(".account").each(function () {
+            var $this = $(this);
+
+            var opt = $.extend({}, { "baseurl": "/", "useChartfields": true }, $this.data());
+
+            var dataTableOptions;
+
+            if (opt.useChartfields)
+                dataTableOptions = {
+                    "columns": [
+                        null,
+                        null,
+                        null,
+                        null,
+                        { "orderable": false }
+                    ]
+                };
+            else
+                dataTableOptions = {
+                    "columns": [
+                        null,
+                        null,
+                        { "orderable": false }
+                    ]
+                };
+
+            $(".data-table", $this).on('init.dt', function (e, settings, json) {
+                var table = $(this);
+                $("tbody", table).css({ "visibility": "visible" });
+            }).DataTable(dataTableOptions);
+
+            $this.on("change", ".orgs", function (e) {
+                var orgs = $(this);
+                window.location = opt.baseurl + orgs.val();
+            });
+        });
+    </script>
+}

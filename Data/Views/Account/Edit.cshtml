@@ -1,0 +1,377 @@
+﻿@using Data.Models;
+
+@model AccountEditModel
+@{
+    ViewBag.Title = "Account Edit";
+    Layout = "~/Views/Shared/_Layout2.cshtml";
+}
+
+@section styles{
+    <style>
+        label.control-label {
+            font-size: 12px;
+        }
+    </style>
+}
+
+@if (Model.AccountID == 0)
+{
+    <div class="page-title">Add New Account</div>
+}
+else
+{
+    <div class="page-title">Configure Account @Model.AccountName</div>
+}
+<hr />
+<div class="account-edit" data-baseurl="@Url.Content("~/")" style="display: none;">
+    <div class="row">
+        <div class="col-md-8">
+            @if (Model.IsChartFieldOrg)
+            {
+                <h4>@Model.CurrentOrg.OrgName Chart Fields</h4>
+                <div class="form-horizontal internal-org">
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Account</label>
+                        <div class="col-md-2">
+                            <input type="text" class="form-control input-sm account" value="" data-update="true" data-field="ChartFields.Account" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Fund</label>
+                        <div class="col-md-2">
+                            <input type="text" class="form-control input-sm fund" value="" data-update="true" data-field="ChartFields.Fund" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Department</label>
+                        <div class="col-md-2">
+                            <input type="text" class="form-control input-sm department" value="" data-update="true" data-field="ChartFields.Department" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Program</label>
+                        <div class="col-md-2">
+                            <input type="text" class="form-control input-sm program" value="" data-update="true" data-field="ChartFields.Program" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Class</label>
+                        <div class="col-md-2">
+                            <input type="text" class="form-control input-sm class" value="" data-update="true" data-field="ChartFields.Class" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Project Grant</label>
+                        <div class="col-md-2">
+                            <input type="text" class="form-control input-sm project" value="" data-update="true" data-field="ChartFields.Project" />
+                        </div>
+                    </div>
+                    <div class="form-group shortcode-form-group">
+                        <label class="col-md-2 control-label">Short Code</label>
+                        <div class="col-md-2">
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control shortcode" value="" data-update="true" data-field="ChartFields.ShortCode" />
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default shortcode-lookup" type="button">Lookup</button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <h4>External Organization Account Number</h4>
+                <div class="form-horizontal external-org">
+                    <div class="form-group">
+                        <label class="col-md-3 control-label">Account Number</label>
+                        <div class="col-md-4">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-addon">999999EX</span>
+                                <input type="text" class="form-control account-number" value="" data-update="true" data-field="AccountNumber" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-3 control-label">Purchase Order Number</label>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control input-sm invoice-number" value="" data-update="true" data-field="InvoiceNumber" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-3 control-label">Invoice Line 1</label>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control input-sm invoice-line1" value="" data-update="true" data-field="InvoiceLine1" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-3 control-label">Invoice Line 2</label>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control input-sm invoice-line2" value="" data-update="true" data-field="InvoiceLine2" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-3 control-label">Purchase Order End Date</label>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control input-sm po-end-date" value="" data-update="true" data-field="PoEndDate" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-3 control-label">Purchase Order Initial Funds</label>
+                        <div class="col-md-4">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-addon">$</span>
+                                <input type="text" class="form-control input-sm po-initial-funds" value="" data-update="true" data-field="PoInitialFunds" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="form-horizontal account-info">
+                <div class="form-group">
+                    <label class="col-md-2 control-label">Account Name</label>
+                    <div class="col-md-6">
+                        <input type="text" class="form-control input-sm account-name" value="" data-update="true" data-field="AccountName" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 control-label">Funding Source</label>
+                    <div class="col-md-6">
+                        @Html.DropDownList("funding_source", Model.FundingSources.Select(x => new SelectListItem() { Text = x.FundingSourceName, Value = x.FundingSourceID.ToString() }), new { @class = "form-control input-sm funding-sources", @data_update = "true", @data_field = "FundingSourceID" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 control-label">Technical Field</label>
+                    <div class="col-md-6">
+                        @Html.DropDownList("technical_field", Model.TechnicalFields.Select(x => new SelectListItem() { Text = x.TechnicalFieldName, Value = x.TechnicalFieldID.ToString() }), new { @class = "form-control input-sm technical-fields", @data_update = "true", @data_field = "TechnicalFieldID" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 control-label">Special Topic</label>
+                    <div class="col-md-6">
+                        @Html.DropDownList("special_topic", Model.SpecialTopics.Select(x => new SelectListItem() { Text = x.SpecialTopicName, Value = x.SpecialTopicID.ToString() }), new { @class = "form-control input-sm special-topics", @data_update = "true", @data_field = "SpecialTopicID" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 control-label">Account Type</label>
+                    <div class="col-md-6">
+                        <div class="account-types">
+                            <label class="radio-inline">
+                                <input type="radio" name="AccountTypes" value="1" data-update="true" data-field="AccountTypeID" /> Regular
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" name="AccountTypes" value="2" data-update="true" data-field="AccountTypeID" /> IOF
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio" name="AccountTypes" value="3" data-update="true" data-field="AccountTypeID" /> Limited
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="row">
+        <div class="col-md-8">
+            <table class="table data-table address-list">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th style="width: 160px;">Attention</th>
+                        <th style="width: 230px;">Address Line 1</th>
+                        <th style="width: 230px;">Address Line 2</th>
+                        <th style="width: 150px;">City</th>
+                        <th style="width: 45px;">State</th>
+                        <th style="width: 80px;">Zip</th>
+                        <th style="width: 50px;">Country</th>
+                        <th style="width: 50px;">&nbsp;</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="address-item" data-address-type="billing" data-address-id="-1">
+                        <td>Billing</td>
+                        <td class="attention"></td>
+                        <td class="address-line1"></td>
+                        <td class="address-line2"></td>
+                        <td class="city"></td>
+                        <td class="state"></td>
+                        <td class="zip"></td>
+                        <td class="country"></td>
+                        <td class="controls">
+                            <button type="button" class="btn btn-default btn-xs add-addr">ADD</button>
+                            <div class="edit-delete" style="display: none;">
+                                <a href="#" class="edit-addr"><img src="~/Content/images/im_edit.gif" /></a>
+                                <a href="#" class="delete-addr" style="margin-left: 2px;"><img src="~/Content/images/im_delete.gif" /></a>
+                            </div>
+                            <div class="update-cancel" style="display: none;">
+                                <a href="#" class="update-addr"><img src="~/Content/images/im_update.gif" /></a>
+                                <a href="#" class="cancel-addr" style="margin-left: 2px;"><img src="~/Content/images/im_cancel.gif" /></a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="address-item" data-address-type="shipping" data-address-id="-1">
+                        <td>Shipping</td>
+                        <td class="attention"></td>
+                        <td class="address-line1"></td>
+                        <td class="address-line2"></td>
+                        <td class="city"></td>
+                        <td class="state"></td>
+                        <td class="zip"></td>
+                        <td class="country"></td>
+                        <td class="controls">
+                            <button type="button" class="btn btn-default btn-xs add-addr">ADD</button>
+                            <div class="edit-delete" style="display: none;">
+                                <a href="#" class="edit-addr"><img src="~/Content/images/im_edit.gif" /></a>
+                                <a href="#" class="delete-addr" style="margin-left: 2px;"><img src="~/Content/images/im_delete.gif" /></a>
+                            </div>
+                            <div class="update-cancel" style="display: none;">
+                                <a href="#" class="update-addr"><img src="~/Content/images/im_update.gif" /></a>
+                                <a href="#" class="cancel-addr" style="margin-left: 2px;"><img src="~/Content/images/im_cancel.gif" /></a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="row">
+        <div class="col-md-3">
+            <table class="table data-table manager-list">
+                <thead>
+                    <tr>
+                        <th>Manager</th>
+                        <th style="width: 80px;">&nbsp;</th>
+                    </tr>
+                </thead>
+                <tbody class="manager-list-items"></tbody>
+                <tfoot>
+                    <tr>
+                        <td>
+                            @Html.DropDownList("available_manager", Model.AvailableManagers.Select(x => new SelectListItem() { Text = string.Format("{0}, {1}", x.LName, x.FName), Value = x.ClientOrgID.ToString() }), new { @class = "form-control input-sm available-managers" })
+                        </td>
+                        <td style="text-align: center;">
+                            <button type="button" class="btn btn-default btn-xs add-manager">ADD NEW</button>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="row" style="margin-bottom: 20px;">
+        <div class="col-md-8">
+            @Html.ActionLink("Store Modified Data", "Update", new { orgId = Model.CurrentOrg.OrgID }, new { @class = "btn btn-primary" })
+            @Html.ActionLink("Abandon Changes", "Cancel", new { orgId = Model.CurrentOrg.OrgID }, new { @class = "btn btn-default" })
+        </div>
+    </div>
+
+    <div class="modal fade chartfield-modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Chart Field Lookup</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Fund</label>
+                            <div class="col-sm-3">
+                                <input type="text" class="form-control input-sm fund" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Department</label>
+                            <div class="col-sm-3">
+                                <input type="text" class="form-control input-sm department" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Program</label>
+                            <div class="col-sm-3">
+                                <input type="text" class="form-control input-sm program" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Class</label>
+                            <div class="col-sm-3">
+                                <input type="text" class="form-control input-sm class" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Project Grant</label>
+                            <div class="col-sm-3">
+                                <input type="text" class="form-control input-sm project" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Short Code</label>
+                            <div class="col-sm-3">
+                                <input type="text" class="form-control input-sm shortcode" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Description</label>
+                            <div class="col-sm-9">
+                                <p class="form-control-static description"></p>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Status</label>
+                            <div class="col-sm-3">
+                                <p class="form-control-static">
+                                    <span class="label label-success status-open" style="display: none;">Open</span>
+                                    <span class="label label-danger status-terminated" style="display: none;">Terminated</span>
+                                    <span class="label label-danger status-notfound" style="display: none;">Not Found</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary save-chartfields">Use these values</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/x-handlebars-template" id="manager-list-template">
+    {{#each this}}
+    <tr class="manager-item" data-client-org-id="{{ClientOrgID}}">
+        <td>{{LName}}, {{FName}}</td>
+        <td style="text-align: center;">
+            <a href="#" class="delete-manager"><img src="@Url.Content("~/Content/images/im_delete.gif")" alt="delete" /></a>
+        </td>
+    </tr>
+    {{/each}}
+</script>
+
+@section scripts{
+    <script src="~/Scripts/account.js"></script>
+    <script>
+        var source = $("#manager-list-template").html();
+        var template = Handlebars.compile(source);
+        $(".account-edit").account({
+            "templates": {
+                "manager-list": template
+            }
+        });
+    </script>
+}
