@@ -165,15 +165,41 @@
                 var input = $(this);
                 var field = input.data("field");
                 var value = input.val();
+                var hasError = false;
+                var errmsg = "";
 
-                $.ajax({
-                    "url": opt.baseurl + "ajax/account/update",
-                    "method": "POST",
-                    "data": JSON.stringify([{ "field": field, "value": value }]),
-                    "contentType": "application/json; charset=UTF-8"
-                }).done(function (data) {
-                    console.log(data);
-                }).fail(failHandler);
+                input.closest(".form-group").removeClass("has-error");
+                input.closest(".form-group").find(".help-block").html("").hide();
+
+                if (input.prop("type") === "text") {
+                    if (input.data("required") && value.length === 0) {
+                        hasError = true;
+                        errmsg = "Required";
+                    } else {
+                        var maxlen = parseInt(input.prop("maxlength")) || 0;
+
+                        if (input.data("require-maxlen") && maxlen > 0) {
+                            if (value.length !== maxlen) {
+                                hasError = true;
+                                errmsg = "Length required: " + maxlen;
+                            }
+                        }
+                    }
+                }
+
+                if (hasError) {
+                    input.closest(".form-group").find(".help-block").html(errmsg).show();
+                    input.closest(".form-group").addClass("has-error");
+                } else {
+                    $.ajax({
+                        "url": opt.baseurl + "ajax/account/update",
+                        "method": "POST",
+                        "data": JSON.stringify([{ "field": field, "value": value }]),
+                        "contentType": "application/json; charset=UTF-8"
+                    }).done(function (data) {
+                        console.log(data);
+                    }).fail(failHandler);
+                }
             });
 
             internalOrg.on("click", ".shortcode-lookup", function (e) {
@@ -325,7 +351,7 @@
 
             }).on("click", ".delete-manager", function (e) {
                 e.preventDefault();
-                
+
                 var mgr = $(this).closest(".manager-item");
 
                 if (mgr.length > 0) {

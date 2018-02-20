@@ -142,14 +142,15 @@ namespace Data.Controllers
                 else
                 {
                     acct = new Account();
+                    acct.Org = DA.Current.Single<Org>(orgId);
                     insert = true;
                 }
 
                 if (acct != null)
                 {
                     acct.Name = acctEdit.AccountName;
-                    acct.Number = acctEdit.AccountNumber;
-                    acct.ShortCode = acctEdit.ShortCode;
+                    acct.Number = AccountEditUtility.GetAccountNumber(acctEdit);
+                    acct.ShortCode = AccountEditUtility.GetShortCode(acctEdit);
                     acct.FundingSourceID = acctEdit.FundingSourceID;
                     acct.TechnicalFieldID = acctEdit.TechnicalFieldID;
                     acct.SpecialTopicID = acctEdit.SpecialTopicID;
@@ -210,8 +211,14 @@ namespace Data.Controllers
                         }
                     }
 
+                    if (insert)
+                    {
+                        DA.Current.Insert(acct);
+                        acct.Enable();
+                    }
+
                     // handle managers
-                    var currentManagers = AccountEditUtility.GetManagerEdits(acctEdit.AccountID).ToList();
+                    var currentManagers = AccountEditUtility.GetManagerEdits(acct.AccountID).ToList();
 
                     foreach (var mgr in acctEdit.Managers)
                     {
@@ -222,21 +229,19 @@ namespace Data.Controllers
                             // check for an existing ClientAccount to make a manager and reactivate if needed
                             ClientAccount ca;
 
-                            ca = DA.Current.Query<ClientAccount>().FirstOrDefault(x => x.ClientOrg.ClientOrgID == mgr.ClientOrgID && x.Account.AccountID == acctEdit.AccountID);
+                            ca = DA.Current.Query<ClientAccount>().FirstOrDefault(x => x.ClientOrg.ClientOrgID == mgr.ClientOrgID && x.Account == acct);
 
                             if (ca != null)
                             {
                                 ca.Manager = true;
-
-                                if (!ca.Active)
-                                    ca.Enable();
+                                if (!ca.Active) ca.Enable();
                             }
                             else
                             {
                                 ca = new ClientAccount()
                                 {
                                     ClientOrg = DA.Current.Single<ClientOrg>(mgr.ClientOrgID),
-                                    Account = DA.Current.Single<Account>(acctEdit.AccountID),
+                                    Account = acct,
                                     Manager = true,
                                     IsDefault = false
                                 };
@@ -255,7 +260,6 @@ namespace Data.Controllers
                         }
                     }
 
-
                     // now check for any deleted managers
                     foreach (var mgr in currentManagers.ToArray())
                     {
@@ -263,7 +267,8 @@ namespace Data.Controllers
                         {
                             // a current manager was deleted
 
-                            ClientAccount ca = DA.Current.Query<ClientAccount>().FirstOrDefault(x => x.ClientOrg.ClientOrgID == mgr.ClientOrgID && x.Account.AccountID == acctEdit.AccountID);
+                            ClientAccount ca = DA.Current.Query<ClientAccount>()
+                                .FirstOrDefault(x => x.ClientOrg.ClientOrgID == mgr.ClientOrgID && x.Account == acct);
 
                             if (ca != null)
                             {
@@ -271,12 +276,6 @@ namespace Data.Controllers
                                 currentManagers.Remove(mgr);
                             }
                         }
-                    }
-
-                    if (insert)
-                    {
-                        DA.Current.Insert(acct);
-                        acct.Enable();
                     }
                 }
 

@@ -126,5 +126,17 @@ namespace Data.Models
                 return acctEdit.AccountNumber;
             }
         }
+
+        public static string GetShortCode(AccountEdit acctEdit)
+        {
+            if (acctEdit.ChartFields != null)
+            {
+                return acctEdit.ChartFields.ShortCode;
+            }
+            else
+            {
+                return acctEdit.ShortCode;
+            }
+        }
     }
 }
