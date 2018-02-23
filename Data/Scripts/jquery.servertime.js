@@ -3,7 +3,7 @@
         return this.each(function () {
             var $this = $(this);
 
-            var opt = $.extend({}, { "url": null, "interval": 1000 * 60 * 10, "format": "h:mm:ss A", "ontick": null }, $this.data(), options);
+            var opt = $.extend({}, { "url": null, "interval": 1000 * 60 * 10, "format": "h:mm:ss A", "ontick": null, "autostart": true }, $this.data(), options);
             
             var getServerTime = function () {
                 /// <summary>Gets the current server time.</summary>
@@ -97,7 +97,7 @@
                 }
             };
 
-            start();
+			if (opt.autostart) start();
 
             $this.on("stop", function () {
                 stop();
