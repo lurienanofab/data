@@ -15,10 +15,18 @@ namespace Data.Controllers
     [LNFAuthorize(ClientPrivilege.Administrator)]
     public class AccountController : Controller
     {
+        private IActiveDataItemManager ActiveDataItemManager { get; }
+
+        public AccountController()
+        {
+            // TODO: wire-up constructor injection
+            ActiveDataItemManager = DA.Use<IActiveDataItemManager>();
+        }
+
         [Route("account/{orgId?}")]
         public ActionResult Index(int orgId = 0)
         {
-            var model = new Models.AccountModel();
+            var model = new AccountModel();
 
             var allOrgs = DA.Current.Query<Org>().OrderBy(x => x.OrgName).ToList();
             var activeOrgs = allOrgs.Where(x => x.Active).OrderBy(x => x.OrgName).ToList();
@@ -46,9 +54,11 @@ namespace Data.Controllers
             if (currentOrg == null)
                 return RedirectToAction("Index", new { orgId });
 
-            var model = new AccountEditModel();
-            model.AccountID = accountId;
-            model.CurrentOrg = currentOrg;
+            var model = new AccountEditModel
+            {
+                AccountID = accountId,
+                CurrentOrg = currentOrg
+            };
 
             var fundingSources = DA.Current.Query<FundingSource>().OrderBy(x => x.FundingSourceName).ToList();
             model.FundingSources = fundingSources;
@@ -106,21 +116,23 @@ namespace Data.Controllers
                 var clientAccounts = DA.Current.Query<ClientAccount>().Where(x => x.Account == acct && x.Active).ToList();
                 foreach (var ca in clientAccounts)
                 {
-                    ca.Disable(); // disable access to this account
+                    // disable access to this account
+                    ActiveDataItemManager.Disable(ca);
 
                     // check that all clients still have another account
                     var co = ca.ClientOrg;
                     var c = co.Client;
-                    bool hasActiveAcct = false;
+
                     throw new Exception("need to do this");
                     // check if client has any active accounts
+                    //bool hasActiveAcct = false;
                     //hasActiveAcct = DataUtility.HasActiveAccount(clientDataRow, dsAccount.Tables["ClientOrg"], dsAccount.Tables["ClientAccount"]);
 
                     //if (!hasActiveAcct && c != null)
-                        //clientDataRow["EnableAccess"] = false;
+                    //clientDataRow["EnableAccess"] = false;
                 }
 
-                acct.Disable();
+                ActiveDataItemManager.Disable(acct);
             }
 
             return RedirectToAction("Index", new { orgId });
@@ -141,8 +153,7 @@ namespace Data.Controllers
                     acct = DA.Current.Single<Account>(acctEdit.AccountID);
                 else
                 {
-                    acct = new Account();
-                    acct.Org = DA.Current.Single<Org>(orgId);
+                    acct = new Account { Org = DA.Current.Single<Org>(orgId) };
                     insert = true;
                 }
 
@@ -214,7 +225,7 @@ namespace Data.Controllers
                     if (insert)
                     {
                         DA.Current.Insert(acct);
-                        acct.Enable();
+                        ActiveDataItemManager.Enable(acct);
                     }
 
                     // handle managers
@@ -234,7 +245,8 @@ namespace Data.Controllers
                             if (ca != null)
                             {
                                 ca.Manager = true;
-                                if (!ca.Active) ca.Enable();
+                                if (!ca.Active)
+                                    ActiveDataItemManager.Enable(ca);
                             }
                             else
                             {
@@ -248,7 +260,7 @@ namespace Data.Controllers
 
                                 DA.Current.Insert(ca);
 
-                                ca.Enable();
+                                ActiveDataItemManager.Enable(ca);
                             }
 
                             currentManagers.Add(new AccountManagerEdit()
@@ -317,9 +329,11 @@ namespace Data.Controllers
                 acctEdit.PoInitialFunds = acct.PoInitialFunds;
                 acctEdit.PoRemainingFunds = acct.PoRemainingFunds;
 
-                acctEdit.Addresses = new Dictionary<string, AddressEdit>();
-                acctEdit.Addresses.Add("billing", AccountEditUtility.GetAddressEdit(acct.BillAddressID));
-                acctEdit.Addresses.Add("shipping", AccountEditUtility.GetAddressEdit(acct.ShipAddressID));
+                acctEdit.Addresses = new Dictionary<string, AddressEdit>
+                {
+                    { "billing", AccountEditUtility.GetAddressEdit(acct.BillAddressID) },
+                    { "shipping", AccountEditUtility.GetAddressEdit(acct.ShipAddressID) }
+                };
 
                 if (AccountChartFields.IsChartFieldOrg(org))
                 {
@@ -340,9 +354,11 @@ namespace Data.Controllers
             {
                 acctEdit.OrgID = org.OrgID;
                 acctEdit.Managers = new List<AccountManagerEdit>();
-                acctEdit.Addresses = new Dictionary<string, AddressEdit>();
-                acctEdit.Addresses.Add("billing", AccountEditUtility.GetAddressEdit(org.DefBillAddressID));
-                acctEdit.Addresses.Add("shipping", AccountEditUtility.GetAddressEdit(org.DefShipAddressID));
+                acctEdit.Addresses = new Dictionary<string, AddressEdit>
+                {
+                    { "billing", AccountEditUtility.GetAddressEdit(org.DefBillAddressID) },
+                    { "shipping", AccountEditUtility.GetAddressEdit(org.DefShipAddressID) }
+                };
                 acctEdit.AccountTypeID = 1;
 
                 if (AccountChartFields.IsChartFieldOrg(org))
@@ -364,7 +380,7 @@ namespace Data.Controllers
 
             bool disableAcct; // need to do this because of default account
 
-            var managed = DA.Current.Query<ClientManager>().Where(x => x.ManagerOrg == mgr.ClientOrg && x.Active).ToList();
+            var managed = DA.Current.Query<LNF.Repository.Data.ClientManager>().Where(x => x.ManagerOrg == mgr.ClientOrg && x.Active).ToList();
 
             // get all the active ClientAccounts for this account, this is a mix of managers and non-managers
             var clientAccounts = DA.Current.Query<ClientAccount>().Where(x => x.Account == mgr.Account && x.Active).ToList();
@@ -377,7 +393,7 @@ namespace Data.Controllers
                 if (ca != null) // if the client has access to this account
                 {
                     disableAcct = true;
-                    var managers = DA.Current.Query<ClientManager>().Where(x => x.ClientOrg == mcm.ClientOrg && x.Active).ToList();
+                    var managers = DA.Current.Query<LNF.Repository.Data.ClientManager>().Where(x => x.ClientOrg == mcm.ClientOrg && x.Active).ToList();
                     foreach (var ccm in managers) // for all of the client's managers
                     {
                         if (clientAccounts.Any(x => x.Active && x.Manager && x.ClientOrg == ccm.ManagerOrg)) // another of this clients managers is managing this account
@@ -385,7 +401,7 @@ namespace Data.Controllers
                     }
 
                     if (disableAcct)
-                        ca.Disable();
+                        ActiveDataItemManager.Disable(ca);
                 }
             }
 

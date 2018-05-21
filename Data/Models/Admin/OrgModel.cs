@@ -13,6 +13,16 @@ namespace Data.Models.Admin
 {
     public class OrgModel : AdminBaseModel
     {
+        private IOrgManager OrgManager { get; }
+        private IActiveDataItemManager ActiveDataItemManager { get; }
+
+        public OrgModel()
+        {
+            // TODO: wire-up constructor injection
+            OrgManager = DA.Use<IOrgManager>();
+            ActiveDataItemManager = DA.Use<IActiveDataItemManager>();
+        }
+
         public int OrgTypeID { get; set; }
         public string OrgName { get; set; }
         public bool NNINOrg { get; set; }
@@ -166,13 +176,13 @@ namespace Data.Models.Admin
             if (originalActive != Active)
             {
                 if (Active)
-                    org.Enable();
+                    ActiveDataItemManager.Enable(org);
                 else
                 {
-                    org.Disable();
+                    ActiveDataItemManager.Disable(org);
 
                     //need to disable any clients where this was the only active org
-                    IList<ClientOrg> clientOrgs = org.ClientOrgs().Where(x => x.Active).ToList();
+                    IList<ClientOrg> clientOrgs = OrgManager.GetClientOrgs(org).Where(x => x.Active).ToList();
 
                     foreach (ClientOrg co in clientOrgs)
                     {
@@ -181,7 +191,7 @@ namespace Data.Models.Admin
                         if (!hasAnotherActiveClientOrg)
                         {
                             //no other active ClientOrgs so disable the Client record also
-                            co.Client.Disable();
+                            ActiveDataItemManager.Disable(co.Client);
                         }
                     }
                 }
@@ -241,8 +251,10 @@ namespace Data.Models.Admin
 
         private AddressModel GetAddressModel(OrgAddressType type, Address entity)
         {
-            var result = new AddressModel();
-            result.AddressType = Enum.GetName(typeof(OrgAddressType), type);
+            var result = new AddressModel
+            {
+                AddressType = Enum.GetName(typeof(OrgAddressType), type)
+            };
 
             if (entity != null)
             {

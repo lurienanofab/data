@@ -10,9 +10,9 @@ namespace Data.Controllers.Api
     public class OrgController : ApiController
     {
         [Route("api/org/active")]
-        public IEnumerable<OrgModel> GetActiveOrgs()
+        public IEnumerable<OrgItem> GetActiveOrgs()
         {
-            var orgs = DA.Current.Query<Org>().Where(x => x.Active).OrderBy(x => x.OrgName).Model<OrgModel>();
+            var orgs = DA.Current.Query<Org>().Where(x => x.Active).OrderBy(x => x.OrgName).Model<OrgItem>();
             return orgs;
         }
     }

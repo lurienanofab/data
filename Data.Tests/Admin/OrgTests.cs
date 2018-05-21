@@ -12,6 +12,7 @@ using LNF.Repository;
 using LNF.Repository.Data;
 using Data.Models.Admin;
 using Data.Controllers;
+using LNF.Data;
 
 namespace Data.Tests.Admin
 {
@@ -28,10 +29,11 @@ namespace Data.Tests.Admin
         [TestMethod]
         public void CanSaveOrg()
         {
-            var model = new OrgModel();
-
-            model.OrgName = string.Format("Test Org [{0:yyyyMMddHHmmss}]", DateTime.Now);
-            model.OrgTypeID = 2;
+            var model = new OrgModel()
+            {
+                OrgName = string.Format("Test Org [{0:yyyyMMddHHmmss}]", DateTime.Now),
+                OrgTypeID = 2
+            };
 
             var result = model.Save();
             var message = model.GetMessage();

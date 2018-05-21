@@ -120,22 +120,22 @@ namespace Data.Models
             return query.ToArray();
         }
 
-        public ClientManager[] ClientManagerSearch()
+        public LNF.Repository.Data.ClientManager[] ClientManagerSearch()
         {
-            IList<ClientManager> query = new List<ClientManager>();
+            var query = new List<LNF.Repository.Data.ClientManager>();
             if (string.IsNullOrEmpty(Search))
-                query = DA.Current.Query<ClientManager>().ToList();
+                query = DA.Current.Query<LNF.Repository.Data.ClientManager>().ToList();
             else
             {
-                if (GetSingle<ClientManager>("cm", query))
+                if (GetSingle<LNF.Repository.Data.ClientManager>("cm", query))
                     return query.ToArray();
-                else if (GetMultiple<ClientManager>("co", query, id => x => x.ClientOrg.ClientOrgID == id))
+                else if (GetMultiple<LNF.Repository.Data.ClientManager>("co", query, id => x => x.ClientOrg.ClientOrgID == id))
                     return query.ToArray();
-                else if (GetMultiple<ClientManager>("mo", query, id => x => x.ManagerOrg.ClientOrgID == id))
+                else if (GetMultiple<LNF.Repository.Data.ClientManager>("mo", query, id => x => x.ManagerOrg.ClientOrgID == id))
                     return query.ToArray();
                 else
                 {
-                    query = DA.Current.Query<ClientManager>().Where(x =>
+                    query = DA.Current.Query<LNF.Repository.Data.ClientManager>().Where(x =>
                         x.ClientManagerID.ToString() == Search
                         || x.ClientOrg.Client.UserName.ToLower().Contains(Search.ToLower())
                         || x.ClientOrg.Client.LName.ToLower().Contains(Search.ToLower())
@@ -206,8 +206,7 @@ namespace Data.Models
             prefix = prefix + ":";
             if (Search.StartsWith(prefix))
             {
-                int id;
-                if (int.TryParse(Search.Substring(prefix.Length), out id))
+                if (int.TryParse(Search.Substring(prefix.Length), out int id))
                 {
                     IList<T> items = DA.Current.Query<T>().Where(search(id)).ToList();
                     foreach (T i in items)
@@ -225,8 +224,7 @@ namespace Data.Models
             prefix = prefix + ":";
             if (Search.StartsWith(prefix))
             {
-                int id;
-                if (int.TryParse(Search.Substring(prefix.Length), out id))
+                if (int.TryParse(Search.Substring(prefix.Length), out int id))
                 {
                     T item = DA.Current.Single<T>(id);
                     if (item != null)

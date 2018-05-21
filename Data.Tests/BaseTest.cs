@@ -13,7 +13,7 @@ namespace Data.Tests
         [TestInitialize]
         public void Setup()
         {
-            _uow = Providers.DataAccess.StartUnitOfWork();
+            _uow = ServiceProvider.Current.DataAccess.StartUnitOfWork();
         }
 
         [TestCleanup]

@@ -17,20 +17,20 @@ namespace Data.Models
 
         public IEnumerable<Badge> GetBadges()
         {
-            return Providers.PhysicalAccess.GetBadge();
+            return ServiceProvider.Current.PhysicalAccess.GetBadge();
         }
 
         public IEnumerable<Card> GetCards()
         {
             if (ExpireCutoff.HasValue)
-                return Providers.PhysicalAccess.ExpiringCards(ExpireCutoff.Value);
+                return ServiceProvider.Current.PhysicalAccess.ExpiringCards(ExpireCutoff.Value);
             else
-                return Providers.PhysicalAccess.GetCards();
+                return ServiceProvider.Current.PhysicalAccess.GetCards();
         }
 
         public IEnumerable<Event> GetEvents()
         {
-            return Providers.PhysicalAccess.GetEvents(StartDate.Value, EndDate.Value.AddDays(1));
+            return ServiceProvider.Current.PhysicalAccess.GetEvents(StartDate.Value, EndDate.Value.AddDays(1));
         }
 
         public string DaysSinceLastAccess(Card c)

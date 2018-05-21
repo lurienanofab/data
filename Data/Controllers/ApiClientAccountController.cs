@@ -1,18 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Web.Http;
+﻿using Data.Models.Api;
 using LNF.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
-using Data.Models.Api;
+using System.Linq;
+using System.Web.Http;
 
 namespace Data.Controllers
 {
     public class ApiClientAccountController : ApiController
     {
+        private IClientManager ClientManager { get; set; }
+        private IActiveDataItemManager ActiveDataItemManager { get; }
+
+        public ApiClientAccountController()
+        {
+            //TODO: wire-up constructor injection
+            ClientManager = DA.Use<IClientManager>();
+            ActiveDataItemManager = DA.Use<IActiveDataItemManager>();
+        }
+
         public AccountModel[] Get([FromUri] string option, int id)
         {
             switch (option)
@@ -52,12 +58,12 @@ namespace Data.Controllers
                         };
                     }
 
-                    ca.Enable();
+                    ActiveDataItemManager.Enable(ca);
 
                     //may need to restore physical access because there is now an active acct and other requirements are met
                     string alert;
                     var check = AccessCheck.Create(ca.ClientOrg.Client);
-                    ClientUtility.UpdatePhysicalAccess(check, out alert);
+                    ClientManager.UpdatePhysicalAccess(check, out alert);
 
                     result = ApiUtility.CreateAccountModel(ca.Account);
 
@@ -77,12 +83,11 @@ namespace Data.Controllers
                     ClientAccount ca = DA.Current.Query<ClientAccount>().FirstOrDefault(x => x.ClientOrg.ClientOrgID == id && x.Account.AccountID == model.AccountID);
                     if (ca != null)
                     {
-                        ca.Disable();
+                        ActiveDataItemManager.Disable(ca);
 
                         //may not have physical access any more if there are no more active accounts
-                        string alert;
                         var check = AccessCheck.Create(ca.ClientOrg.Client);
-                        ClientUtility.UpdatePhysicalAccess(check, out alert);
+                        ClientManager.UpdatePhysicalAccess(check, out string alert);
 
                         return true;
                     }

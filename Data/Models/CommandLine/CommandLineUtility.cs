@@ -20,54 +20,53 @@ namespace Data.Models.CommandLine
         {
             host = new ScriptHost();
 
-            Func<int, int, int, bool> fn = (a, b, c) => false;
-
-            commands = new List<ScriptHost.Command>();
-
-            commands.Add(ScriptHost.Command.Create(
+            commands = new List<ScriptHost.Command>
+            {
+                ScriptHost.Command.Create(
                 name: "help",
                 syntax: "help()",
                 args: new string[] { "none" },
                 example: "help()",
                 helpSummary: "displays a list of commands",
                 helpDetail: "Displays a list of each command with a short description.",
-                method: (Func<string>)CommandLineUtility.HelpSummary));
+                method: (Func<string>)CommandLineUtility.HelpSummary),
 
-            commands.Add(ScriptHost.Command.Create(
+                ScriptHost.Command.Create(
                 name: "more",
                 syntax: "more(name)",
                 args: new string[] { "name: The command name (without parenthesis)." },
                 example: "more(\"help\")",
                 helpSummary: "displays a detailed help message",
                 helpDetail: "Displays detailed information about a command.",
-                method: (Func<string, string>)CommandLineUtility.HelpDetail));
+                method: (Func<string, string>)HelpDetail),
 
-            commands.Add(ScriptHost.Command.Create(
+                ScriptHost.Command.Create(
                 name: "now",
                 syntax: "now()",
                 args: new string[] { "none" },
                 example: "now()",
                 helpSummary: "displays the current server time",
                 helpDetail: "Displays the current time according to the server. Can be used to check the difference between server and client times.",
-                method: (Func<DateTime>)(() => DateTime.Now)));
+                method: (Func<DateTime>)(() => DateTime.Now)),
 
-            commands.Add(ScriptHost.Command.Create(
+                ScriptHost.Command.Create(
                 name: "clients",
                 syntax: "clients(search)",
                 args: new string[] { "search: An object for which to search. Numbers will search for a matching ClientID, strings will search for any ccurrence in username, first, last, or middle names." },
                 example: "clients(\"dgrimard\")",
                 helpSummary: "displays a collection of clients found by the search term",
                 helpDetail: "Searches all clients and returns a list.",
-                method: (Func<object, ClientInfoCollection>)CommandLineUtility.ClientInfo));
+                method: (Func<object, ClientInfoCollection>)CommandLineUtility.ClientInfo),
 
-            commands.Add(ScriptHost.Command.Create(
+                ScriptHost.Command.Create(
                 name: "monthly_financial_emails",
                 syntax: "monthly_financial_emails(date, args)",
                 args: new string[] { "date: The string representation of a period for which to send emails.", "args: A dictionary composed of IncludeManager (bool), Recipients (a list of emails), Message (special text to include in the email). The recipients list should be a list object, for example: [\"email1@example.com\", \"email2@example.com\"]" },
                 example: "monthly_financial_emails(\"2014-07-01\", {\"IncludeManager\": false, \"Recipients\": [\"your@email.com\"], \"Message\": \"this is a test\"})",
                 helpSummary: "sends the monthly emails to financial managers",
                 helpDetail: "Emails are sent to financial managers at the beginning of the month. The email text includes a list of all users under the manager's accounts who had charges during the month. This method allows re-sending emails in the event a problem occurs or for testing.",
-                method: (Func<string, IDictionary<object, object>, ScriptHost.Result>)CommandLineUtility.MonthlyFinancialEmails));
+                method: (Func<string, IDictionary<object, object>, ScriptHost.Result>)CommandLineUtility.MonthlyFinancialEmails)
+            };
 
             //Func<object, ScriptHost.Result> accountInfo = CommandLineUtility.AccountInfo;
             //Func<int, ScriptHost.Result> prowatchCreateUser = CommandLineUtility.ProwatchCreateUser;
@@ -182,14 +181,14 @@ namespace Data.Models.CommandLine
         {
             ScriptHost.Result result = new ScriptHost.Result();
 
-            var wd = new LNF.CommonTools.WriteData();
+            var wd = new WriteData();
 
             DateTime sd = DateTime.Now;
             DateTime ed = DateTime.Now;
             DateTime period = DateTime.Now;
             bool delete = queryParams.GetValue("Delete", true);
 
-            Action<bool, bool, bool> getDates = (startRequired, endRequired, periodRequired) =>
+            void getDates(bool startRequired, bool endRequired, bool periodRequired)
             {
                 if (startRequired && !queryParams.ContainsParameter("StartDate"))
                     throw new Exception("Missing parameter: StartDate");
@@ -203,7 +202,7 @@ namespace Data.Models.CommandLine
                 sd = queryParams.GetValue("StartDate", DateTime.Now);
                 ed = queryParams.GetValue("EndDate", DateTime.Now);
                 period = queryParams.GetValue("Period", DateTime.Now);
-            };
+            }
 
             switch (task)
             {
@@ -212,49 +211,49 @@ namespace Data.Models.CommandLine
                     WriteToolDataManager.Create(sd, ed, queryParams.GetValue("ClientID", 0), queryParams.GetValue("ResourceID", 0)).WriteToolDataClean();
                     result.Success = true;
                     result.Message = null;
-                    result.Data = Providers.Log.Current;
+                    result.Data = ServiceProvider.Current.Log.Current;
                     break;
                 case "ToolData":
                     getDates(true, true, false);
                     WriteToolDataManager.Create(sd, ed, queryParams.GetValue("ClientID", 0), queryParams.GetValue("ResourceID", 0)).WriteToolData();
                     result.Success = true;
                     result.Message = null;
-                    result.Data = Providers.Log.Current;
+                    result.Data = ServiceProvider.Current.Log.Current;
                     break;
                 case "RoomDataClean":
                     getDates(true, true, false);
                     WriteRoomDataManager.Create(sd, ed, queryParams.GetValue("ClientID", 0), queryParams.GetValue("RoomID", 0)).WriteRoomDataClean(delete);
                     result.Success = true;
                     result.Message = null;
-                    result.Data = Providers.Log.Current;
+                    result.Data = ServiceProvider.Current.Log.Current;
                     break;
                 case "RoomData":
                     getDates(true, true, false);
                     WriteRoomDataManager.Create(sd, ed, queryParams.GetValue("ClientID", 0), queryParams.GetValue("RoomID", 0)).WriteRoomData();
                     result.Success = true;
                     result.Message = null;
-                    result.Data = Providers.Log.Current;
+                    result.Data = ServiceProvider.Current.Log.Current;
                     break;
                 case "StoreDataClean":
                     getDates(true, true, false);
                     WriteStoreDataManager.Create(sd, ed, queryParams.GetValue("ClientID", 0), queryParams.GetValue("ItemID", 0)).WriteStoreDataClean();
                     result.Success = true;
                     result.Message = null;
-                    result.Data = Providers.Log.Current;
+                    result.Data = ServiceProvider.Current.Log.Current;
                     break;
                 case "StoreData":
                     getDates(true, true, false);
                     WriteStoreDataManager.Create(sd, ed, queryParams.GetValue("ClientID", 0), queryParams.GetValue("ItemID", 0)).WriteStoreData();
                     result.Success = true;
                     result.Message = null;
-                    result.Data = Providers.Log.Current;
+                    result.Data = ServiceProvider.Current.Log.Current;
                     break;
                 case "ToolBillingStep1":
                     getDates(false, false, true);
                     BillingDataProcessStep1.PopulateToolBilling(period, queryParams.GetValue("ClientID", 0), queryParams.GetValue("IsTemp", false));
                     result.Success = true;
                     result.Message = null;
-                    result.Data = Providers.Log.Current;
+                    result.Data = ServiceProvider.Current.Log.Current;
                     break;
                 default:
                     result.Success = false;
@@ -268,8 +267,7 @@ namespace Data.Models.CommandLine
         public static async Task<ScriptHost.Result> SchedulerTask(string task)
         {
             ScriptHost.Result result = new ScriptHost.Result();
-            var model = new ServiceModel();
-            model.Task = task;
+            var model = new ServiceModel { Task = task };
             GenericResult gr = await model.HandleCommand();
 
             if (gr.Success)
@@ -299,10 +297,10 @@ namespace Data.Models.CommandLine
             }
             else
             {
-                LNF.PhysicalAccess.Badge b = Providers.PhysicalAccess.GetBadge(c).FirstOrDefault();
+                LNF.PhysicalAccess.Badge b = ServiceProvider.Current.PhysicalAccess.GetBadge(c).FirstOrDefault();
                 if (b == null)
                 {
-                    Providers.PhysicalAccess.AddClient(c);
+                    ServiceProvider.Current.PhysicalAccess.AddClient(c);
                     result.Success = true;
                     result.Message = "ok";
                 }
@@ -459,13 +457,17 @@ namespace Data.Models.CommandLine
 
             string[] recip = null;
             IList<object> temp = queryParams.GetValue("Recipients", default(IList<object>));
+
             if (temp != null && temp.Count > 0)
                 recip = temp.Select(x => x.ToString()).ToArray();
 
-            LNF.Billing.MonthlyEmailOptions opt = new LNF.Billing.MonthlyEmailOptions();
-            opt.IncludeManager = queryParams.GetValue("IncludeManager", true);
-            opt.Message = queryParams.GetValue("Message", string.Empty);
-            opt.Recipients = recip;
+            LNF.Billing.MonthlyEmailOptions opt = new LNF.Billing.MonthlyEmailOptions
+            {
+                IncludeManager = queryParams.GetValue("IncludeManager", true),
+                Message = queryParams.GetValue("Message", string.Empty),
+                Recipients = recip
+            };
+
             int count = LNF.Billing.FinancialManagerUtility.SendMonthlyUserUsageEmails(d, opt);
 
             result.Success = true;

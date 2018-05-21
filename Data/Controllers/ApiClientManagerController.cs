@@ -1,18 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Web.Http;
+﻿using Data.Models.Api;
 using LNF.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
-using Data.Models.Api;
+using System.Linq;
+using System.Web.Http;
 
 namespace Data.Controllers
 {
     public class ApiClientManagerController : ApiController
     {
+        private IActiveDataItemManager ActiveDataItemManager { get; }
+
+        public ApiClientManagerController()
+        {
+            //TODO: wire-up constructor injection
+            ActiveDataItemManager = DA.Use<IActiveDataItemManager>();
+        }
+
         public ClientModel[] Get([FromUri] string option, int id)
         {
             switch (option)
@@ -43,19 +47,19 @@ namespace Data.Controllers
 
                     if (co != null && mo != null)
                     {
-                        ClientManager cm = DA.Current.Query<ClientManager>().FirstOrDefault(x => x.ClientOrg == co && x.ManagerOrg == mo);
+                        var cm = DA.Current.Query<LNF.Repository.Data.ClientManager>().FirstOrDefault(x => x.ClientOrg == co && x.ManagerOrg == mo);
 
                         if (cm == null)
                         {
                             //no existing ClientManager record so create a new one
-                            cm = new ClientManager()
+                            cm = new LNF.Repository.Data.ClientManager()
                             {
                                 ClientOrg = co,
                                 ManagerOrg = mo
                             };
                         }
 
-                        cm.Enable();
+                        ActiveDataItemManager.Enable(cm);
 
                         result = ApiUtility.CreateClientModel(cm.ManagerOrg);
                     }
@@ -74,10 +78,10 @@ namespace Data.Controllers
                 case "current":
                     ClientOrg co = DA.Current.Single<ClientOrg>(id);
                     ClientOrg mo = DA.Current.Single<ClientOrg>(model.ClientOrgID);
-                    ClientManager cm = DA.Current.Query<ClientManager>().FirstOrDefault(x => x.ClientOrg == co && x.ManagerOrg == mo && x.Active);
+                    var cm = DA.Current.Query<LNF.Repository.Data.ClientManager>().FirstOrDefault(x => x.ClientOrg == co && x.ManagerOrg == mo && x.Active);
                     if (cm != null)
                     {
-                        cm.Disable();
+                        ActiveDataItemManager.Disable(cm);
 
                         //remove account access if no other manager manages the acct
                         ClientModel m = ApiUtility.CreateClientModel(co);
@@ -102,9 +106,7 @@ namespace Data.Controllers
                                 ClientAccount ca = DA.Current.Query<ClientAccount>().FirstOrDefault(x => x.ClientOrg.ClientOrgID == m.ClientOrgID && x.Account.AccountID == acct.AccountID);
 
                                 if (!ca.Manager) //do not deactivate if this client is also the acct manager!
-                                {
-                                    ca.Disable();
-                                }
+                                    ActiveDataItemManager.Disable(ca);
                             }
                         }
 

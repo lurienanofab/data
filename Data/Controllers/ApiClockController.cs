@@ -53,7 +53,7 @@ namespace Data.Controllers
                     ArraySegment<byte> buffer = new ArraySegment<byte>(new byte[2048]);
                     var response = Get(source);
 
-                    buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(Providers.Serialization.Json.SerializeObject(response)));
+                    buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(ServiceProvider.Current.Serialization.Json.SerializeObject(response)));
                     await socket.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
                     await Task.Delay(1000);
                 }

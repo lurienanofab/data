@@ -1,6 +1,7 @@
 ﻿using Data.Models.Admin;
 using LNF.Data;
 using LNF.Models.Data;
+using LNF.Repository;
 using LNF.Web.Mvc;
 using System;
 using System.Web.Mvc;
@@ -9,6 +10,14 @@ namespace Data.Controllers.Admin
 {
     public class AdminController : BaseController
     {
+        private IOrgManager OrgManager { get; }
+
+        public AdminController()
+        {
+            // TODO: wire-up constructor injection
+            OrgManager = DA.Use<IOrgManager>();
+        }
+
         [Route("admin")]
         [LNFAuthorize(ClientPrivilege.Administrator)]
         public ActionResult Index()
@@ -58,7 +67,7 @@ namespace Data.Controllers.Admin
         public ActionResult AssignAccounts(Models.Admin.ClientModel model)
         {
             if (model.OrgID == 0)
-                model.OrgID = OrgUtility.GetPrimaryOrg().OrgID;
+                model.OrgID = OrgManager.GetPrimaryOrg().OrgID;
             return View(model);
         }
 

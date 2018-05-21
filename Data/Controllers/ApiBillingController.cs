@@ -126,7 +126,7 @@ namespace Data.Controllers
                 StartDate = start,
                 EndDate = end,
                 TimeTaken = (end - start).TotalSeconds,
-                LogText = string.Join(Environment.NewLine, Providers.Log.Current.Select(x => x.Body))
+                LogText = string.Join(Environment.NewLine, ServiceProvider.Current.Log.Current.Select(x => x.Body))
             };
         }
     }

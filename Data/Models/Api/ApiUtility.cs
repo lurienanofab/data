@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using LNF.Data;
+﻿using LNF.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Data.Models.Api
 {
@@ -16,12 +14,14 @@ namespace Data.Models.Api
 
     public static class ApiUtility
     {
+        public static IClientOrgManager ClientOrgManager => DA.Use<IClientOrgManager>();
+
         #region ##### Manager ###########################################################
 
         public static ClientModel[] GetCurrentManagers(ClientModel model)
         {
             ClientOrg co = DA.Current.Single<ClientOrg>(model.ClientOrgID);
-            ClientOrg[] current = DA.Current.Query<ClientManager>().Where(x => x.ClientOrg == co && x.Active).Select(x => x.ManagerOrg).ToArray();
+            ClientOrg[] current = DA.Current.Query<LNF.Repository.Data.ClientManager>().Where(x => x.ClientOrg == co && x.Active).Select(x => x.ManagerOrg).ToArray();
             return current.Select(x => CreateClientModel(x)).OrderBy(x => x.DisplayName).ToArray();
         }
 
@@ -34,15 +34,15 @@ namespace Data.Models.Api
         public static ClientModel[] GetAvailableManagers(ClientModel model)
         {
             ClientOrg co = DA.Current.Single<ClientOrg>(model.ClientOrgID);
-            ClientOrg[] current = DA.Current.Query<ClientManager>().Where(x => x.ClientOrg == co && x.Active).Select(x => x.ManagerOrg).ToArray();
-            IList<ClientOrg> all = ClientOrgUtility.SelectOrgManagers(co.Org.OrgID);
+            ClientOrg[] current = DA.Current.Query<LNF.Repository.Data.ClientManager>().Where(x => x.ClientOrg == co && x.Active).Select(x => x.ManagerOrg).ToArray();
+            IList<ClientOrg> all = ClientOrgManager.SelectOrgManagers(co.Org.OrgID);
             ClientModel[] result = all.Where(a => !current.Select(c => c.ClientOrgID).Contains(a.ClientOrgID)).Select(x => CreateClientModel(x)).OrderBy(x => x.DisplayName).ToArray();
             return result;
         }
 
         public static ClientModel[] GetAllManagers(ClientModel model)
         {
-            IList<ClientOrg> all = ClientOrgUtility.SelectOrgManagers(model.OrgID);
+            IList<ClientOrg> all = ClientOrgManager.SelectOrgManagers(model.OrgID);
             ClientModel[] result = all.Select(x => CreateClientModel(x)).OrderBy(x => x.DisplayName).ToArray();
             return result;
         }

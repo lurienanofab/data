@@ -33,7 +33,7 @@ namespace Data.Controllers
         public ActionResult PurgeLog(ServiceModel model)
         {
             if (model.PurgeLogDate != DateTime.MinValue)
-                Providers.Log.Current.Purge(model.PurgeLogDate);
+                ServiceProvider.Current.Log.Current.Purge(model.PurgeLogDate);
             return RedirectToAction("Scheduler");
         }
 

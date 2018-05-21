@@ -1,16 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using LNF.Data;
+﻿using LNF.Data;
 using LNF.Data.ClientAccountMatrix;
 using LNF.Repository;
 using LNF.Repository.Data;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Data.Models.Admin
 {
     public class AjaxModel
     {
+        private IClientManager ClientManager { get; }
+        private IClientOrgManager ClientOrgManager { get; }
+        private IActiveDataItemManager ActiveDataItemManager { get; }
+
+        public AjaxModel()
+        {
+            // TODO: wire-up constructor injection
+            ClientManager = DA.Use<IClientManager>();
+            ClientOrgManager = DA.Use<IClientOrgManager>();
+            ActiveDataItemManager = DA.Use<IActiveDataItemManager>();
+        }
+
         public string Command { get; set; }
         public string Action { get; set; }
         public string UserName { get; set; }
@@ -41,9 +52,9 @@ namespace Data.Models.Admin
                     if (OrgID == 0)
                         throw new Exception("Missing parameter OrgID");
 
-                    var query = ClientOrgUtility.SelectOrgManagers(OrgID);
+                    var query = ClientOrgManager.SelectOrgManagers(OrgID);
 
-                    return new { status = "ok", managers = query.Select(x => new { x.ClientOrgID, DisplayName = x.Client.DisplayName }).ToArray() };
+                    return new { status = "ok", managers = query.Select(x => new { x.ClientOrgID, x.Client.DisplayName }).ToArray() };
                 case "update-matrix":
                     if (OrgID == 0)
                         throw new Exception("Missing parameter OrgID");
@@ -55,7 +66,7 @@ namespace Data.Models.Admin
                     string matrix = m.MatrixHtml.ToString();
                     string filter = m.FilterHtml.ToString();
 
-                    return new { status = "ok", matrix = matrix, filter = filter };
+                    return new { status = "ok", matrix, filter };
                 case "update-client-account":
                     if (OrgID == 0)
                         throw new Exception("Missing parameter OrgID");
@@ -79,7 +90,7 @@ namespace Data.Models.Admin
 
         public IList<ClientOrg> GetManagers(int orgId)
         {
-            return ClientOrgUtility.SelectOrgManagers(orgId);
+            return ClientOrgManager.SelectOrgManagers(orgId);
         }
 
         public void UpdateClientAccount()
@@ -116,29 +127,29 @@ namespace Data.Models.Admin
                 DA.Current.SaveOrUpdate(ca);
             }
 
-            ca.Enable();
+            ActiveDataItemManager.Enable(ca);
 
-            string alert;
             var check = AccessCheck.Create(ca.ClientOrg.Client);
-            ClientUtility.UpdatePhysicalAccess(check, out alert);
+            ClientManager.UpdatePhysicalAccess(check, out string alert);
 
             //A final check...
             if (ca.ClientOrg.ClientOrgID != UserClientOrgID)
-                throw new Exception(string.Format("EnableClientAccount failed. Expected ClientOrgID: {0}, Actual ClientOrgID: {1}", (int)UserClientOrgID, ca.ClientOrg.ClientOrgID));
+                throw new Exception(string.Format("EnableClientAccount failed. Expected ClientOrgID: {0}, Actual ClientOrgID: {1}", UserClientOrgID, ca.ClientOrg.ClientOrgID));
         }
 
-        public void DisableClientAccount()
+        public string DisableClientAccount()
         {
             ClientAccount ca = GetClientAccount();
 
             if (ca == null)
                 throw new Exception(string.Format("Could not find ClientAccount record for ClientOrgID: {0}", UserClientOrgID));
 
-            ca.Disable();
+            ActiveDataItemManager.Disable(ca);
 
-            string alert;
             var check = AccessCheck.Create(ca.ClientOrg.Client);
-            ClientUtility.UpdatePhysicalAccess(check, out alert);
+            ClientManager.UpdatePhysicalAccess(check, out string alert);
+
+            return alert;
         }
 
         public ClientAccount GetClientAccount()

@@ -18,13 +18,20 @@ namespace Data.Controllers
 {
     public class FeedController : Controller
     {
+        private IScriptingService ScriptingService { get; }
+
+        public FeedController(IScriptingService scriptingService)
+        {
+            ScriptingService = scriptingService;
+        }
+
         // feed/reports/define/{alias}
         public ActionResult Configuration(string alias, string callback = null)
         {
             string content = string.Empty;
 
             if (string.IsNullOrEmpty(alias))
-                content = Providers.Serialization.Json.SerializeObject(new { error = true, errorMessage = "Missing parameter: alias" });
+                content = ServiceProvider.Current.Serialization.Json.SerializeObject(new { error = true, errorMessage = "Missing parameter: alias" });
             else
             {
                 string filePath = Path.Combine(Server.MapPath("~/Content/json"), string.Format("{0}.json", alias));
@@ -32,7 +39,7 @@ namespace Data.Controllers
                 if (System.IO.File.Exists(filePath))
                     content = System.IO.File.ReadAllText(filePath);
                 else
-                    content = Providers.Serialization.Json.SerializeObject(new { error = true, errorMessage = string.Format("Cannot find report configuration: {0}.json", alias) });
+                    content = ServiceProvider.Current.Serialization.Json.SerializeObject(new { error = true, errorMessage = string.Format("Cannot find report configuration: {0}.json", alias) });
             }
 
             if (!string.IsNullOrEmpty(callback))
@@ -111,7 +118,7 @@ namespace Data.Controllers
                 else
                     query = string.Format("data(sqlquery(\"{0}\"))", model.Query.Replace("\n", " ").Replace("\"", @"\""").Trim());
 
-                Result result = Providers.Scripting.Run(query, Parameters.Create());
+                Result result = ScriptingService.Run(query, Parameters.Create());
 
                 if (result.Exception != null)
                     error = result.Exception.Message;
@@ -239,7 +246,7 @@ namespace Data.Controllers
                 {
                     try
                     {
-                        Result result = Providers.Scripting.Run(feed.FeedQuery, Parameters.Create());
+                        Result result = ScriptingService.Run(feed.FeedQuery, Parameters.Create());
                         if (result.Exception != null)
                             throw result.Exception;
 
@@ -278,8 +285,7 @@ namespace Data.Controllers
 
         private bool ViewInactive()
         {
-            bool result;
-            if (bool.TryParse(Request.QueryString["inactive"], out result))
+            if (bool.TryParse(Request.QueryString["inactive"], out bool result))
                 return result;
             else
                 return false;

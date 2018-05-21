@@ -137,16 +137,18 @@ namespace Data.Models
                     if (existing != null)
                         throw new Exception("Alias '" + Alias + "' is already in use");
 
-                    feed = new DataFeed();
-                    feed.FeedGUID = System.Guid.NewGuid();
-                    feed.FeedAlias = Alias;
-                    feed.FeedName = Name;
-                    feed.FeedDescription = Description;
-                    feed.FeedLink = Link;
-                    feed.Private = Private;
-                    feed.Active = Active;
-                    feed.FeedType = FeedType;
-                    feed.FeedQuery = Query;
+                    feed = new DataFeed
+                    {
+                        FeedGUID = System.Guid.NewGuid(),
+                        FeedAlias = Alias,
+                        FeedName = Name,
+                        FeedDescription = Description,
+                        FeedLink = Link,
+                        Private = Private,
+                        Active = Active,
+                        FeedType = FeedType,
+                        FeedQuery = Query
+                    };
 
                     DA.Current.SaveOrUpdate(feed);
                 }
@@ -201,7 +203,7 @@ namespace Data.Models
             {
                 string alias = Path.GetFileNameWithoutExtension(f);
                 string json = File.ReadAllText(f);
-                var def = Providers.Serialization.Json.DeserializeAnonymous(json, new { title = "" });
+                var def = ServiceProvider.Current.Serialization.Json.DeserializeAnonymous(json, new { title = "" });
                 yield return new ReportItem() { Alias = alias, Title = def.title };
             }
         }

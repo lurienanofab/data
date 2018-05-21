@@ -37,7 +37,7 @@ namespace Data.Controllers
 
         public InLabArea[] GetInLab()
         {
-            IEnumerable<Badge> query = Providers.PhysicalAccess.CurrentlyInArea();
+            IEnumerable<Badge> query = ServiceProvider.Current.PhysicalAccess.CurrentlyInArea();
 
             IList<InLabArea> areas = query.Select(x => x.CurrentAreaName).Distinct().Select(x => new InLabArea() { AreaName = x }).OrderBy(x => x.AreaName).ToList();
             foreach (InLabArea a in areas)
@@ -67,7 +67,7 @@ namespace Data.Controllers
                     ArraySegment<byte> buffer = new ArraySegment<byte>(new byte[2048]);
                     var response = new { Timestamp = DateTime.Now, Count = count, Areas = areas };
 
-                    buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(Providers.Serialization.Json.SerializeObject(response)));
+                    buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(ServiceProvider.Current.Serialization.Json.SerializeObject(response)));
                     await socket.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
                     await Task.Delay(10000);
                 }

@@ -62,7 +62,7 @@ namespace Data.Models
         {
             var point = DA.Current.Query<Point>().First(x => x.PointID == pointId);
             var block = point.Block;
-            BlockResponse resp = (await Providers.Control.GetBlockState(block)).EnsureSuccess();
+            BlockResponse resp = (await ServiceProvider.Current.Control.GetBlockState(block)).EnsureSuccess();
             var blockState = resp.BlockState;
             var result = blockState.Points.First(x => x.PointID == point.PointID);
             return result;
@@ -78,7 +78,7 @@ namespace Data.Models
 
             var point = inst.GetPoint();
 
-            Providers.Control.SetPointState(point, state, d);
+            ServiceProvider.Current.Control.SetPointState(point, state, d);
         }
 
         public ActionInstance GetActionInstance(int pointId, ActionType actionType = ActionType.Interlock)

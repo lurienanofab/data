@@ -51,11 +51,11 @@ namespace Data.Controllers
                         object[] items = GetActiveReservations();
 
                         var response = new { Timestamp = DateTime.Now, Count = items.Length, Items = items };
-                        buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(Providers.Serialization.Json.SerializeObject(response)));
+                        buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(ServiceProvider.Current.Serialization.Json.SerializeObject(response)));
                     }
                     catch (Exception ex)
                     {
-                        buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(Providers.Serialization.Json.SerializeObject(new { Timestamp = DateTime.Now, Error = ex.Message })));
+                        buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(ServiceProvider.Current.Serialization.Json.SerializeObject(new { Timestamp = DateTime.Now, Error = ex.Message })));
                     }
 
                     await socket.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
@@ -73,16 +73,16 @@ namespace Data.Controllers
                 Resource = r.Resource.ResourceName,
                 ProcTech = r.Resource.ProcessTech.ProcessTechName,
                 ActualBeginDateTime = r.ActualBeginDateTime.Value,
-                BeginDateTime = r.BeginDateTime,
-                EndDateTime = r.EndDateTime,
+                r.BeginDateTime,
+                r.EndDateTime,
                 ScheduledDurationHours = (r.EndDateTime - r.BeginDateTime).TotalSeconds / 60.0 / 60.0,
                 DurationHours = (DateTime.Now - r.ActualBeginDateTime.Value).TotalSeconds / 60.0 / 60.0,
                 RemainingMinutes = Math.Max(0, (r.EndDateTime - DateTime.Now).TotalSeconds / 60.0),
                 OvertimeMinutes = Math.Max(0, (DateTime.Now - r.EndDateTime).TotalSeconds / 60.0),
                 Client = new
                 {
-                    ClientID = r.Client.ClientID,
-                    DisplayName = r.Client.DisplayName
+                    r.Client.ClientID,
+                    r.Client.DisplayName
                 }
             };
             return result;
