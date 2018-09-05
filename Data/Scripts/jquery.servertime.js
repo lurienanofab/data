@@ -3,8 +3,8 @@
         return this.each(function () {
             var $this = $(this);
 
-            var opt = $.extend({}, { "url": null, "interval": 1000 * 60 * 10, "format": "h:mm:ss A", "ontick": null, "autostart": true }, $this.data(), options);
-            
+            var opt = $.extend({}, { "url": null, "interval": 1000 * 60 * 10, "showDate": true, "dateFormat": "M/D/YYYY", "timeFormat": "h:mm:ss A", "ontick": null, "autostart": true }, $this.data(), options);
+
             var getServerTime = function () {
                 /// <summary>Gets the current server time.</summary>
                 /// <returns value="jQuery.Deferred().promise()"></returns>
@@ -14,7 +14,7 @@
                     "dataType": "jsonp"
                 });
             };
-            
+
             var diff = null;
             var clockInterval = 250;
             var clockTimer = null;
@@ -26,15 +26,23 @@
 
                 return moment().add(diff, 'ms');
             };
-            
+
             var displayTime = function () {
                 /// <summary>Displays the server time in this html element.</summary>
                 /// <returns value="jQuery.Deferred().promise()"></returns>
 
                 var def = $.Deferred();
                 var adjusted = getAdjustedTime();
-                $this.html(adjusted.format(opt.format));
+
+                $this.html("");
+
+                if (opt.showDate)
+                    $this.append($("<div/>", { "class": "servertime-date" }).html(adjusted.format(opt.dateFormat)));
+
+                $this.append($("<div/>", { "class": "servertime-time" }).html(adjusted.format(opt.timeFormat)));
+
                 def.resolve(adjusted);
+
                 return def.promise();
             };
 
@@ -97,7 +105,7 @@
                 }
             };
 
-			if (opt.autostart) start();
+            if (opt.autostart) start();
 
             $this.on("stop", function () {
                 stop();

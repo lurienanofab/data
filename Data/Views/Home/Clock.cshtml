@@ -1,6 +1,4 @@
-﻿@using System.Configuration;
-
-@model Data.Models.ClockModel
+﻿@model Data.Models.ClockModel
 @{
     Layout = null;
     ViewBag.Title = "Clock";
@@ -16,8 +14,8 @@
     <title>@ViewBag.Title</title>
 
     <!-- Bootstrap -->
-    <link href="//ssel-apps.eecs.umich.edu/static/styles/bootstrap/themes/lnf/bootstrap.css" rel="stylesheet">
-    <link href="//ssel-apps.eecs.umich.edu/static/lib/bootstrap/plugins/bootstrap-datepicker/css/bootstrap-datepicker.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="@Url.Content("//ssel-apps.eecs.umich.edu/static/styles/bootstrap/themes/lnf/bootstrap.css")">
+    <link rel="stylesheet" href="@Url.Content("//ssel-apps.eecs.umich.edu/static/lib/bootstrap/plugins/bootstrap-datepicker/css/bootstrap-datepicker.min.css")">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -47,10 +45,18 @@
 
         .digital {
             text-align: center;
-            font-size: 12vw;
             font-weight: bold;
             color: #000000;
+            font-size: 12vw;
         }
+
+            .digital .servertime-date {
+                font-size: 4vw;
+            }
+
+            .digital .servertime-time {
+                font-size: 12vw;
+            }
 
         .inlab {
         }
@@ -84,7 +90,8 @@
 
     @*<link rel="stylesheet" href="@Url.Content("~/Scripts/jquery.analogclock/jquery.analogclock.css")" />*@
 
-    <script src="//ssel-apps.eecs.umich.edu/static/scripts/screensaver.js"></script>
+    <script src="@Url.Content("//ssel-apps.eecs.umich.edu/static/scripts/screensaver.js")"></script>
+
     <script>
         //var redirectUrl = "http://ssel-apps.eecs.umich.edu/login";
         //var redirectUrl = "http://ssel-apps.eecs.umich.edu/login?ReturnUrl=%2Fsselonline%3Fview%3D%252Fsselscheduler%253Fmode%253Dkiosk%2526timeout%253D60";
@@ -111,11 +118,11 @@
     </div>
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="//ssel-apps.eecs.umich.edu/static/lib/jquery/jquery.min.js"></script>
+    <script src="@Url.Content("//ssel-apps.eecs.umich.edu/static/lib/jquery/jquery.min.js")"></script>
 
     <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="//ssel-apps.eecs.umich.edu/static/lib/bootstrap/js/bootstrap.min.js"></script>
-    <script src="//ssel-apps.eecs.umich.edu/static/lib/moment/moment.js"></script>
+    <script src="@Url.Content("//ssel-apps.eecs.umich.edu/static/lib/bootstrap/js/bootstrap.min.js")"></script>
+    <script src="@Url.Content("//ssel-apps.eecs.umich.edu/static/lib/moment/moment.js")"></script>
     <script src="@Url.Content("~/Scripts/jquery.querystring.js")"></script>
     <script src="@Url.Content("~/Scripts/jquery.analogclock.js")"></script>
     <script src="@Url.Content("~/Scripts/jquery.servertime.js")"></script>
@@ -128,7 +135,8 @@
         $(".digital-clock").servertime({
             "url": "//ssel-sched.eecs.umich.edu/time.aspx",
             "interval": 1000 * 60 * 10,
-            "format": ('@Model.Format' == '24') ? "HH:mm:ss" : "hh:mm:ss A",
+            "dateFormat": "M/D/YYYY",
+            "timeFormat": ('@Model.Format' == '24') ? "HH:mm:ss" : "hh:mm:ss A",
             "ontick": function (m) {
                 //analogClock.trigger("set", m);
             }
