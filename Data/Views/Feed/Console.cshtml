@@ -73,6 +73,21 @@
     <div class="panel-body">
         @Html.CreateSubMenu(Model.GetSubMenu())
         <div class="feed" data-console="true" data-ajaxurl="@Url.Action("Ajax", "Feed")">
+
+            @if (!string.IsNullOrEmpty(Model.Message))
+            {
+                <div class="alert alert-success">
+                    @Model.Message
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert alert-danger">
+                    @Model.ErrorMessage
+                </div>
+            }
+
             @using (Html.BeginForm("Save", "Feed", null, FormMethod.Post, null))
             {
                 @Html.HiddenFor(x => x.Guid)
@@ -116,8 +131,8 @@
                     @Html.TextAreaFor(x => x.Query, 15, 100, new { @class = "feed-query form-control", @spellcheck = "false" })
                 </div>
                 <div style="margin-top: 10px;">
-                    <button type="submit" name="Command" value="save-feed" class="btn btn-primary save-feed" style="width: 90px;">Save Feed</button>
-                    <button type="button" class="btn btn-default cancel-feed" style="width: 90px;" onclick="window.location='@Url.Action("List", "Feed")'">Cancel</button>
+                    <button type="submit" name="Command" value="save-feed" class="btn btn-primary">Save</button>
+                    @Html.ActionLink("Return", "List", "Feed", new { @class = "btn btn-default" })
                 </div>
             }
             <hr />

@@ -1,6 +1,7 @@
 ﻿using Data.Models;
 using LNF;
 using LNF.CommonTools;
+using LNF.Models.Billing;
 using LNF.Models.Data;
 using LNF.Web.Mvc;
 using System;
@@ -45,11 +46,9 @@ namespace Data.Controllers
         }
 
         [LNFAuthorize(ClientPrivilege.Developer)]
-        public ActionResult ReadStoreDataClean(DateTime sd, DateTime ed, int clientId = 0, int itemId = 0, ReadStoreDataManager.StoreDataCleanOption option = ReadStoreDataManager.StoreDataCleanOption.AllItems)
+        public ActionResult ReadStoreDataClean(DateTime sd, DateTime ed, int clientId = 0, int itemId = 0, StoreDataCleanOption option = StoreDataCleanOption.AllItems)
         {
-            
-            var mgr = new ReadStoreDataManager();
-            var dt = mgr.ReadStoreDataClean(option, sd, ed, clientId, itemId);
+            var dt = ReadData.Store.ReadStoreDataClean(sd, ed, clientId, itemId, option);
 
             var result = dt.AsEnumerable().Select(dr => new
             {
@@ -74,7 +73,8 @@ namespace Data.Controllers
             try
             {
                 DateTime now = DateTime.Now;
-                DataTableManager.Update(types.Split(','));
+                BillingCategory categories = Utility.ParseEnum<BillingCategory>(types);
+                DataTableManager.Update(categories);
                 return Content(string.Format("Updated {0} in {1} seconds", types, (DateTime.Now - now).TotalSeconds), "text/plain");
             }
             catch (Exception ex)

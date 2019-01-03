@@ -12,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Web.Mvc;
 
 namespace Data.Models
@@ -58,11 +57,11 @@ namespace Data.Models
             return DA.Current.Query<ActionInstance>().ToArray();
         }
 
-        public async Task<PointState> GetPointState(int pointId)
+        public PointState GetPointState(int pointId)
         {
             var point = DA.Current.Query<Point>().First(x => x.PointID == pointId);
             var block = point.Block;
-            BlockResponse resp = (await ServiceProvider.Current.Control.GetBlockState(block)).EnsureSuccess();
+            BlockResponse resp = ServiceProvider.Current.Control.GetBlockState(block);
             var blockState = resp.BlockState;
             var result = blockState.Points.First(x => x.PointID == point.PointID);
             return result;
@@ -93,7 +92,7 @@ namespace Data.Models
             return p.Block;
         }
 
-        public async Task<ResourceState[]> GetResources()
+        public ResourceState[] GetResources()
         {
             DataTable dt = new DataTable();
             dt.Columns.Add("ResourceID", typeof(int));
@@ -106,7 +105,7 @@ namespace Data.Models
             foreach (var r in query)
                 dt.Rows.Add(r.ResourceID, r.ResourceName, r.BuildingName, r.LabName, r.ProcessTechName);
 
-            await WagoInterlock.AllToolStatus(dt);
+            WagoInterlock.AllToolStatus(dt);
 
             ResourceState[] result = dt.AsEnumerable().Select(x => new ResourceState()
             {

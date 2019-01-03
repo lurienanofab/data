@@ -1,4 +1,5 @@
 ﻿using Data.Models.Api;
+using LNF;
 using LNF.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
@@ -15,8 +16,8 @@ namespace Data.Controllers
         public ApiClientAccountController()
         {
             //TODO: wire-up constructor injection
-            ClientManager = DA.Use<IClientManager>();
-            ActiveDataItemManager = DA.Use<IActiveDataItemManager>();
+            ClientManager = ServiceProvider.Current.Use<IClientManager>();
+            ActiveDataItemManager = ServiceProvider.Current.Use<IActiveDataItemManager>();
         }
 
         public AccountModel[] Get([FromUri] string option, int id)
@@ -62,7 +63,8 @@ namespace Data.Controllers
 
                     //may need to restore physical access because there is now an active acct and other requirements are met
                     string alert;
-                    var check = AccessCheck.Create(ca.ClientOrg.Client);
+                    var c = DA.Current.Single<ClientInfo>(ca.ClientOrg.Client.ClientID).CreateClientItem();
+                    var check = AccessCheck.Create(c);
                     ClientManager.UpdatePhysicalAccess(check, out alert);
 
                     result = ApiUtility.CreateAccountModel(ca.Account);
@@ -86,7 +88,8 @@ namespace Data.Controllers
                         ActiveDataItemManager.Disable(ca);
 
                         //may not have physical access any more if there are no more active accounts
-                        var check = AccessCheck.Create(ca.ClientOrg.Client);
+                        var c = DA.Current.Single<ClientInfo>(ca.ClientOrg.Client.ClientID).CreateClientItem();
+                        var check = AccessCheck.Create(c);
                         ClientManager.UpdatePhysicalAccess(check, out string alert);
 
                         return true;

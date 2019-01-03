@@ -1,4 +1,5 @@
-﻿using LNF.Data;
+﻿using LNF;
+using LNF.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace Data.Models.Api
 
     public static class ApiUtility
     {
-        public static IClientOrgManager ClientOrgManager => DA.Use<IClientOrgManager>();
+        public static IClientOrgManager ClientOrgManager => ServiceProvider.Current.Use<IClientOrgManager>();
 
         #region ##### Manager ###########################################################
 

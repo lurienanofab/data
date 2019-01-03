@@ -3,7 +3,6 @@ using LNF.Cache;
 using LNF.Models.Data;
 using LNF.Web.Mvc;
 using OnlineServices.Api.Data;
-using System.Threading.Tasks;
 using System.Web.Mvc;
 
 namespace Data.Controllers
@@ -54,31 +53,30 @@ namespace Data.Controllers
         }
 
         [Route("utility/billing-checks")]
-        public async Task<ActionResult> BillingChecks(UtilityModel model)
+        public ActionResult BillingChecks(UtilityModel model)
         {
             ViewBag.FixAutoEndMessage = string.Empty;
 
             if (model.Period.HasValue)
             {
-                using (var dc = new DataClient())
+                var dc = new DataClient();
+
+                int fixAutoEndCount = -1;
+
+                if (model.Command == "fix-all-auto-end-problems")
                 {
-                    int fixAutoEndCount = -1;
-
-                    if (model.Command == "fix-all-auto-end-problems")
-                    {
-                        fixAutoEndCount = await dc.FixAllAutoEndProblems(model.Period.Value);
-                    }
-                   
-                    if (model.Command == "fix-auto-end-problem")
-                    {
-                        fixAutoEndCount = await dc.FixAutoEndProblem(model.Period.Value, model.ReservationID);
-                    }
-
-                    if (fixAutoEndCount >= 0)
-                        ViewBag.FixAutoEndMessage = string.Format("Auto-end problems fixed: {0}", fixAutoEndCount);
-
-                    model.AutoEndProblems = await dc.GetAutoEndProblems(model.Period.Value);
+                    fixAutoEndCount = dc.FixAllAutoEndProblems(model.Period.Value);
                 }
+
+                if (model.Command == "fix-auto-end-problem")
+                {
+                    fixAutoEndCount = dc.FixAutoEndProblem(model.Period.Value, model.ReservationID);
+                }
+
+                if (fixAutoEndCount >= 0)
+                    ViewBag.FixAutoEndMessage = string.Format("Auto-end problems fixed: {0}", fixAutoEndCount);
+
+                model.AutoEndProblems = dc.GetAutoEndProblems(model.Period.Value);
             }
 
             return View(model);

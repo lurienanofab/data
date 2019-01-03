@@ -37,14 +37,14 @@
 
             switch (opt.path) {
                 case "process/data/clean":
+                    result.StartDate = opt.startPeriod;
+                    result.EndDate = opt.endPeriod;
                 case "process/data":
-                    result.StartPeriod = opt.startPeriod;
-                    result.EndPeriod = opt.endPeriod;
+                    result.Period = opt.startPeriod;
                     result.Record = getRecord();
                     break;
                 case "process/step1":
-                    result.StartPeriod = opt.startPeriod;
-                    result.EndPeriod = opt.endPeriod;
+                    result.Period = opt.startPeriod;
                     result.Record = getRecord();
                     result.Delete = opt.delete;
                     result.IsTemp = opt.isTemp;
@@ -69,11 +69,7 @@
             'type': 'POST',
             'data': model,
             'success': function (data, textStatus, jqXHR) {
-                if (data.Success)
-                    $this.html('<div class="api-message success">' + data.LogText + '</div>');
-                else
-                    $this.html('<div class="api-message failure">' + data.LogText + '</div>');
-
+                $this.html('<div class="api-message success">' + data.LogText + '</div>');
                 def.resolve(data, textStatus, jqXHR);
             },
             'error': function (jqXHR, textStatus, errorThrown) {

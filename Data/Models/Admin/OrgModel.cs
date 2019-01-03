@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Mvc;
+﻿using Data.Models.Api;
 using LNF;
 using LNF.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
-using Data.Models.Api;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.Mvc;
 
 namespace Data.Models.Admin
 {
@@ -19,8 +18,8 @@ namespace Data.Models.Admin
         public OrgModel()
         {
             // TODO: wire-up constructor injection
-            OrgManager = DA.Use<IOrgManager>();
-            ActiveDataItemManager = DA.Use<IActiveDataItemManager>();
+            OrgManager = ServiceProvider.Current.Use<IOrgManager>();
+            ActiveDataItemManager = ServiceProvider.Current.Use<IActiveDataItemManager>();
         }
 
         public int OrgTypeID { get; set; }

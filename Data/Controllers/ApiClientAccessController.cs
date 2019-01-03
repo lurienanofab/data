@@ -1,22 +1,21 @@
-﻿using System;
-using System.Text;
+﻿using Data.Models.Api;
+using LNF;
+using LNF.Data;
+using LNF.Models.PhysicalAccess;
+using LNF.Repository;
+using LNF.Repository.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using System.Web.WebSockets;
-using System.Threading;
-using System.Threading.Tasks;
-using LNF;
-using LNF.Data;
-using LNF.PhysicalAccess;
-using LNF.Repository;
-using LNF.Repository.Data;
-using Data.Models;
-using Data.Models.Api;
 
 namespace Data.Controllers
 {
@@ -27,7 +26,7 @@ namespace Data.Controllers
         {
             AccessCheck result = null;
 
-            Client c = DA.Current.Single<Client>(id);
+            var c = DA.Current.Single<ClientInfo>(id).CreateClientItem();
 
             if (c != null)
                 result = AccessCheck.Create(c);
@@ -37,7 +36,7 @@ namespace Data.Controllers
 
         public InLabArea[] GetInLab()
         {
-            IEnumerable<Badge> query = ServiceProvider.Current.PhysicalAccess.CurrentlyInArea();
+            IEnumerable<Badge> query = ServiceProvider.Current.PhysicalAccess.GetCurrentlyInArea("all");
 
             IList<InLabArea> areas = query.Select(x => x.CurrentAreaName).Distinct().Select(x => new InLabArea() { AreaName = x }).OrderBy(x => x.AreaName).ToList();
             foreach (InLabArea a in areas)
@@ -78,7 +77,7 @@ namespace Data.Controllers
 
         private Models.Api.InLabClient GetInLabClient(Badge b)
         {
-            var result = new Models.Api.InLabClient()
+            var result = new InLabClient()
             {
                 LastName = b.LastName,
                 FirstName = b.FirstName,

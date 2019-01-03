@@ -31,6 +31,7 @@ namespace Data.Models
         public string Key { get; set; }
         public IHtmlString Html { get; set; }
         public DataFeedType FeedType { get; set; }
+        public string Message { get; set; }
         public string ErrorMessage { get; set; }
         public bool ViewInactive { get; set; }
         //public override string App { get; set; }
@@ -122,7 +123,7 @@ namespace Data.Models
             return DataFeedUtility.GetTables(ds, Key).ToArray();
         }
 
-        public void SaveFeed()
+        public bool SaveFeed()
         {
             try
             {
@@ -158,13 +159,19 @@ namespace Data.Models
                     feed = GetFeedByGuid();
 
                     if (feed == null)
-                        throw new Exception("Could not find feed using GUID: " + Guid);
+                        throw new Exception($"Could not find feed using GUID: {Guid}");
 
                     if (existing != null && existing.FeedGUID != feed.FeedGUID)
-                        throw new Exception("Alias '" + Alias + "' is already in use");
+                    {
+                        Alias = feed.FeedAlias;
+                        throw new Exception($"Alias '{existing.FeedAlias}' is already in use.");
+                    }
 
                     if (string.IsNullOrEmpty(Alias))
+                    {
+                        Alias = feed.FeedAlias;
                         throw new Exception("Alias is required.");
+                    }
 
                     if (string.IsNullOrEmpty(Name))
                         throw new Exception("Name is required.");
@@ -180,18 +187,13 @@ namespace Data.Models
 
                     DA.Current.SaveOrUpdate(feed);
                 }
+
+                return true;
             }
             catch (Exception ex)
             {
                 ErrorMessage = ex.Message;
-            }
-            finally
-            {
-                Alias = string.Empty;
-                Name = string.Empty;
-                Description = string.Empty;
-                Link = string.Empty;
-                Format = string.Empty;
+                return false;
             }
         }
 

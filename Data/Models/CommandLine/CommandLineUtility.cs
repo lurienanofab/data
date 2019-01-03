@@ -1,6 +1,7 @@
 ﻿using LNF;
 using LNF.CommonTools;
 using LNF.Data;
+using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
 using LNF.Scripting;
@@ -208,42 +209,42 @@ namespace Data.Models.CommandLine
             {
                 case "ToolDataClean":
                     getDates(true, true, false);
-                    WriteToolDataManager.Create(sd, ed, queryParams.GetValue("ClientID", 0), queryParams.GetValue("ResourceID", 0)).WriteToolDataClean();
+                    new WriteToolDataCleanProcess(sd, ed, queryParams.GetValue("ClientID", 0)).Start();
                     result.Success = true;
                     result.Message = null;
                     result.Data = ServiceProvider.Current.Log.Current;
                     break;
                 case "ToolData":
                     getDates(true, true, false);
-                    WriteToolDataManager.Create(sd, ed, queryParams.GetValue("ClientID", 0), queryParams.GetValue("ResourceID", 0)).WriteToolData();
+                    new WriteToolDataProcess(sd, queryParams.GetValue("ClientID", 0), queryParams.GetValue("ResourceID", 0)).Start();
                     result.Success = true;
                     result.Message = null;
                     result.Data = ServiceProvider.Current.Log.Current;
                     break;
                 case "RoomDataClean":
                     getDates(true, true, false);
-                    WriteRoomDataManager.Create(sd, ed, queryParams.GetValue("ClientID", 0), queryParams.GetValue("RoomID", 0)).WriteRoomDataClean(delete);
+                    new WriteRoomDataCleanProcess(sd, ed, queryParams.GetValue("ClientID", 0)).Start();
                     result.Success = true;
                     result.Message = null;
                     result.Data = ServiceProvider.Current.Log.Current;
                     break;
                 case "RoomData":
                     getDates(true, true, false);
-                    WriteRoomDataManager.Create(sd, ed, queryParams.GetValue("ClientID", 0), queryParams.GetValue("RoomID", 0)).WriteRoomData();
+                    new WriteRoomDataProcess(sd, queryParams.GetValue("ClientID", 0), queryParams.GetValue("RoomID", 0)).Start();
                     result.Success = true;
                     result.Message = null;
                     result.Data = ServiceProvider.Current.Log.Current;
                     break;
                 case "StoreDataClean":
                     getDates(true, true, false);
-                    WriteStoreDataManager.Create(sd, ed, queryParams.GetValue("ClientID", 0), queryParams.GetValue("ItemID", 0)).WriteStoreDataClean();
+                    new WriteStoreDataCleanProcess(sd, ed, queryParams.GetValue("ClientID", 0)).Start();
                     result.Success = true;
                     result.Message = null;
                     result.Data = ServiceProvider.Current.Log.Current;
                     break;
                 case "StoreData":
                     getDates(true, true, false);
-                    WriteStoreDataManager.Create(sd, ed, queryParams.GetValue("ClientID", 0), queryParams.GetValue("ItemID", 0)).WriteStoreData();
+                    new WriteStoreDataProcess(sd, queryParams.GetValue("ClientID", 0), queryParams.GetValue("ItemID", 0)).Start();
                     result.Success = true;
                     result.Message = null;
                     result.Data = ServiceProvider.Current.Log.Current;
@@ -264,11 +265,11 @@ namespace Data.Models.CommandLine
             return result;
         }
 
-        public static async Task<ScriptHost.Result> SchedulerTask(string task)
+        public static ScriptHost.Result SchedulerTask(string task)
         {
             ScriptHost.Result result = new ScriptHost.Result();
             var model = new ServiceModel { Task = task };
-            GenericResult gr = await model.HandleCommand();
+            GenericResult gr = model.HandleCommand();
 
             if (gr.Success)
             {
@@ -289,7 +290,8 @@ namespace Data.Models.CommandLine
         {
             ScriptHost.Result result = new ScriptHost.Result();
 
-            Client c = DA.Current.Single<Client>(id);
+            ClientItem c = DA.Current.Single<LNF.Repository.Data.ClientInfo>(id).CreateClientItem();
+
             if (c == null)
             {
                 result.Success = false;
@@ -297,7 +299,7 @@ namespace Data.Models.CommandLine
             }
             else
             {
-                LNF.PhysicalAccess.Badge b = ServiceProvider.Current.PhysicalAccess.GetBadge(c).FirstOrDefault();
+                LNF.Models.PhysicalAccess.Badge b = ServiceProvider.Current.PhysicalAccess.GetBadge(c.ClientID).FirstOrDefault();
                 if (b == null)
                 {
                     ServiceProvider.Current.PhysicalAccess.AddClient(c);
@@ -455,20 +457,14 @@ namespace Data.Models.CommandLine
 
             DateTime d = DateTime.Parse(date);
 
-            string[] recip = null;
-            IList<object> temp = queryParams.GetValue("Recipients", default(IList<object>));
-
-            if (temp != null && temp.Count > 0)
-                recip = temp.Select(x => x.ToString()).ToArray();
-
             LNF.Billing.MonthlyEmailOptions opt = new LNF.Billing.MonthlyEmailOptions
             {
                 IncludeManager = queryParams.GetValue("IncludeManager", true),
-                Message = queryParams.GetValue("Message", string.Empty),
-                Recipients = recip
+                Message = queryParams.GetValue("Message", string.Empty)
             };
 
-            int count = LNF.Billing.FinancialManagerUtility.SendMonthlyUserUsageEmails(d, opt);
+            var processResult = LNF.Billing.FinancialManagerUtility.SendMonthlyUserUsageEmails(d, 0, 0, opt);
+            var count = processResult.TotalEmailsSent;
 
             result.Success = true;
             result.Message = string.Format("sent {0} emails", count);

@@ -1,4 +1,5 @@
 ﻿using Data.Models;
+using LNF;
 using LNF.Data;
 using LNF.Models.Data;
 using LNF.Repository;
@@ -20,7 +21,7 @@ namespace Data.Controllers
         public AccountController()
         {
             // TODO: wire-up constructor injection
-            ActiveDataItemManager = DA.Use<IActiveDataItemManager>();
+            ActiveDataItemManager = ServiceProvider.Current.Use<IActiveDataItemManager>();
         }
 
         [Route("account/{orgId?}")]

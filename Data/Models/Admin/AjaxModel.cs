@@ -1,4 +1,6 @@
-﻿using LNF.Data;
+﻿using LNF;
+using LNF.Cache;
+using LNF.Data;
 using LNF.Data.ClientAccountMatrix;
 using LNF.Repository;
 using LNF.Repository.Data;
@@ -17,9 +19,9 @@ namespace Data.Models.Admin
         public AjaxModel()
         {
             // TODO: wire-up constructor injection
-            ClientManager = DA.Use<IClientManager>();
-            ClientOrgManager = DA.Use<IClientOrgManager>();
-            ActiveDataItemManager = DA.Use<IActiveDataItemManager>();
+            ClientManager = ServiceProvider.Current.Use<IClientManager>();
+            ClientOrgManager = ServiceProvider.Current.Use<IClientOrgManager>();
+            ActiveDataItemManager = ServiceProvider.Current.Use<IActiveDataItemManager>();
         }
 
         public string Command { get; set; }
@@ -129,7 +131,8 @@ namespace Data.Models.Admin
 
             ActiveDataItemManager.Enable(ca);
 
-            var check = AccessCheck.Create(ca.ClientOrg.Client);
+            var c = DA.Current.Single<ClientInfo>(ca.ClientOrg.Client.ClientID).CreateClientItem();
+            var check = AccessCheck.Create(c);
             ClientManager.UpdatePhysicalAccess(check, out string alert);
 
             //A final check...
@@ -146,7 +149,8 @@ namespace Data.Models.Admin
 
             ActiveDataItemManager.Disable(ca);
 
-            var check = AccessCheck.Create(ca.ClientOrg.Client);
+            var c = DA.Current.Single<ClientInfo>(ca.ClientOrg.Client.ClientID).CreateClientItem();
+            var check = AccessCheck.Create(c);
             ClientManager.UpdatePhysicalAccess(check, out string alert);
 
             return alert;

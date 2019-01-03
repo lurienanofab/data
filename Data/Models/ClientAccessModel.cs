@@ -1,10 +1,8 @@
-﻿using System;
+﻿using LNF;
+using LNF.Models.PhysicalAccess;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Web;
-using LNF;
-using LNF.Repository;
-using LNF.PhysicalAccess;
 
 namespace Data.Models
 {
@@ -23,7 +21,7 @@ namespace Data.Models
         public IEnumerable<Card> GetCards()
         {
             if (ExpireCutoff.HasValue)
-                return ServiceProvider.Current.PhysicalAccess.ExpiringCards(ExpireCutoff.Value);
+                return ServiceProvider.Current.PhysicalAccess.GetExpiringCards(ExpireCutoff.Value);
             else
                 return ServiceProvider.Current.PhysicalAccess.GetCards();
         }

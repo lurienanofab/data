@@ -2,7 +2,6 @@
 using OnlineServices.Api.Billing;
 using OnlineServices.Api.Scheduler;
 using System;
-using System.Threading.Tasks;
 using System.Web.Http;
 
 namespace Data.Controllers.Api
@@ -16,26 +15,23 @@ namespace Data.Controllers.Api
         }
 
         [HttpPost, Route("utility/api/email/financial-manager")]
-        public async Task<int> SendFinancialManagerEmails([FromBody] FinancialManagerReportOptions options)
+        public int SendFinancialManagerEmails([FromBody] FinancialManagerReportOptions options)
         {
             if (options == null)
                 throw new ArgumentNullException("options");
 
-            using (var client = new BillingClient())
-            {
-                var result = await client.SendFinancialManagerReport(options);
-                return result;
-            }
+            var client = new ReportClient();
+            var result = client.SendFinancialManagerReport(options);
+
+            return result.TotalEmailsSent;
         }
 
         [HttpPost, Route("utility/api/email/card-expiration")]
-        public async Task<int> SendCardExpirationEmails()
+        public int SendCardExpirationEmails()
         {
-            using (var client = new SchedulerServiceClient())
-            {
-                var result = await client.SendExpiringCardsEmail();
-                return result;
-            }
+            var client = new SchedulerServiceClient();
+            var result = client.SendExpiringCardsEmail();
+            return result;
         }
     }
 }

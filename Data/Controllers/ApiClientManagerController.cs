@@ -1,4 +1,5 @@
 ﻿using Data.Models.Api;
+using LNF;
 using LNF.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
@@ -14,7 +15,7 @@ namespace Data.Controllers
         public ApiClientManagerController()
         {
             //TODO: wire-up constructor injection
-            ActiveDataItemManager = DA.Use<IActiveDataItemManager>();
+            ActiveDataItemManager = ServiceProvider.Current.Use<IActiveDataItemManager>();
         }
 
         public ClientModel[] Get([FromUri] string option, int id)

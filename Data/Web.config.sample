@@ -14,7 +14,7 @@
     <provider production="false">
       <context loginUrl="/login" />
       <dataAccess showSql="true" />
-      <email host="127.0.0.1" enableSsl="true" log="true" />
+      <email host="xxxxx" log="true" />
       <control host="xxxxx" />
       <log name="Data" enabled="true" />
     </provider>
@@ -34,7 +34,7 @@
     <add key="NtpServer" value="xxxxx"/>
     <add key="ClockOption" value="digital-12"/>
     <add key="ScreensaverRedirect" value="xxxxx"/>
-    <add key="ApiHost" value="xxxxx"/>
+    <add key="ApiBaseUrl" value="xxxxx"/>
     <add key="BasicAuthUsername" value="xxxxx"/>
     <add key="BasicAuthPassword" value="xxxxx"/>
     <add key="ControlClient" value="LNF.Web.Api.ControlClient, LNF.Web.Api"/>

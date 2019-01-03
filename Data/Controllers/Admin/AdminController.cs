@@ -1,7 +1,7 @@
 ﻿using Data.Models.Admin;
+using LNF;
 using LNF.Data;
 using LNF.Models.Data;
-using LNF.Repository;
 using LNF.Web.Mvc;
 using System;
 using System.Web.Mvc;
@@ -15,7 +15,7 @@ namespace Data.Controllers.Admin
         public AdminController()
         {
             // TODO: wire-up constructor injection
-            OrgManager = DA.Use<IOrgManager>();
+            OrgManager = ServiceProvider.Current.Use<IOrgManager>();
         }
 
         [Route("admin")]

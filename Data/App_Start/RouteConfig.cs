@@ -70,12 +70,6 @@ namespace Data
             );
 
             routes.MapRoute(
-                name: "FeedSave",
-                url: "feed/save",
-                defaults: new { controller = "Feed", action = "Save" }
-            );
-
-            routes.MapRoute(
                 name: "FeedAjax",
                 url: "feed/ajax",
                 defaults: new { controller = "Feed", action = "Ajax" }
@@ -85,18 +79,6 @@ namespace Data
                 name: "FeedDelete",
                 url: "feed/delete/{Alias}",
                 defaults: new { controller = "Feed", action = "Delete", Alias = UrlParameter.Optional }
-            );
-
-            routes.MapRoute(
-                name: "FeedConsole",
-                url: "feed/console/{Alias}",
-                defaults: new { controller = "Feed", action = "Console", Alias = UrlParameter.Optional }
-            );
-
-            routes.MapRoute(
-                name: "FeedList",
-                url: "feed/list",
-                defaults: new { controller = "Feed", action = "List" }
             );
 
             routes.MapRoute(

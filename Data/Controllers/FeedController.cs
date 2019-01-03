@@ -18,12 +18,7 @@ namespace Data.Controllers
 {
     public class FeedController : Controller
     {
-        private IScriptingService ScriptingService { get; }
-
-        public FeedController(IScriptingService scriptingService)
-        {
-            ScriptingService = scriptingService;
-        }
+        private readonly IScriptingService _scriptingSvc = new PythonScriptService();
 
         // feed/reports/define/{alias}
         public ActionResult Configuration(string alias, string callback = null)
@@ -48,7 +43,7 @@ namespace Data.Controllers
             return Content(content, "application/json");
         }
 
-        [LNFAuthorize(ClientPrivilege.Administrator)]
+        [HttpGet, Route("feed/list"), LNFAuthorize(ClientPrivilege.Administrator)]
         public ActionResult List(FeedModel model)
         {
             ViewBag.UsePills = true;
@@ -58,7 +53,7 @@ namespace Data.Controllers
             return View(model);
         }
 
-        [LNFAuthorize(ClientPrivilege.Administrator)]
+        [HttpGet, Route("feed/console/{alias?}"), LNFAuthorize(ClientPrivilege.Administrator)]
         public ActionResult Console(FeedModel model)
         {
             model.CurrentPage = "Feed";
@@ -78,6 +73,8 @@ namespace Data.Controllers
                     model.Active = feed.Active;
                     model.FeedType = feed.FeedType;
                     model.Query = feed.FeedQuery;
+                    model.Message = GetAndRemoveSessionValue("SaveFeedMessage");
+                    model.ErrorMessage = GetAndRemoveSessionValue("SaveFeedError");
                 }
             }
             else
@@ -86,6 +83,22 @@ namespace Data.Controllers
             }
 
             return View(model);
+        }
+
+        [HttpPost, Route("feed/console/save"), LNFAuthorize]
+        public ActionResult Save(FeedModel model)
+        {
+            var result = model.SaveFeed();
+
+            Session.Remove("SaveFeedMessage");
+            Session.Remove("SaveFeedError");
+
+            if (result)
+                Session["SaveFeedMessage"] = "Saved OK!";
+            else
+                Session["SaveFeedError"] = model.ErrorMessage;
+
+            return RedirectToAction("Console", new { model.Alias });
         }
 
         public ActionResult Reports(FeedModel model)
@@ -118,7 +131,7 @@ namespace Data.Controllers
                 else
                     query = string.Format("data(sqlquery(\"{0}\"))", model.Query.Replace("\n", " ").Replace("\"", @"\""").Trim());
 
-                Result result = ScriptingService.Run(query, Parameters.Create());
+                Result result = _scriptingSvc.Run(query, Parameters.Create());
 
                 if (result.Exception != null)
                     error = result.Exception.Message;
@@ -246,7 +259,7 @@ namespace Data.Controllers
                 {
                     try
                     {
-                        Result result = ScriptingService.Run(feed.FeedQuery, Parameters.Create());
+                        Result result = _scriptingSvc.Run(feed.FeedQuery, Parameters.Create());
                         if (result.Exception != null)
                             throw result.Exception;
 
@@ -269,26 +282,25 @@ namespace Data.Controllers
             return View(model);
         }
 
-        [LNFAuthorize]
-        public ActionResult Save(FeedModel model)
-        {
-            model.SaveFeed();
-            if (string.IsNullOrEmpty(model.ErrorMessage))
-                return RedirectToAction("List");
-            else
-            {
-                model.CurrentPage = "Feed";
-                model.CurrentSubMenuItem = "console";
-                return View("Console", model);
-            }
-        }
-
         private bool ViewInactive()
         {
             if (bool.TryParse(Request.QueryString["inactive"], out bool result))
                 return result;
             else
                 return false;
+        }
+
+        private string GetAndRemoveSessionValue(string key)
+        {
+            string result = string.Empty;
+
+            if (Session[key] != null)
+            {
+                result = Session[key].ToString();
+                Session.Remove(key);
+            }
+
+            return result;
         }
     }
 }

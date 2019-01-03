@@ -43,49 +43,48 @@ namespace Data.Models
             return result;
         }
 
-        public async Task<GenericResult> HandleCommand()
+        public GenericResult HandleCommand()
         {
             if (Task == "interlock-test")
                 return HandleInterlockTest();
 
-            using (var ssc = new SchedulerServiceClient())
+            var ssc = new SchedulerServiceClient();
+
+            string command = "task-" + Task;
+            GenericResult result = new GenericResult();
+            bool taskResult = true;
+
+            switch (command)
             {
-                string command = "task-" + Task;
-                GenericResult result = new GenericResult();
-                bool taskResult = false;
-
-                switch (command)
-                {
-                    case "task-5min":
-                        taskResult = await ssc.RunFiveMinuteTask();
-                        break;
-                    case "task-daily":
-                        taskResult = await ssc.RunDailyTask();
-                        break;
-                    case "task-monthly":
-                        taskResult = await ssc.RunMonthlyTask();
-                        break;
-                    default:
-                        result.Success = false;
-                        result.Message = "Invalid Command";
-                        result.Data = command;
-                        return result;
-                }
-
-                if (taskResult)
-                {
-                    result.Success = true;
-                    result.Message = command;
-                }
-                else
-                {
+                case "task-5min":
+                    var fiveMinuteTaskResult = ssc.RunFiveMinuteTask();
+                    break;
+                case "task-daily":
+                    var dailyTaskResult = ssc.RunDailyTask();
+                    break;
+                case "task-monthly":
+                    var monthlyTaskResult = ssc.RunMonthlyTask();
+                    break;
+                default:
                     result.Success = false;
-                    result.Message = "Service did not respond.";
+                    result.Message = "Invalid Command";
                     result.Data = command;
-                }
-
-                return result;
+                    return result;
             }
+
+            if (taskResult)
+            {
+                result.Success = true;
+                result.Message = command;
+            }
+            else
+            {
+                result.Success = false;
+                result.Message = "Service did not respond.";
+                result.Data = command;
+            }
+
+            return result;
         }
 
         public GenericResult HandleInterlockTest()
@@ -102,7 +101,7 @@ namespace Data.Models
                             string state = HttpContext.Current.Request.QueryString["state"];
                             if (!string.IsNullOrEmpty(state))
                             {
-                                LNF.CommonTools.WagoInterlock.ToggleInterlock(id, state == "on", 0).Wait();
+                                LNF.CommonTools.WagoInterlock.ToggleInterlock(id, state == "on", 0);
                                 return new GenericResult() { Success = true, Message = string.Format("{0}: {1}", id, state) };
                             }
                             else
