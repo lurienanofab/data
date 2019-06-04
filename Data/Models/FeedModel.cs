@@ -11,6 +11,7 @@ using LNF.Repository;
 using LNF.Repository.Data;
 using LNF.Web.Mvc;
 using LNF.Web.Mvc.UI;
+using LNF.Models.Data;
 
 namespace Data.Models
 {
@@ -34,7 +35,6 @@ namespace Data.Models
         public string Message { get; set; }
         public string ErrorMessage { get; set; }
         public bool ViewInactive { get; set; }
-        //public override string App { get; set; }
 
         public DataFeed[] GetFeeds()
         {
@@ -102,7 +102,7 @@ namespace Data.Models
 
         public void DeleteFeed()
         {
-            DataFeedUtility.DeleteFeed(GetFeed());
+            DataFeedUtility.DeleteFeed(GetFeed(), CurrentUser);
         }
 
         public override SubMenu GetSubMenu()
@@ -115,7 +115,8 @@ namespace Data.Models
 
         public DataSet ExecuteQuery(DataFeed feed)
         {
-            return DataFeedUtility.ExecuteQuery(feed, Parameters.Create());
+            var util = new DataFeedUtility(ServiceProvider.Current);
+            return util.ExecuteQuery(feed, Parameters.Create());
         }
 
         public DataTable[] GetTables(DataSet ds)

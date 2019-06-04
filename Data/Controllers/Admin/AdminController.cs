@@ -15,7 +15,7 @@ namespace Data.Controllers.Admin
         public AdminController()
         {
             // TODO: wire-up constructor injection
-            OrgManager = ServiceProvider.Current.Use<IOrgManager>();
+            OrgManager = ServiceProvider.Current.Data.Org;
         }
 
         [Route("admin")]

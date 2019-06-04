@@ -1,8 +1,8 @@
 ﻿using Data.Models;
-using LNF.Cache;
+using LNF;
 using LNF.Models.Data;
+using LNF.Web;
 using LNF.Web.Mvc;
-using OnlineServices.Api.Data;
 using System.Web.Mvc;
 
 namespace Data.Controllers
@@ -47,7 +47,7 @@ namespace Data.Controllers
                 model.TableName = "client";
 
             if (model.Record == 0)
-                model.Record = CacheManager.Current.CurrentUser.ClientID;
+                model.Record = HttpContext.CurrentUser().ClientID;
 
             return View(model);
         }
@@ -59,24 +59,24 @@ namespace Data.Controllers
 
             if (model.Period.HasValue)
             {
-                var dc = new DataClient();
+                var util = ServiceProvider.Current.Data.Utility;
 
                 int fixAutoEndCount = -1;
 
                 if (model.Command == "fix-all-auto-end-problems")
                 {
-                    fixAutoEndCount = dc.FixAllAutoEndProblems(model.Period.Value);
+                    fixAutoEndCount = util.FixAllAutoEndProblems(model.Period.Value);
                 }
 
                 if (model.Command == "fix-auto-end-problem")
                 {
-                    fixAutoEndCount = dc.FixAutoEndProblem(model.Period.Value, model.ReservationID);
+                    fixAutoEndCount = util.FixAutoEndProblem(model.Period.Value, model.ReservationID);
                 }
 
                 if (fixAutoEndCount >= 0)
                     ViewBag.FixAutoEndMessage = string.Format("Auto-end problems fixed: {0}", fixAutoEndCount);
 
-                model.AutoEndProblems = dc.GetAutoEndProblems(model.Period.Value);
+                model.AutoEndProblems = util.GetAutoEndProblems(model.Period.Value);
             }
 
             return View(model);

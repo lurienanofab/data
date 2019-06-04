@@ -1,6 +1,7 @@
 ﻿using LNF;
 using LNF.CommonTools;
 using LNF.Control;
+using LNF.Models.Data;
 using LNF.Models.Data.Utility.BillingChecks;
 using LNF.Repository;
 using LNF.Repository.Control;
@@ -101,7 +102,7 @@ namespace Data.Models
             dt.Columns.Add("LabName", typeof(string));
             dt.Columns.Add("ProcessTechName", typeof(string));
 
-            ResourceInfo[] query = DA.Current.Query<ResourceInfo>().Where(x => x.IsActive).ToArray();
+            ResourceInfo[] query = DA.Current.Query<ResourceInfo>().Where(x => x.ResourceIsActive).ToArray();
             foreach (var r in query)
                 dt.Rows.Add(r.ResourceID, r.ResourceName, r.BuildingName, r.LabName, r.ProcessTechName);
 

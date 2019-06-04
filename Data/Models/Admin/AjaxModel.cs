@@ -1,7 +1,6 @@
 ﻿using LNF;
-using LNF.Cache;
-using LNF.Data;
 using LNF.Data.ClientAccountMatrix;
+using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
 using System;
@@ -13,15 +12,13 @@ namespace Data.Models.Admin
     public class AjaxModel
     {
         private IClientManager ClientManager { get; }
-        private IClientOrgManager ClientOrgManager { get; }
-        private IActiveDataItemManager ActiveDataItemManager { get; }
+        private IActiveLogManager ActiveLogManager { get; }
 
         public AjaxModel()
         {
             // TODO: wire-up constructor injection
-            ClientManager = ServiceProvider.Current.Use<IClientManager>();
-            ClientOrgManager = ServiceProvider.Current.Use<IClientOrgManager>();
-            ActiveDataItemManager = ServiceProvider.Current.Use<IActiveDataItemManager>();
+            ClientManager = ServiceProvider.Current.Data.Client;
+            ActiveLogManager = ServiceProvider.Current.Data.ActiveLog;
         }
 
         public string Command { get; set; }
@@ -54,9 +51,9 @@ namespace Data.Models.Admin
                     if (OrgID == 0)
                         throw new Exception("Missing parameter OrgID");
 
-                    var query = ClientOrgManager.SelectOrgManagers(OrgID);
+                    var query = ClientManager.SelectOrgManagers(OrgID);
 
-                    return new { status = "ok", managers = query.Select(x => new { x.ClientOrgID, x.Client.DisplayName }).ToArray() };
+                    return new { status = "ok", managers = query.Select(x => new { x.ClientOrgID, x.DisplayName }).ToArray() };
                 case "update-matrix":
                     if (OrgID == 0)
                         throw new Exception("Missing parameter OrgID");
@@ -90,9 +87,9 @@ namespace Data.Models.Admin
             }
         }
 
-        public IList<ClientOrg> GetManagers(int orgId)
+        public IEnumerable<IClient> GetManagers(int orgId)
         {
-            return ClientOrgManager.SelectOrgManagers(orgId);
+            return ClientManager.SelectOrgManagers(orgId);
         }
 
         public void UpdateClientAccount()
@@ -126,14 +123,13 @@ namespace Data.Models.Admin
                 };
 
                 // Need to save to get the ClientAccountID.
-                DA.Current.SaveOrUpdate(ca);
+                DA.Current.Insert(ca);
             }
 
-            ActiveDataItemManager.Enable(ca);
+            ActiveLogManager.Enable("ClientAccount", ca.ClientAccountID);
 
-            var c = DA.Current.Single<ClientInfo>(ca.ClientOrg.Client.ClientID).CreateClientItem();
-            var check = AccessCheck.Create(c);
-            ClientManager.UpdatePhysicalAccess(check, out string alert);
+            var c = DA.Current.Single<ClientInfo>(ca.ClientOrg.Client.ClientID).CreateModel<IClient>();
+            ClientManager.UpdatePhysicalAccess(c, out string alert);
 
             //A final check...
             if (ca.ClientOrg.ClientOrgID != UserClientOrgID)
@@ -147,11 +143,10 @@ namespace Data.Models.Admin
             if (ca == null)
                 throw new Exception(string.Format("Could not find ClientAccount record for ClientOrgID: {0}", UserClientOrgID));
 
-            ActiveDataItemManager.Disable(ca);
+            ActiveLogManager.Disable("ClientAccount", ca.ClientAccountID);
 
-            var c = DA.Current.Single<ClientInfo>(ca.ClientOrg.Client.ClientID).CreateClientItem();
-            var check = AccessCheck.Create(c);
-            ClientManager.UpdatePhysicalAccess(check, out string alert);
+            var c = DA.Current.Single<ClientInfo>(ca.ClientOrg.Client.ClientID).CreateModel<IClient>();
+            ClientManager.UpdatePhysicalAccess(c, out string alert);
 
             return alert;
         }

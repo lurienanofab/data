@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Mvc;
-using System.Xml;
-using LNF;
-using LNF.Data;
+﻿using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
 using LNF.Web.Mvc.UI;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.Mvc;
+using System.Xml;
 
 namespace Data.Models.Admin
 {
@@ -85,12 +83,12 @@ namespace Data.Models.Admin
             //ToArray is needed because of GetDisplayName
             var group = query.ToArray().GroupBy(x => new
             {
-                ClientID = x.ClientID,
-                ClientOrgID = x.ClientOrgID,
-                OrgID = x.OrgID,
-                OrgManager = x.OrgManager,
-                OrgFinManager = x.OrgFinManager,
-                ClientOrgActive = x.ClientOrgActive,
+                x.ClientID,
+                x.ClientOrgID,
+                x.OrgID,
+                x.OrgManager,
+                x.OrgFinManager,
+                x.ClientOrgActive,
                 DisplayName = x.GetDisplayName()
             });
 
@@ -173,7 +171,7 @@ namespace Data.Models.Admin
 
         public override void Load()
         {
-            message = string.Empty;
+            Message = string.Empty;
 
             if (ClientID == 0)
             {
@@ -185,7 +183,7 @@ namespace Data.Models.Admin
 
             if (org == null)
             {
-                message = GetAlert("Cannot find OrgID {0}", OrgID);
+                Message = GetAlert("Cannot find OrgID {0}", OrgID);
             }
             else
             {

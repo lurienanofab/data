@@ -1,9 +1,9 @@
-﻿using System;
+﻿using LNF.Models.Data;
+using LNF.Web.Mvc;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Web;
-using System.Configuration;
-using LNF.Web.Mvc;
 
 namespace Data.Models
 {
@@ -19,9 +19,11 @@ namespace Data.Models
 
         public ClockModel()
         {
-            items = new List<ClockItem>();
-            items.Add(new ClockItem("<div class=\"analog row\" style=\"display: {0};\"><ul class=\"col-md-12 analog-clock\"><li class=\"sec\"></li><li class=\"hour\"></li><li class=\"min\"></li></ul></div>") { Type = "analog", Order = 0, Visible = false });
-            items.Add(new ClockItem("<div class=\"digital row\" style=\"display: {0};\"><div class=\"col-md-12 digital-clock\"></div></div>") { Type = "digital", Order = 0, Visible = false });
+            items = new List<ClockItem>
+            {
+                new ClockItem("<div class=\"analog row\" style=\"display: {0};\"><ul class=\"col-md-12 analog-clock\"><li class=\"sec\"></li><li class=\"hour\"></li><li class=\"min\"></li></ul></div>") { Type = "analog", Order = 0, Visible = false },
+                new ClockItem("<div class=\"digital row\" style=\"display: {0};\"><div class=\"col-md-12 digital-clock\"></div></div>") { Type = "digital", Order = 0, Visible = false }
+            };
         }
 
         public void ApplyOption()
@@ -76,7 +78,7 @@ namespace Data.Models
 
     public class ClockItem
     {
-        private string html;
+        private readonly string html;
 
         public int Order { get; set; }
         public string Type { get; set; }

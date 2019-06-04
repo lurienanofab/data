@@ -1,4 +1,5 @@
 ﻿using LNF;
+using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
 using LNF.Web.Mvc;
@@ -7,7 +8,6 @@ using OnlineServices.Api.Scheduler;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Web;
 
 namespace Data.Models

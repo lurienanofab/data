@@ -1,4 +1,5 @@
 ﻿using LNF;
+using LNF.Impl.Context;
 using LNF.Impl.DependencyInjection.Web;
 using LNF.Web;
 using Microsoft.Owin;
@@ -15,7 +16,9 @@ namespace Data
     {
         public override void Configuration(IAppBuilder app)
         {
-            ServiceProvider.Current = IOC.Resolver.GetInstance<ServiceProvider>();
+            var ctx = new WebContext(new WebContextFactory());
+            var ioc = new IOC(ctx);
+            ServiceProvider.Current = ioc.Resolver.GetInstance<ServiceProvider>();
             base.Configuration(app); // this must come before app.UseWebApi or NHibernate won't work
             HttpConfiguration config = new HttpConfiguration();
             WebApiConfig.Register(config);
@@ -25,6 +28,11 @@ namespace Data
         public override void ConfigureAuth(IAppBuilder app)
         {
             //use FormsAuthentication
+        }
+
+        public override void ConfigureFilters(GlobalFilterCollection filters)
+        {
+            FilterConfig.RegisterGlobalFilters(filters);
         }
 
         public override void ConfigureRoutes(RouteCollection routes)

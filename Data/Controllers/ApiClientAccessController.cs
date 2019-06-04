@@ -1,6 +1,7 @@
 ﻿using Data.Models.Api;
 using LNF;
 using LNF.Data;
+using LNF.Models.Data;
 using LNF.Models.PhysicalAccess;
 using LNF.Repository;
 using LNF.Repository.Data;
@@ -26,10 +27,10 @@ namespace Data.Controllers
         {
             AccessCheck result = null;
 
-            var c = DA.Current.Single<ClientInfo>(id).CreateClientItem();
+            var c = DA.Current.Single<ClientInfo>(id).CreateModel<IClient>();
 
             if (c != null)
-                result = AccessCheck.Create(c);
+                result = AccessCheck.Create(c, ServiceProvider.Current);
 
             return result;
         }

@@ -89,6 +89,8 @@
                 switch (emailType) {
                     case "financial-manager":
                         return { "Period": getStartPeriod(), "Message": "", "IncludeManager": true };
+                    case "user-apportionment":
+                        return { "Period": getStartPeriod(), "Message": "", "NoEmail": false };
                     default:
                         return null;
                 }

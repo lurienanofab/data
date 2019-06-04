@@ -1,6 +1,6 @@
 ﻿using Data.Models.Api;
 using LNF;
-using LNF.Data;
+using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
 using System.Linq;
@@ -10,12 +10,12 @@ namespace Data.Controllers
 {
     public class ApiClientManagerController : ApiController
     {
-        private IActiveDataItemManager ActiveDataItemManager { get; }
+        private IActiveLogManager ActiveLogManager { get; }
 
         public ApiClientManagerController()
         {
             //TODO: wire-up constructor injection
-            ActiveDataItemManager = ServiceProvider.Current.Use<IActiveDataItemManager>();
+            ActiveLogManager = ServiceProvider.Current.Data.ActiveLog;
         }
 
         public ClientModel[] Get([FromUri] string option, int id)
@@ -48,21 +48,23 @@ namespace Data.Controllers
 
                     if (co != null && mo != null)
                     {
-                        var cm = DA.Current.Query<LNF.Repository.Data.ClientManager>().FirstOrDefault(x => x.ClientOrg == co && x.ManagerOrg == mo);
+                        var cm = DA.Current.Query<ClientManager>().FirstOrDefault(x => x.ClientOrg == co && x.ManagerOrg == mo);
 
                         if (cm == null)
                         {
                             //no existing ClientManager record so create a new one
-                            cm = new LNF.Repository.Data.ClientManager()
+                            cm = new ClientManager()
                             {
                                 ClientOrg = co,
                                 ManagerOrg = mo
                             };
+
+                            DA.Current.Insert(cm);
                         }
 
-                        ActiveDataItemManager.Enable(cm);
+                        ActiveLogManager.Enable("ClientManager", cm.ClientManagerID);
 
-                        result = ApiUtility.CreateClientModel(cm.ManagerOrg);
+                        result = ApiUtility.CreateClientModel(cm.ManagerOrg.CreateModel<IClient>());
                     }
                     break;
             }
@@ -82,10 +84,10 @@ namespace Data.Controllers
                     var cm = DA.Current.Query<LNF.Repository.Data.ClientManager>().FirstOrDefault(x => x.ClientOrg == co && x.ManagerOrg == mo && x.Active);
                     if (cm != null)
                     {
-                        ActiveDataItemManager.Disable(cm);
+                        ActiveLogManager.Disable("ClientManager", cm.ClientManagerID);
 
                         //remove account access if no other manager manages the acct
-                        ClientModel m = ApiUtility.CreateClientModel(co);
+                        ClientModel m = ApiUtility.CreateClientModel(co.CreateModel<IClient>());
                         AccountModel[] currentAccounts = ApiUtility.GetCurrentAccounts(m);
                         ClientModel[] currentManagers = ApiUtility.GetCurrentManagers(m);
 
@@ -107,7 +109,7 @@ namespace Data.Controllers
                                 ClientAccount ca = DA.Current.Query<ClientAccount>().FirstOrDefault(x => x.ClientOrg.ClientOrgID == m.ClientOrgID && x.Account.AccountID == acct.AccountID);
 
                                 if (!ca.Manager) //do not deactivate if this client is also the acct manager!
-                                    ActiveDataItemManager.Disable(ca);
+                                    ActiveLogManager.Disable("ClientAccount", ca.ClientAccountID);
                             }
                         }
 

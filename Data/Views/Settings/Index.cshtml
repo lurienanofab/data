@@ -1,0 +1,114 @@
+﻿@using Data.Models;
+
+@{
+    ViewBag.Title = "Settings";
+    Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
+}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">Settings</h3>
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-sm-8">
+                <div class="alert-container"></div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th style="width: 320px;">Name</th>
+                            <th>Value</th>
+                            <th style="width: 150px;">&nbsp;</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background-color: #eee;">
+                            <td><input type="text" id="new_setting_name" class="form-control" /></td>
+                            <td><input type="text" id="new_setting_value" class="form-control" /></td>
+                            <td><a href="#" id="add_setting" class="btn btn-default">Add</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        var ajaxUrl = '@Url.Action("Ajax", "Settings")';
+
+        function displayAlert(text, type) {
+            $(".alert-container").html($("<div/>", { "class": "alert alert-" + type, "role": "alert" }).html(text));
+        }
+
+        function fillTable(data) {
+            $(".global-settings-item").remove();
+
+            $(".table tbody").append($.map(data, function (item, index) {
+                var settingName = $("<input/>", { "type": "text", "class": "form-control global-setting-name" }).val(item.SettingName);
+                var settingValue = $("<input/>", { "type": "text", "class": "form-control global-setting-value" }).val(item.SettingValue);
+
+                var tr = $("<tr/>", { "class": "global-settings-item" })
+                    .append($("<td/>").html(settingName))
+                    .append($("<td/>").html(settingValue))
+                    .append($("<td/>")
+                        .append($("<a/>", { "href": "#", "class": "btn btn-default update-global-setting" }).html("Update"))
+                        .append($("<a/>", { "href": "#", "class": "btn btn-default delete-global-setting" }).html("Delete").css({ "margin-left": "4px", "color": "#a94442" })));
+
+                tr.on("click", ".update-global-setting", function (e) {
+                    e.preventDefault();
+                    updateSetting(item.SettingID, settingName.val(), settingValue.val());
+                }).on("click", ".delete-global-setting", function (e) {
+                    e.preventDefault();
+                    deleteSetting(item.SettingID);
+                });
+
+                return tr;
+            }));
+        }
+
+        function deleteSetting(id) {
+            $.ajax({
+                "url": ajaxUrl + '?id=' + id,
+                "method": "delete"
+            }).done(function (data, textStatus, jqXHR) {
+                fillTable(data);
+                displayAlert("Deleted setting OK!", "success");
+            }).fail(function (jqXHR, textStatus, errorThrown) {
+                displayAlert(errorThrown, "danger");
+            });
+        }
+
+        function updateSetting(id, name, value) {
+            $.ajax({
+                "url": ajaxUrl,
+                "method": "post",
+                "data": { SettingID: id, SettingName: name, SettingValue: value }
+            }).done(function (data, textStatus, jqXHR) {
+                fillTable(data);
+                displayAlert(id === 0 ? "Added setting OK!" : "Updated setting OK!", "success");
+            }).fail(function (jqXHR, textStatus, errorThrown) {
+                displayAlert(errorThrown, "danger");
+            });
+        }
+
+        function loadSettings() {
+            $.ajax({
+                "url": ajaxUrl,
+                "method": "get",
+            }).done(function (data, textStatus, jqXHR) {
+                fillTable(data);
+            }).fail(function (jqXHR, textStatus, errorThrown) {
+                displayAlert(errorThrown, "danger");
+            });
+        }
+
+        $("#add_setting").on("click", function (e) {
+            e.preventDefault();
+            updateSetting(0, $("#new_setting_name").val(), $("#new_setting_value").val());
+        });
+
+        loadSettings();
+    </script>
+}

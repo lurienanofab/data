@@ -1,18 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Mvc;
-using System.Web.Mvc.Html;
-using System.Web.Routing;
-using System.Reflection;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhino.Mocks;
+﻿using Data.Controllers;
+using Data.Models.Admin;
+using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
-using Data.Models.Admin;
-using Data.Controllers;
-using LNF.Data;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhino.Mocks;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Web;
+using System.Web.Mvc;
+using System.Web.Routing;
 
 namespace Data.Tests.Admin
 {
@@ -29,8 +28,17 @@ namespace Data.Tests.Admin
         [TestMethod]
         public void CanSaveOrg()
         {
+            IClient currentUser = new LNF.Models.Data.ClientItem
+            {
+                ClientID = 1301,
+                UserName = "jgett",
+                LName = "Getty",
+                FName = "James"
+            };
+
             var model = new OrgModel()
             {
+                CurrentUser = currentUser,
                 OrgName = string.Format("Test Org [{0:yyyyMMddHHmmss}]", DateTime.Now),
                 OrgTypeID = 2
             };

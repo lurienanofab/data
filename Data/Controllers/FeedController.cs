@@ -4,6 +4,7 @@ using LNF.Data;
 using LNF.Models.Data;
 using LNF.Repository.Data;
 using LNF.Scripting;
+using LNF.Web;
 using LNF.Web.Mvc;
 using System;
 using System.Collections;
@@ -108,14 +109,15 @@ namespace Data.Controllers
             return View(model);
         }
 
-        [LNFAuthorize(ClientPrivilege.Administrator)]
-        public ActionResult Delete(FeedModel model)
+        [Route("feed/delete/{alias}"), LNFAuthorize(ClientPrivilege.Administrator)]
+        public ActionResult Delete(string alias)
         {
+            var model = new FeedModel() { Alias = alias, CurrentUser = HttpContext.CurrentUser() };
             model.DeleteFeed();
             return RedirectToAction("Index", new { Alias = "", Format = "" });
         }
 
-        [HttpPost, LNFAuthorize]
+        [HttpPost, Route("feed/ajax"), LNFAuthorize]
         public ActionResult Ajax(FeedModel model)
         {
             if (model.Command == "run-script")
@@ -150,58 +152,71 @@ namespace Data.Controllers
                 return Json(new { Success = false, Message = "Invalid command" });
         }
 
-        [AllowAnonymous]
-        public ActionResult Index(FeedModel model)
+        [Route("feed/{alias?}/{format?}/{key?}"), AllowAnonymous]
+        public ActionResult Index(string alias, string format, string key)
         {
+            var model = new FeedModel()
+            {
+                CurrentUser = HttpContext.CurrentUser(),
+                Alias = alias,
+                Format = format,
+                Key = key
+            };
+
             if (string.IsNullOrEmpty(model.Alias))
                 return RedirectToAction("List");
 
-            DataFeed feed = model.GetFeed();
+            //DataFeed feed = model.GetFeed();
             ContentResult result = new ContentResult();
+
+            var feedResult = ServiceProvider.Current.Data.Feed.GetDataFeedResult(alias, key);
+
             try
             {
-                if (feed == null)
+                var util = new DataFeedUtility(ServiceProvider.Current);
+
+                if (feedResult == null)
                     throw new Exception("Could not find feed: " + model.Alias);
-                else if (feed.Deleted)
+                else if (feedResult.Deleted)
                     throw new Exception("Could not find feed: " + model.Alias);
-                else if (!feed.Active && !DataFeedUtility.CanViewInactiveFeeds())
+                else if (!feedResult.Active && !DataFeedUtility.CanViewInactiveFeeds(HttpContext.CurrentUser()))
                     throw new Exception("Could not find feed: " + model.Alias);
                 else
                 {
                     switch (model.Format)
                     {
                         case "xml":
-                            result.Content = DataFeedUtility.XmlFeedContent(feed, model.Key, Parameters.Create());
+                            result.Content = util.XmlFeedContent(feedResult, model.Key, Parameters.Create());
                             result.ContentType = "text/xml";
                             break;
                         case "rss":
-                            result.Content = DataFeedUtility.RssFeedContent(feed, model.Key, Parameters.Create());
+                            result.Content = util.RssFeedContent(feedResult, model.Key, Parameters.Create());
                             result.ContentType = "application/rss+xml";
                             break;
                         case "html":
                             return View("Feed", model);
                         case "table":
-                            result.Content = DataFeedUtility.HtmlFeedContent(feed, model.Key, model.Format, Parameters.Create());
+                            result.Content = util.HtmlFeedContent(feedResult, model.Key, model.Format, Parameters.Create());
                             result.ContentType = "text/html";
                             break;
                         case "json":
                         case "jsonp":
                         case "datatables":
-                            result.Content = DataFeedUtility.JsonFeedContent(feed, model.Key, model.Format, Parameters.Create());
+                            result.Content = util.JsonFeedContent(feedResult, model.Key, model.Format, Parameters.Create());
                             if (model.Format == "jsonp" && !string.IsNullOrEmpty(model.Callback))
                                 result.Content = model.Callback + "(" + result.Content + ")";
                             result.ContentType = "application/json";
                             break;
                         case "ical":
-                            result.Content = DataFeedUtility.IcalFeedContent(feed, model.Key, Parameters.Create());
+                            result.Content = util.IcalFeedContent(feedResult, model.Key, Parameters.Create());
                             result.ContentType = "text/calendar";
                             Response.Charset = string.Empty;
-                            Response.AddHeader("Content-Disposition", string.Format("attachment;filename={0}-{1}.ics", feed.FeedAlias, DateTime.Now.ToString("yyyyMMddHHmmss")));
+                            Response.AddHeader("Content-Disposition", string.Format("attachment;filename={0}-{1}.ics", feedResult.Alias, DateTime.Now.ToString("yyyyMMddHHmmss")));
                             break;
                         default: //csv
-                            result.Content = DataFeedUtility.CsvFeedContent(feed, model.Key, Parameters.Create());
+                            result.Content = util.CsvFeedContent(feedResult, model.Key, Parameters.Create());
                             result.ContentType = "text/csv";
-                            Response.AddHeader("Content-Disposition", string.Format("attachment;filename={0}-{1}.csv", feed.FeedAlias, DateTime.Now.ToString("yyyyMMddHHmmss")));
+                            Response.AddHeader("Content-Disposition", string.Format("attachment;filename={0}-{1}.csv", feedResult.Alias, DateTime.Now.ToString("yyyyMMddHHmmss")));
                             break;
                     }
                 }

@@ -1,6 +1,5 @@
 ﻿using Data.Models;
 using LNF;
-using LNF.Data;
 using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
@@ -16,12 +15,12 @@ namespace Data.Controllers
     [LNFAuthorize(ClientPrivilege.Administrator)]
     public class AccountController : Controller
     {
-        private IActiveDataItemManager ActiveDataItemManager { get; }
+        private IActiveLogManager ActiveLogManager { get; }
 
         public AccountController()
         {
             // TODO: wire-up constructor injection
-            ActiveDataItemManager = ServiceProvider.Current.Use<IActiveDataItemManager>();
+            ActiveLogManager = ServiceProvider.Current.Data.ActiveLog;
         }
 
         [Route("account/{orgId?}")]
@@ -42,7 +41,7 @@ namespace Data.Controllers
             var activeAccounts = DA.Current.Query<Account>().Where(x => x.Active && x.Org.OrgID == currentOrg.OrgID).OrderBy(x => x.Name).ToList();
             model.ActiveAccounts = activeAccounts;
 
-            model.IsChartFieldOrg = AccountChartFields.IsChartFieldOrg(currentOrg);
+            model.IsChartFieldOrg = AccountChartFields.IsChartFieldOrg(currentOrg.CreateModel<IOrg>());
 
             return View(model);
         }
@@ -87,21 +86,24 @@ namespace Data.Controllers
 
             AccountEdit acctEdit;
 
+            IAccount a = acct.CreateModel<IAccount>();
+            IOrg o = currentOrg.CreateModel<IOrg>();
+
             if (Session["AccountEdit"] == null)
-                InitAccountEdit(acct, currentOrg);
+                InitAccountEdit(a, o);
             else
             {
                 acctEdit = (AccountEdit)Session["AccountEdit"];
 
                 if (acctEdit.OrgID != currentOrg.OrgID || acctEdit.AccountID != accountId)
-                    InitAccountEdit(acct, currentOrg);
+                    InitAccountEdit(a, o);
             }
 
             acctEdit = (AccountEdit)Session["AccountEdit"];
 
             model.AvailableManagers = AccountEditUtility.GetAvailableManagers(acctEdit);
 
-            model.IsChartFieldOrg = AccountChartFields.IsChartFieldOrg(currentOrg);
+            model.IsChartFieldOrg = AccountChartFields.IsChartFieldOrg(o);
 
             return View(model);
         }
@@ -118,7 +120,7 @@ namespace Data.Controllers
                 foreach (var ca in clientAccounts)
                 {
                     // disable access to this account
-                    ActiveDataItemManager.Disable(ca);
+                    ActiveLogManager.Disable("ClientAccount", ca.ClientAccountID);
 
                     // check that all clients still have another account
                     var co = ca.ClientOrg;
@@ -133,7 +135,7 @@ namespace Data.Controllers
                     //clientDataRow["EnableAccess"] = false;
                 }
 
-                ActiveDataItemManager.Disable(acct);
+                ActiveLogManager.Disable("Account", acct.AccountID);
             }
 
             return RedirectToAction("Index", new { orgId });
@@ -226,7 +228,7 @@ namespace Data.Controllers
                     if (insert)
                     {
                         DA.Current.Insert(acct);
-                        ActiveDataItemManager.Enable(acct);
+                        ActiveLogManager.Enable("Account", acct.AccountID);
                     }
 
                     // handle managers
@@ -247,7 +249,7 @@ namespace Data.Controllers
                             {
                                 ca.Manager = true;
                                 if (!ca.Active)
-                                    ActiveDataItemManager.Enable(ca);
+                                    ActiveLogManager.Enable("ClientAccount", ca.ClientAccountID);
                             }
                             else
                             {
@@ -261,7 +263,7 @@ namespace Data.Controllers
 
                                 DA.Current.Insert(ca);
 
-                                ActiveDataItemManager.Enable(ca);
+                                ActiveLogManager.Enable("ClientAccount", ca.ClientAccountID);
                             }
 
                             currentManagers.Add(new AccountManagerEdit()
@@ -305,7 +307,7 @@ namespace Data.Controllers
             return RedirectToAction("Index", new { orgId });
         }
 
-        private void InitAccountEdit(Account acct, Org org)
+        private void InitAccountEdit(IAccount acct, IOrg org)
         {
             AccountEdit acctEdit = new AccountEdit();
 
@@ -313,11 +315,11 @@ namespace Data.Controllers
 
             if (acct != null)
             {
-                acctEdit.OrgID = acct.Org.OrgID;
+                acctEdit.OrgID = acct.OrgID;
                 acctEdit.AccountID = acct.AccountID;
-                acctEdit.AccountName = acct.Name;
-                acctEdit.AccountNumber = acct.Number;
-                acctEdit.AccountTypeID = acct.AccountType.AccountTypeID;
+                acctEdit.AccountName = acct.AccountName;
+                acctEdit.AccountNumber = acct.AccountNumber;
+                acctEdit.AccountTypeID = acct.AccountTypeID;
                 acctEdit.FundingSourceID = acct.FundingSourceID;
                 acctEdit.Managers = AccountEditUtility.GetManagerEdits(acct.AccountID);
                 acctEdit.ShortCode = acct.ShortCode.Trim();
@@ -338,7 +340,7 @@ namespace Data.Controllers
 
                 if (AccountChartFields.IsChartFieldOrg(org))
                 {
-                    var cf = acct.GetChartFields();
+                    var cf = ServiceProvider.Current.Data.Account.GetChartFields(acct);
                     acctEdit.ChartFields = new AccountChartFieldEdit()
                     {
                         Account = cf.Account,
@@ -402,7 +404,7 @@ namespace Data.Controllers
                     }
 
                     if (disableAcct)
-                        ActiveDataItemManager.Disable(ca);
+                        ActiveLogManager.Disable("ClientAccount", ca.ClientAccountID);
                 }
             }
 

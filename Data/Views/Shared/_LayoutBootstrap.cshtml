@@ -22,8 +22,8 @@
       <script src="//oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
 
-    <link href="//ssel-apps.eecs.umich.edu/static/lib/footable/css/footable.core.bootstrap.css" rel="stylesheet">
-    <link href="//ssel-apps.eecs.umich.edu/static/lib/datatables/css/dataTables.bootstrap.min.css" rel="stylesheet">
+    <link href="@Url.Content("//ssel-apps.eecs.umich.edu/static/lib/footable/css/footable.core.bootstrap.css")" rel="stylesheet">
+    <link href="@Url.Content("//ssel-apps.eecs.umich.edu/static/lib/datatables/css/dataTables.bootstrap.min.css")" rel="stylesheet">
     <link href="@Url.Content("~/Scripts/jquery.editTable/jquery.editTable.css")" rel="stylesheet">
 
     <style>
@@ -61,7 +61,7 @@
                                 @Html.NavigationLink("Feeds", "List", "Feed")
                                 @Html.NavigationLink("News", "Index", "News")
                                 @Html.NavigationLink("Utility", "Index", "Utility")
-                                @Html.NavigationLink("Service", "Index", "Service")
+                                @Html.NavigationLink("Settings", "Index", "Settings")
                             </ul>
                         </div><!-- /.navbar-collapse -->
                     </nav>
@@ -82,19 +82,19 @@
     </div>
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="//ssel-apps.eecs.umich.edu/static/lib/jquery/jquery.min.js"></script>
+    <script src="@Url.Content("//ssel-apps.eecs.umich.edu/static/lib/jquery/jquery.min.js")"></script>
 
     <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="//ssel-apps.eecs.umich.edu/static/lib/bootstrap/js/bootstrap.min.js"></script>
-    <script src="//ssel-apps.eecs.umich.edu/static/lib/bootstrap/plugins/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
+    <script src="@Url.Content("//ssel-apps.eecs.umich.edu/static/lib/bootstrap/js/bootstrap.min.js")"></script>
+    <script src="@Url.Content("//ssel-apps.eecs.umich.edu/static/lib/bootstrap/plugins/bootstrap-datepicker/js/bootstrap-datepicker.js")"></script>
 
-    <script src="//ssel-apps.eecs.umich.edu/static/lib/footable/js/footable.min.js"></script>
-    <script src="//ssel-apps.eecs.umich.edu/static/lib/footable/js/footable.sorting.min.js"></script>
-    <script src="//ssel-apps.eecs.umich.edu/static/lib/footable/js/footable.filtering.min.js"></script>
-    <script src="//ssel-apps.eecs.umich.edu/static/lib/datatables/js/jquery.dataTables.min.js"></script>
-    <script src="//ssel-apps.eecs.umich.edu/static/lib/datatables/js/dataTables.bootstrap.min.js"></script>
-    <script src="//ssel-apps.eecs.umich.edu/static/lib/moment/moment.min.js"></script>
-    <script src="//ssel-apps.eecs.umich.edu/static/scripts/api/control.js"></script>
+    <script src="@Url.Content("//ssel-apps.eecs.umich.edu/static/lib/footable/js/footable.min.js")"></script>
+    <script src="@Url.Content("//ssel-apps.eecs.umich.edu/static/lib/footable/js/footable.sorting.min.js")"></script>
+    <script src="@Url.Content("//ssel-apps.eecs.umich.edu/static/lib/footable/js/footable.filtering.min.js")"></script>
+    <script src="@Url.Content("//ssel-apps.eecs.umich.edu/static/lib/datatables/js/jquery.dataTables.min.js")"></script>
+    <script src="@Url.Content("//ssel-apps.eecs.umich.edu/static/lib/datatables/js/dataTables.bootstrap.min.js")"></script>
+    <script src="@Url.Content("//ssel-apps.eecs.umich.edu/static/lib/moment/moment.min.js")"></script>
+    <script src="@Url.Content("//ssel-apps.eecs.umich.edu/static/scripts/api/control.js")"></script>
     <script src="@Url.Content("~/Scripts/jquery.editTable/jquery.editTable.js")"></script>
 
     <script>

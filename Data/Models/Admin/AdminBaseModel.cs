@@ -1,21 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Mvc;
-using LNF;
-using LNF.Data;
+﻿using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
 using LNF.Web.Mvc;
 using LNF.Web.Mvc.UI;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
 
 namespace Data.Models.Admin
 {
     public abstract class AdminBaseModel : BaseModel
     {
         public string Command { get; set; }
-        protected string message { get; set; }
+        protected string Message { get; set; }
 
         //room properties
         public int RoomID { get; set; }
@@ -67,7 +65,7 @@ namespace Data.Models.Admin
 
         public void LoadRoom()
         {
-            message = string.Empty;
+            Message = string.Empty;
 
             if (RoomID == 0)
                 return;
@@ -75,11 +73,11 @@ namespace Data.Models.Admin
             Room room = DA.Current.Single<Room>(RoomID);
             if (room == null)
             {
-                message = string.Format("<div class=\"alert alert-danger\" role=\"alert\">Cannot find RoomID {0}</div>", RoomID);
+                Message = string.Format("<div class=\"alert alert-danger\" role=\"alert\">Cannot find RoomID {0}</div>", RoomID);
             }
             else
             {
-                ParentID = room.ParentID.HasValue ? room.ParentID.Value : 0;
+                ParentID = room.ParentID ?? 0;
                 RoomName = room.RoomName;
                 DisplayName = room.DisplayName;
                 PassbackRoom = room.PassbackRoom;
@@ -94,7 +92,7 @@ namespace Data.Models.Admin
         {
             if (string.IsNullOrEmpty(RoomName))
             {
-                message = string.Format("<div class=\"alert alert-danger\" role=\"alert\">Room name must not be blank</div>", RoomID);
+                Message = string.Format("<div class=\"alert alert-danger\" role=\"alert\">Room name must not be blank</div>", RoomID);
                 return false;
             }
 
@@ -106,7 +104,7 @@ namespace Data.Models.Admin
                 room = DA.Current.Single<Room>(RoomID);
                 if (room == null)
                 {
-                    message = string.Format("<div class=\"alert alert-danger\" role=\"alert\">Cannot find RoomID {0}</div>", RoomID);
+                    Message = string.Format("<div class=\"alert alert-danger\" role=\"alert\">Cannot find RoomID {0}</div>", RoomID);
                     return false;
                 }
             }
@@ -201,10 +199,10 @@ namespace Data.Models.Admin
 
         public IHtmlString GetMessage()
         {
-            if (string.IsNullOrEmpty(message))
+            if (string.IsNullOrEmpty(Message))
                 return null;
             else
-                return new HtmlString(message);
+                return new HtmlString(Message);
         }
     }
 }

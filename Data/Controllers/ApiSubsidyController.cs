@@ -7,6 +7,7 @@ using System.Web.Http;
 using LNF.Repository;
 using LNF.Repository.Billing;
 using LNF.CommonTools;
+using LNF.Models.Billing.Process;
 
 namespace Data.Controllers
 {
@@ -37,9 +38,16 @@ namespace Data.Controllers
 
         private void CalculateSubsidy(DateTime period, int clientId = 0)
         {
+            var step4 = new BillingDataProcessStep4Subsidy(new BillingProcessStep4Command
+            {
+                Command = "subsidy",
+                Period = period,
+                ClientID = clientId
+            });
+
             BillingDataProcessStep2.PopulateRoomBillingByAccount(period, clientId);
             BillingDataProcessStep2.PopulateToolBillingByAccount(period, clientId);
-            BillingDataProcessStep4Subsidy.PopulateSubsidyBilling(period, clientId);
+            step4.PopulateSubsidyBilling();
             BillingDataProcessStep2.PopulateRoomBillingByAccount(period, clientId);
             BillingDataProcessStep2.PopulateRoomBillingByRoomOrg(period, clientId);
             BillingDataProcessStep2.PopulateToolBillingByAccount(period, clientId);

@@ -70,18 +70,6 @@ namespace Data
             );
 
             routes.MapRoute(
-                name: "FeedAjax",
-                url: "feed/ajax",
-                defaults: new { controller = "Feed", action = "Ajax" }
-            );
-
-            routes.MapRoute(
-                name: "FeedDelete",
-                url: "feed/delete/{Alias}",
-                defaults: new { controller = "Feed", action = "Delete", Alias = UrlParameter.Optional }
-            );
-
-            routes.MapRoute(
                 name: "Feed",
                 url: "feed/{Alias}/{Format}/{Key}",
                 defaults: new { controller = "Feed", action = "Index", Alias = UrlParameter.Optional, Format = UrlParameter.Optional, Key = UrlParameter.Optional }

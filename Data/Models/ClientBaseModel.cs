@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using LNF.Models.Data;
 using LNF.Web.Mvc;
 using LNF.Web.Mvc.UI;
+using System;
 
 namespace Data.Models
 {

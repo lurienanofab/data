@@ -1,5 +1,6 @@
 ﻿using LNF;
 using LNF.Data;
+using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
 using System.Collections.Generic;
@@ -15,50 +16,52 @@ namespace Data.Models.Api
 
     public static class ApiUtility
     {
-        public static IClientOrgManager ClientOrgManager => ServiceProvider.Current.Use<IClientOrgManager>();
+        public static IClientManager ClientOrgManager => ServiceProvider.Current.Data.Client;
 
         #region ##### Manager ###########################################################
 
         public static ClientModel[] GetCurrentManagers(ClientModel model)
         {
             ClientOrg co = DA.Current.Single<ClientOrg>(model.ClientOrgID);
-            ClientOrg[] current = DA.Current.Query<LNF.Repository.Data.ClientManager>().Where(x => x.ClientOrg == co && x.Active).Select(x => x.ManagerOrg).ToArray();
-            return current.Select(x => CreateClientModel(x)).OrderBy(x => x.DisplayName).ToArray();
+            var query = DA.Current.Query<ClientManager>().Where(x => x.ClientOrg == co && x.Active).Select(x => x.ManagerOrg);
+            var current = query.CreateModels();
+            return current.Select(CreateClientModel).OrderBy(x => x.DisplayName).ToArray();
         }
 
         public static ClientModel[] GetCurrentManagers(AccountModel model)
         {
-            IList<ClientAccount> query = DA.Current.Query<ClientAccount>().Where(x => x.Account.AccountID == model.AccountID && x.Manager && x.Active).ToList();
-            return query.Select(x => CreateClientModel(x.ClientOrg)).OrderBy(x => x.DisplayName).ToArray();
+            var query = DA.Current.Query<ClientAccount>().Where(x => x.Account.AccountID == model.AccountID && x.Manager && x.Active).Select(x => x.ClientOrg);
+            var current = query.CreateModels();
+            return current.Select(CreateClientModel).OrderBy(x => x.DisplayName).ToArray();
         }
 
         public static ClientModel[] GetAvailableManagers(ClientModel model)
         {
             ClientOrg co = DA.Current.Single<ClientOrg>(model.ClientOrgID);
-            ClientOrg[] current = DA.Current.Query<LNF.Repository.Data.ClientManager>().Where(x => x.ClientOrg == co && x.Active).Select(x => x.ManagerOrg).ToArray();
-            IList<ClientOrg> all = ClientOrgManager.SelectOrgManagers(co.Org.OrgID);
+            ClientOrg[] current = DA.Current.Query<ClientManager>().Where(x => x.ClientOrg == co && x.Active).Select(x => x.ManagerOrg).ToArray();
+            IEnumerable<IClient> all = ClientOrgManager.SelectOrgManagers(co.Org.OrgID);
             ClientModel[] result = all.Where(a => !current.Select(c => c.ClientOrgID).Contains(a.ClientOrgID)).Select(x => CreateClientModel(x)).OrderBy(x => x.DisplayName).ToArray();
             return result;
         }
 
         public static ClientModel[] GetAllManagers(ClientModel model)
         {
-            IList<ClientOrg> all = ClientOrgManager.SelectOrgManagers(model.OrgID);
+            IEnumerable<IClient> all = ClientOrgManager.SelectOrgManagers(model.OrgID);
             ClientModel[] result = all.Select(x => CreateClientModel(x)).OrderBy(x => x.DisplayName).ToArray();
             return result;
         }
 
-        public static ClientModel CreateClientModel(ClientOrg co)
+        public static ClientModel CreateClientModel(IClient c)
         {
             return new ClientModel()
             {
-                ClientID = co.Client.ClientID,
-                ClientOrgID = co.ClientOrgID,
-                OrgID = co.Org.OrgID,
-                DisplayName = co.Client.DisplayName,
-                OrgName = co.Org.OrgName,
-                Email = co.Email,
-                Phone = co.Phone
+                ClientID = c.ClientID,
+                ClientOrgID = c.ClientOrgID,
+                OrgID = c.OrgID,
+                DisplayName = c.DisplayName,
+                OrgName = c.OrgName,
+                Email = c.Email,
+                Phone = c.Phone
             };
         }
 

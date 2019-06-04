@@ -1,0 +1,61 @@
+﻿@using LNF.CommonTools;
+@using LNF.Web;
+
+@model HandleErrorInfo
+@{
+    Layout = null;
+
+    string message;
+    string stackTrace;
+
+    if (Model.Exception != null)
+    {
+        message = Model.Exception.Message;
+        stackTrace = Model.Exception.StackTrace;
+        SendEmail.SendErrorEmail(Model.Exception, Context.CurrentUser(), "Data", Context.CurrentIP(), Context.Request.Url);
+    }
+    else
+    {
+        message = "No error found.";
+        stackTrace = string.Empty;
+    }
+}
+
+<!doctype html>
+<html lang="en">
+<head runat="server">
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://ssel-apps.eecs.umich.edu/static/lib/bootstrap4/css/bootstrap.min.css" />
+
+    <title>Error</title>
+</head>
+<body>
+    <div class="container-fluid mt-4">
+        <h3>
+            An error has occurred...
+            <small class="text-muted">An email has been sent to LNF staff.</small>
+        </h3>
+        <div class="mb-3">
+            [@Html.ActionLink("LNF Data Home", "Index", "Home", null, null)] [<a href="/login">Logout</a>]
+        </div>
+        <div class="alert alert-danger" role="alert">
+            @message
+            @if (!string.IsNullOrEmpty(stackTrace))
+            {
+                <hr />
+                <pre>@stackTrace</pre>
+            }
+        </div>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://ssel-apps.eecs.umich.edu/static/lib/jquery/jquery.min.js"></script>
+    <script src="https://ssel-apps.eecs.umich.edu/static/lib/popper/1.14.7/umd/popper.min.js"></script>
+    <script src="https://ssel-apps.eecs.umich.edu/static/lib/bootstrap4/js/bootstrap.min.js"></script>
+</body>
+</html>

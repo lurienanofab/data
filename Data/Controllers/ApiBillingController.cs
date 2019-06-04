@@ -1,7 +1,9 @@
 ﻿using Data.Models.Api;
+using LNF;
 using LNF.CommonTools;
 using LNF.Logging;
 using LNF.Models;
+using LNF.Models.Billing.Process;
 using LNF.Repository;
 using LNF.Repository.Billing;
 using LNF.WebApi;
@@ -53,6 +55,9 @@ namespace Data.Controllers
                 if (model.EndPeriod == DateTime.MinValue)
                     model.EndPeriod = model.StartPeriod.AddMonths(1);
 
+                BillingDataProcessStep1 step1 = new BillingDataProcessStep1(DateTime.Now, ServiceProvider.Current);
+                BillingDataProcessStep4Subsidy step4;
+
                 switch (model.Command)
                 {
                     case "tool-data-clean":
@@ -80,15 +85,15 @@ namespace Data.Controllers
                         message += result.LogText;
                         break;
                     case "tool-billing-step1":
-                        result = BillingDataProcessStep1.PopulateToolBilling(model.StartPeriod, model.ClientID, model.IsTemp);
+                        result = step1.PopulateToolBilling(model.StartPeriod, model.ClientID, model.IsTemp);
                         message += result.LogText;
                         break;
                     case "room-billing-step1":
-                        result = BillingDataProcessStep1.PopulateRoomBilling(model.StartPeriod, model.ClientID, model.IsTemp);
+                        result = step1.PopulateRoomBilling(model.StartPeriod, model.ClientID, model.IsTemp);
                         message += result.LogText;
                         break;
                     case "store-billing-step1":
-                        result = BillingDataProcessStep1.PopulateStoreBilling(model.StartPeriod, model.IsTemp);
+                        result = step1.PopulateStoreBilling(model.StartPeriod, model.IsTemp);
                         message += result.LogText;
                         break;
                     case "tool-billing-step2":
@@ -122,11 +127,13 @@ namespace Data.Controllers
                         message += $"Store Step3 By Org: count = {count}";
                         break;
                     case "subsidy-billing-step4":
-                        result = BillingDataProcessStep4Subsidy.PopulateSubsidyBilling(model.StartPeriod, clientId);
+                        step4 = new BillingDataProcessStep4Subsidy(new BillingProcessStep4Command { Command = "subsidy", Period = model.StartPeriod, ClientID = clientId });
+                        result = step4.PopulateSubsidyBilling();
                         message += result.LogText;
                         break;
                     case "subsidy-distribution":
-                        BillingDataProcessStep4Subsidy.DistributeSubsidyMoneyEvenly(model.StartPeriod, model.ClientID);
+                        step4 = new BillingDataProcessStep4Subsidy(new BillingProcessStep4Command { Command = "distribute", Period = model.StartPeriod, ClientID = model.ClientID });
+                        step4.DistributeSubsidyMoneyEvenly();
                         message += "Subsidy distribution: complete";
                         break;
                     case "finalize-data-tables":

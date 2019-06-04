@@ -1,5 +1,5 @@
-﻿using LNF.Models.Billing.Reports;
-using OnlineServices.Api.Billing;
+﻿using LNF;
+using LNF.Models.Billing.Reports;
 using OnlineServices.Api.Scheduler;
 using System;
 using System.Web.Http;
@@ -20,8 +20,7 @@ namespace Data.Controllers.Api
             if (options == null)
                 throw new ArgumentNullException("options");
 
-            var client = new ReportClient();
-            var result = client.SendFinancialManagerReport(options);
+            var result = ServiceProvider.Current.Billing.Report.SendFinancialManagerReport(options);
 
             return result.TotalEmailsSent;
         }
@@ -32,6 +31,17 @@ namespace Data.Controllers.Api
             var client = new SchedulerServiceClient();
             var result = client.SendExpiringCardsEmail();
             return result;
+        }
+
+        [HttpPost, Route("utility/api/email/apportionment")]
+        public int SenApportionmentEmails([FromBody] UserApportionmentReportOptions options)
+        {
+            if (options == null)
+                throw new ArgumentNullException("options");
+
+            var result = ServiceProvider.Current.Billing.Report.SendUserApportionmentReport(options);
+
+            return result.TotalEmailsSent;
         }
     }
 }

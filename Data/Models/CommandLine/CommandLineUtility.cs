@@ -1,6 +1,6 @@
 ﻿using LNF;
 using LNF.CommonTools;
-using LNF.Data;
+using LNF.Models.Billing.Reports;
 using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
@@ -8,7 +8,6 @@ using LNF.Scripting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Data.Models.CommandLine
 {
@@ -30,7 +29,7 @@ namespace Data.Models.CommandLine
                 example: "help()",
                 helpSummary: "displays a list of commands",
                 helpDetail: "Displays a list of each command with a short description.",
-                method: (Func<string>)CommandLineUtility.HelpSummary),
+                method: (Func<string>)HelpSummary),
 
                 ScriptHost.Command.Create(
                 name: "more",
@@ -251,7 +250,8 @@ namespace Data.Models.CommandLine
                     break;
                 case "ToolBillingStep1":
                     getDates(false, false, true);
-                    BillingDataProcessStep1.PopulateToolBilling(period, queryParams.GetValue("ClientID", 0), queryParams.GetValue("IsTemp", false));
+                    var step1 = new BillingDataProcessStep1(DateTime.Now, ServiceProvider.Current);
+                    step1.PopulateToolBilling(period, queryParams.GetValue("ClientID", 0), queryParams.GetValue("IsTemp", false));
                     result.Success = true;
                     result.Message = null;
                     result.Data = ServiceProvider.Current.Log.Current;
@@ -265,10 +265,10 @@ namespace Data.Models.CommandLine
             return result;
         }
 
-        public static ScriptHost.Result SchedulerTask(string task)
+        public static ScriptHost.Result SchedulerTask(string task, IClient currentUser)
         {
             ScriptHost.Result result = new ScriptHost.Result();
-            var model = new ServiceModel { Task = task };
+            var model = new ServiceModel() { Task = task, CurrentUser = currentUser };
             GenericResult gr = model.HandleCommand();
 
             if (gr.Success)
@@ -290,7 +290,7 @@ namespace Data.Models.CommandLine
         {
             ScriptHost.Result result = new ScriptHost.Result();
 
-            ClientItem c = DA.Current.Single<LNF.Repository.Data.ClientInfo>(id).CreateClientItem();
+            var c = DA.Current.Single<LNF.Repository.Data.ClientInfo>(id).CreateModel<IClient>();
 
             if (c == null)
             {
@@ -457,13 +457,16 @@ namespace Data.Models.CommandLine
 
             DateTime d = DateTime.Parse(date);
 
-            LNF.Billing.MonthlyEmailOptions opt = new LNF.Billing.MonthlyEmailOptions
+            var opt = new FinancialManagerReportOptions
             {
+                ClientID = 0,
+                ManagerOrgID = 0,
+                Period = d,
                 IncludeManager = queryParams.GetValue("IncludeManager", true),
                 Message = queryParams.GetValue("Message", string.Empty)
             };
 
-            var processResult = LNF.Billing.FinancialManagerUtility.SendMonthlyUserUsageEmails(d, 0, 0, opt);
+            var processResult = LNF.Billing.FinancialManagerUtility.SendMonthlyUserUsageEmails(opt);
             var count = processResult.TotalEmailsSent;
 
             result.Success = true;

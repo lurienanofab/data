@@ -1,6 +1,7 @@
 ﻿using Data.Models.Api;
 using LNF;
 using LNF.Data;
+using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
 using System;
@@ -13,13 +14,13 @@ namespace Data.Models.Admin
     public class OrgModel : AdminBaseModel
     {
         private IOrgManager OrgManager { get; }
-        private IActiveDataItemManager ActiveDataItemManager { get; }
+        private IActiveLogManager ActiveLogManager { get; }
 
         public OrgModel()
         {
             // TODO: wire-up constructor injection
-            OrgManager = ServiceProvider.Current.Use<IOrgManager>();
-            ActiveDataItemManager = ServiceProvider.Current.Use<IActiveDataItemManager>();
+            OrgManager = ServiceProvider.Current.Data.Org;
+            ActiveLogManager = ServiceProvider.Current.Data.ActiveLog;
         }
 
         public int OrgTypeID { get; set; }
@@ -48,7 +49,7 @@ namespace Data.Models.Admin
 
         public override void Load()
         {
-            message = string.Empty;
+            Message = string.Empty;
 
             if (OrgID == 0)
             {
@@ -60,7 +61,7 @@ namespace Data.Models.Admin
 
             if (org == null)
             {
-                message = GetAlert("Cannot find OrgID {0}", OrgID);
+                Message = GetAlert("Cannot find OrgID {0}", OrgID);
             }
             else
             {
@@ -75,11 +76,11 @@ namespace Data.Models.Admin
         public override bool Save()
         {
             int errors = 0;
-            message = string.Empty;
+            Message = string.Empty;
 
             if (string.IsNullOrEmpty(OrgName))
             {
-                message += GetAlert("Name is required.");
+                Message += GetAlert("Name is required.");
                 errors++;
             }
 
@@ -89,14 +90,14 @@ namespace Data.Models.Admin
             if (existingOrg != null && existingOrg.OrgID != OrgID)
             {
                 //there is an existing (and different) org with the same name
-                message += GetAlert("This name is already used by an {0} org.", existingOrg.Active ? "active" : "inactive");
+                Message += GetAlert("This name is already used by an {0} org.", existingOrg.Active ? "active" : "inactive");
                 errors++;
             }
 
             OrgType orgType = null;
             if (OrgTypeID == 0)
             {
-                message += GetAlert("Type is required.");
+                Message += GetAlert("Type is required.");
                 errors++;
             }
             else
@@ -104,7 +105,7 @@ namespace Data.Models.Admin
                 orgType = DA.Current.Single<OrgType>(OrgTypeID);
                 if (orgType == null)
                 {
-                    message += GetAlert("No record found for OrgTypeID {0}", OrgTypeID);
+                    Message += GetAlert("No record found for OrgTypeID {0}", OrgTypeID);
                     errors++;
                 }
             }
@@ -117,7 +118,7 @@ namespace Data.Models.Admin
                 {
                     if (!Active)
                     {
-                        message += GetAlert("The primary org must be active.");
+                        Message += GetAlert("The primary org must be active.");
                         errors++;
                     }
                 }
@@ -126,7 +127,7 @@ namespace Data.Models.Admin
                     //make sure there is a primary org
                     if (primary == null)
                     {
-                        message += GetAlert("There must be at least one primary org.");
+                        Message += GetAlert("There must be at least one primary org.");
                         errors++;
                     }
                 }
@@ -152,7 +153,7 @@ namespace Data.Models.Admin
                     PrimaryOrg = CanEditPrimaryOrg() ? PrimaryOrg : false
                 };
 
-                DA.Current.SaveOrUpdate(org); // gets a new OrgID
+                DA.Current.Insert(org); // gets a new OrgID
             }
             else
             {
@@ -160,7 +161,7 @@ namespace Data.Models.Admin
 
                 if (org == null)
                 {
-                    message += GetAlert("No record found for OrgID {0}", OrgID);
+                    Message += GetAlert("No record found for OrgID {0}", OrgID);
                     return false;
                 }
 
@@ -175,22 +176,22 @@ namespace Data.Models.Admin
             if (originalActive != Active)
             {
                 if (Active)
-                    ActiveDataItemManager.Enable(org);
+                    ActiveLogManager.Enable("Org", org.OrgID);
                 else
                 {
-                    ActiveDataItemManager.Disable(org);
+                    ActiveLogManager.Disable("Org", org.OrgID);
 
                     //need to disable any clients where this was the only active org
-                    IList<ClientOrg> clientOrgs = OrgManager.GetClientOrgs(org).Where(x => x.Active).ToList();
+                    var clientOrgs = OrgManager.GetClientOrgs(org.OrgID).Where(x => x.ClientActive);
 
-                    foreach (ClientOrg co in clientOrgs)
+                    foreach (var co in clientOrgs)
                     {
                         //does this ClientOrg have any other active associations?
-                        bool hasAnotherActiveClientOrg = DA.Current.Query<ClientOrg>().Any(x => x.Active && x.Client == co.Client && x.Org != co.Org);
+                        bool hasAnotherActiveClientOrg = DA.Current.Query<ClientOrg>().Any(x => x.Active && x.Client.ClientID == co.ClientID && x.Org.OrgID != co.OrgID);
                         if (!hasAnotherActiveClientOrg)
                         {
                             //no other active ClientOrgs so disable the Client record also
-                            ActiveDataItemManager.Disable(co.Client);
+                            ActiveLogManager.Disable("Client", co.ClientID);
                         }
                     }
                 }
