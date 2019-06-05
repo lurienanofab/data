@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Data;
-using System.IO;
-using LNF;
+﻿using LNF;
 using LNF.Data;
-using LNF.Scripting;
+using LNF.Models.Data;
 using LNF.Repository;
 using LNF.Repository.Data;
+using LNF.Scripting;
 using LNF.Web.Mvc;
 using LNF.Web.Mvc.UI;
-using LNF.Models.Data;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.IO;
+using System.Linq;
+using System.Web;
 
 namespace Data.Models
 {
@@ -28,6 +28,7 @@ namespace Data.Models
         public string Format { get; set; }
         public string Callback { get; set; }
         public string Query { get; set; }
+        public string DefaultParameters { get; set; }
         public string Title { get; set; }
         public string Key { get; set; }
         public IHtmlString Html { get; set; }
@@ -113,10 +114,16 @@ namespace Data.Models
                 .Add(new SubMenu.MenuItem() { LinkText = "Reports", ActionName = "Reports", ControllerName = "Feed" });
         }
 
-        public DataSet ExecuteQuery(DataFeed feed)
+        public DataSet ExecuteQuery(DataFeed feed, HttpRequestBase request)
         {
+            var parameters = new Dictionary<object, object>();
+
+            foreach(var key in request.QueryString.AllKeys)
+                parameters.Add(key, request.QueryString[key]);
+
             var util = new DataFeedUtility(ServiceProvider.Current);
-            return util.ExecuteQuery(feed, Parameters.Create());
+            feed.ApplyDefaultParameters(parameters);
+            return util.ExecuteQuery(feed, Parameters.Create(parameters));
         }
 
         public DataTable[] GetTables(DataSet ds)
@@ -185,6 +192,7 @@ namespace Data.Models
                     feed.Active = Active;
                     feed.FeedType = FeedType;
                     feed.FeedQuery = Query;
+                    feed.DefaultParameters = DefaultParameters;
 
                     DA.Current.SaveOrUpdate(feed);
                 }

@@ -1,6 +1,7 @@
-﻿@using LNF.Repository.Data;
+﻿@using LNF.Models.Data;
 @using LNF.Web.Mvc;
 @using Data.Models;
+
 @model FeedModel
 @{
 
@@ -62,6 +63,10 @@
             background-repeat: no-repeat;
             background-position: 0% 50%;
             background-size: 14px 14px;
+        }
+
+        .parameters {
+            margin-bottom: 10px;
         }
     </style>
 }
@@ -130,20 +135,22 @@
                 <div class="form-group">
                     @Html.TextAreaFor(x => x.Query, 15, 100, new { @class = "feed-query form-control", @spellcheck = "false" })
                 </div>
+                <div class="form-group">
+                    <label for="queryString">Query String (Default Parameters):</label>
+                    <div class="input-group">
+                        @Html.TextBoxFor(x => x.DefaultParameters, new { @class = "query-string form-control" })
+                        <span class="input-group-btn">
+                            <button type="button" class="run-feed btn btn-default">Run</button>
+                        </span>
+                    </div>
+                </div>
                 <div style="margin-top: 10px;">
                     <button type="submit" name="Command" value="save-feed" class="btn btn-primary">Save</button>
                     @Html.ActionLink("Return", "List", "Feed", new { @class = "btn btn-default" })
                 </div>
             }
             <hr />
-            <div class="form-inline">
-                <div class="form-group">
-                    <label for="queryString">Query String:</label>
-                    <input type="text" id="queryString" class="query-string form-control" style="width: 500px;" />
-                    <button type="button" class="run-feed btn btn-default">Run</button>
-                </div>
-                <div class="form-group working"></div>
-            </div>
+            <div class="form-group working"></div>
             <a name="output"></a>
             <div class="run-output" style="margin: 10px 0 40px 0;"></div>
         </div>

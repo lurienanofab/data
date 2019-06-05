@@ -25,12 +25,12 @@
 
             var ajaxUrl = function () {
                 return $this.data("ajaxurl");
-            }
+            };
 
             var feedType = function () {
                 var result = $('.feed-types', $this).find('input:checked').val();
                 return result;
-            }
+            };
 
             var getMode = function () {
                 var result = '';
@@ -43,38 +43,16 @@
                         break;
                 }
                 return result;
-            }
-
-            var getQueryString = function (qs) {
-                if (qs.indexOf('?') == 0)
-                    qs = qs.substring(1);
-                var a = qs.split('&');
-                //var a = window.location.search.substr(1).split('&');
-                if (a == "") return {};
-                var b = {};
-                for (var i = 0; i < a.length; ++i) {
-                    var p = a[i].split('=');
-                    if (p.length != 2) continue;
-                    b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
-                }
-                return b;
-            }
-
-            var getParams = function () {
-                var qs = getQueryString($(".query-string", $this).val());
-                var params = {};
-                $.extend(params, qs);
-                return JSON.stringify(params);
-            }
+            };
 
             var setRunError = function (msg) {
                 $('.run-output', $this).html($("<div/>", { "class": "alert alert-danger", "role": "alert" }).html(msg));
                 return false;
-            }
+            };
 
             var bufferContent = function (buffer) {
                 return $('<pre/>').html(buffer);
-            }
+            };
 
             var dataContent = function (data) {
 
@@ -85,16 +63,18 @@
                     table.append("<thead/>").append("<tbody/>");
 
                     var headers = v.Headers;
-                    if (headers != null && headers.length > 0) {
-                        var row = $('<tr/>');
+                    var items = v.Items;
+                    var row = null;
+
+                    if (headers !== null && headers.length > 0) {
+                        row = $('<tr/>');
                         $.each(headers, function (i, v) {
                             row.append($('<th/>').html(v));
                         });
                         $("thead", table).append(row);
                     }
 
-                    var items = v.Items
-                    if (items != null) {
+                    if (items !== null && items.length > 0) {
                         $.each(items, function (i, v) {
                             var row = $('<tr/>');
                             $.each(v, function (x, y) {
@@ -102,26 +82,36 @@
                             });
                             $("tbody", table).append(row);
                         });
+                    } else {
+                        row = $('<tr/>', { 'colspan': Math.max(headers.length, 1) });
+                        row.append($('<td/>', { 'class': 'nodata' }).html('No results to display.'));
+                        $("tbody", table).append(row);
                     }
 
                     result.push(table);
                 });
 
                 return result;
-            }
+            };
 
-            var runFeed = function (type, script) {
-                if (script == '')
+            var runFeed = function (type, script, qs) {
+                if (script === '')
                     return setRunError('Please enter a script.');
                 $.ajax({
                     url: ajaxUrl(),
-                    data: { "Command": "run-script", "FeedType": type, "Query": script, "Params": getParams() },
+                    data: { "Command": "run-script", "FeedType": type, "Query": script, "DefaultParameters": qs },
                     type: 'POST',
                     dataType: 'json',
                     success: function (data, textStatus, jqXHR) {
-                        if (data.Error != '')
+                        if (data.Error !== '')
                             setRunError(data.Error);
                         else {
+                            if (data.Parameters) {
+                                var params = $("<div/>", { "class": "parameters" });
+                                params.html("<strong>Parameters:</strong> " + data.Parameters);
+                                $('.run-output', $this).html(params);
+                            }
+
                             var div = $("<div/>");
                             var count = 0;
 
@@ -147,7 +137,7 @@
                                 count++;
                             }
 
-                            if (data.Data != null) {
+                            if (data.Data !== null) {
                                 div.append(
                                     $("<div/>", { "class": "panel panel-default" }).append(
                                         $("<div/>", { "class": "panel-heading" }).html("Data")
@@ -158,10 +148,10 @@
                                 count++;
                             }
 
-                            if (count == 0)
+                            if (count === 0)
                                 div.html($('<div class="nodata">No results to display.</div>'));
 
-                            $('.run-output', $this).html(div);
+                            $('.run-output', $this).append(div);
                         }
                     },
                     error: function (jqXHR, textStatus, errorThrown) {
@@ -173,7 +163,7 @@
                         $(".run-feed", $this).prop("disabled", false);
                     }
                 });
-            }
+            };
 
             var editor;
 
@@ -194,21 +184,23 @@
                 event.preventDefault();
                 var query = editor.getValue();
 
-                if (query == "")
+                if (query === "")
                     return;
+
+                var qs = $(".query-string", $this).val();
 
                 $(".working", $this).html("working...");
                 $(".run-feed", $this).prop("disabled", true);
-                runFeed(feedType(), query);
+                runFeed(feedType(), query, qs);
             }).on('keyup', '.launcher-querystring', function (event) {
                 var qs = $(".launcher-querystring", $this).val();
                 var href = $(".link-href", $this).val();
                 var baseurl = $(".link-baseurl", $this).val();
-                if (qs.indexOf("?") != 0)
+                if (qs.indexOf("?") !== 0)
                     qs = '?' + qs;
                 $(".launcher-run", $this).attr("href", href + qs);
                 $(".launcher-run", $this).text(baseurl + href + qs);
             });
         });
-    }
+    };
 }(jQuery));

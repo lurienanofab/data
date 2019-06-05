@@ -9,6 +9,7 @@ using LNF.Web.Mvc;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Data;
 using System.IO;
 using System.Linq;
@@ -74,6 +75,7 @@ namespace Data.Controllers
                     model.Active = feed.Active;
                     model.FeedType = feed.FeedType;
                     model.Query = feed.FeedQuery;
+                    model.DefaultParameters = feed.DefaultParameters;
                     model.Message = GetAndRemoveSessionValue("SaveFeedMessage");
                     model.ErrorMessage = GetAndRemoveSessionValue("SaveFeedError");
                 }
@@ -133,7 +135,12 @@ namespace Data.Controllers
                 else
                     query = string.Format("data(sqlquery(\"{0}\"))", model.Query.Replace("\n", " ").Replace("\"", @"\""").Trim());
 
-                Result result = _scriptingSvc.Run(query, Parameters.Create());
+                var dict = new Dictionary<object, object>();
+                DataFeedItem.ApplyDefaultParameters(model.DefaultParameters, dict);
+
+                var parameters = Parameters.Create(dict);
+
+                Result result = _scriptingSvc.Run(query, parameters);
 
                 if (result.Exception != null)
                     error = result.Exception.Message;
@@ -146,7 +153,7 @@ namespace Data.Controllers
                         data.Add(kvp.Key, new { Headers = kvp.Value.GetHeaders().Select(x => x.DisplayText).ToArray(), Items = kvp.Value.GetItems() });
                 }
 
-                return Json(new { Success = true, Message = "", Error = error, Buffer = buffer, Html = html, Data = data });
+                return Json(new { Success = true, Message = "", Error = error, Buffer = buffer, Html = html, Data = data, Parameters = parameters.ToString() });
             }
             else
                 return Json(new { Success = false, Message = "Invalid command" });
@@ -169,7 +176,10 @@ namespace Data.Controllers
             //DataFeed feed = model.GetFeed();
             ContentResult result = new ContentResult();
 
-            var feedResult = ServiceProvider.Current.Data.Feed.GetDataFeedResult(alias, key);
+            var parameters = new Dictionary<object, object>();
+            Merge(parameters, Request.QueryString);
+
+            var feedResult = ServiceProvider.Current.Data.Feed.GetDataFeedResult(alias, key, parameters);
 
             try
             {
@@ -179,42 +189,42 @@ namespace Data.Controllers
                     throw new Exception("Could not find feed: " + model.Alias);
                 else if (feedResult.Deleted)
                     throw new Exception("Could not find feed: " + model.Alias);
-                else if (!feedResult.Active && !DataFeedUtility.CanViewInactiveFeeds(HttpContext.CurrentUser()))
+                else if (!feedResult.Active && !DataFeedItem.CanViewInactiveFeeds(HttpContext.CurrentUser()))
                     throw new Exception("Could not find feed: " + model.Alias);
                 else
                 {
                     switch (model.Format)
                     {
                         case "xml":
-                            result.Content = util.XmlFeedContent(feedResult, model.Key, Parameters.Create());
+                            result.Content = util.XmlFeedContent(feedResult, model.Key);
                             result.ContentType = "text/xml";
                             break;
                         case "rss":
-                            result.Content = util.RssFeedContent(feedResult, model.Key, Parameters.Create());
+                            result.Content = util.RssFeedContent(feedResult, model.Key);
                             result.ContentType = "application/rss+xml";
                             break;
                         case "html":
                             return View("Feed", model);
                         case "table":
-                            result.Content = util.HtmlFeedContent(feedResult, model.Key, model.Format, Parameters.Create());
+                            result.Content = util.HtmlFeedContent(feedResult, model.Key, model.Format);
                             result.ContentType = "text/html";
                             break;
                         case "json":
                         case "jsonp":
                         case "datatables":
-                            result.Content = util.JsonFeedContent(feedResult, model.Key, model.Format, Parameters.Create());
+                            result.Content = util.JsonFeedContent(feedResult, model.Key, model.Format);
                             if (model.Format == "jsonp" && !string.IsNullOrEmpty(model.Callback))
                                 result.Content = model.Callback + "(" + result.Content + ")";
                             result.ContentType = "application/json";
                             break;
                         case "ical":
-                            result.Content = util.IcalFeedContent(feedResult, model.Key, Parameters.Create());
+                            result.Content = util.IcalFeedContent(feedResult, model.Key);
                             result.ContentType = "text/calendar";
                             Response.Charset = string.Empty;
                             Response.AddHeader("Content-Disposition", string.Format("attachment;filename={0}-{1}.ics", feedResult.Alias, DateTime.Now.ToString("yyyyMMddHHmmss")));
                             break;
                         default: //csv
-                            result.Content = util.CsvFeedContent(feedResult, model.Key, Parameters.Create());
+                            result.Content = util.CsvFeedContent(feedResult, model.Key);
                             result.ContentType = "text/csv";
                             Response.AddHeader("Content-Disposition", string.Format("attachment;filename={0}-{1}.csv", feedResult.Alias, DateTime.Now.ToString("yyyyMMddHHmmss")));
                             break;
@@ -274,7 +284,7 @@ namespace Data.Controllers
                 {
                     try
                     {
-                        Result result = _scriptingSvc.Run(feed.FeedQuery, Parameters.Create());
+                        Result result = _scriptingSvc.Run(feed.FeedQuery, GetParameters(feed));
                         if (result.Exception != null)
                             throw result.Exception;
 
@@ -316,6 +326,29 @@ namespace Data.Controllers
             }
 
             return result;
+        }
+
+        private Parameters GetParameters(DataFeed feed)
+        {
+            var dict = new Dictionary<object, object>();
+            Merge(dict, Request.QueryString);
+            Merge(dict, Request.Form);
+            feed.ApplyDefaultParameters(dict);
+
+            var result = Parameters.Create(dict);
+
+            return result;
+        }
+
+        private void Merge(IDictionary<object, object> dict, NameValueCollection nvc)
+        {
+            foreach (var key in nvc.AllKeys)
+            {
+                if (dict.ContainsKey(key))
+                    dict[key] = nvc[key];
+                else
+                    dict.Add(key, nvc[key]);
+            }
         }
     }
 }
