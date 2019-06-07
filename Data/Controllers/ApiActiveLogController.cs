@@ -9,6 +9,7 @@ using LNF.Repository.Data;
 
 namespace Data.Controllers
 {
+    [Route("api/activelog")]
     public class ApiActiveLogController : ApiController
     {
         public ActiveLogModel Post([FromBody] ActiveLogModel model)

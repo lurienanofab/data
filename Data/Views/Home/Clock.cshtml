@@ -1,4 +1,6 @@
-﻿@model Data.Models.ClockModel
+﻿@using Data.Models;
+
+@model ClockModel
 @{
     Layout = null;
     ViewBag.Title = "Clock";
@@ -125,7 +127,7 @@
     <script src="@Url.Content("//ssel-apps.eecs.umich.edu/static/lib/moment/moment.js")"></script>
     <script src="@Url.Content("~/Scripts/jquery.querystring.js")"></script>
     <script src="@Url.Content("~/Scripts/jquery.analogclock.js")"></script>
-    <script src="@Url.Content("~/Scripts/jquery.servertime.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.servertime.js?v=201906061608")"></script>
     <script src="@Url.Content("~/Scripts/jquery.inlab.js")"></script>
 
     <script>
@@ -141,6 +143,27 @@
                 //analogClock.trigger("set", m);
             }
         });
+
+        var events = "click mousemove keydown";
+
+        var redirectUrl = "http://ssel-apps.eecs.umich.edu/login/";
+
+        var redirect = function (e) {
+            //remove event listeners
+            $(window).off(events, redirect);
+
+            //redirect
+            window.top.location = redirectUrl;
+        }
+
+        if ('login' == '@ViewBag.Redirect') {
+            $(window).on("focus", function(e){
+                console.log("focused");
+                $(window).on(events, redirect);
+            });
+
+            $(window).on(events, redirect);
+        }
     </script>
 </body>
 </html>

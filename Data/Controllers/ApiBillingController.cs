@@ -17,7 +17,7 @@ namespace Data.Controllers
 {
     public class ApiBillingController : ApiController
     {
-        [MultiAuthorize(AuthorizeMethod.Basic | AuthorizeMethod.Forms)]
+        [MultiAuthorize(AuthorizeMethod.Basic | AuthorizeMethod.Forms), Route("api/billing/tool")]
         public IList<ToolBilling> GetToolBilling(DateTime period, int clientId = 0, int limit = 0)
         {
             IList<ToolBilling> query = DA.Current.Query<ToolBilling>().Where(x => x.Period == period).ToList();
@@ -28,7 +28,7 @@ namespace Data.Controllers
                 return result.Take(limit).ToList();
         }
 
-        [MultiAuthorize(AuthorizeMethod.Basic | AuthorizeMethod.Forms)]
+        [MultiAuthorize(AuthorizeMethod.Basic | AuthorizeMethod.Forms), Route("api/billing")]
         public BillingResult Post([FromBody] BillingModel model, bool delete = true)
         {
             HttpContext.Current.Server.ScriptTimeout = 1800;

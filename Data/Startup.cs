@@ -1,5 +1,4 @@
 ﻿using LNF;
-using LNF.Impl.Context;
 using LNF.Impl.DependencyInjection.Web;
 using LNF.Web;
 using Microsoft.Owin;
@@ -16,9 +15,9 @@ namespace Data
     {
         public override void Configuration(IAppBuilder app)
         {
-            var ctx = new WebContext(new WebContextFactory());
-            var ioc = new IOC(ctx);
-            ServiceProvider.Current = ioc.Resolver.GetInstance<ServiceProvider>();
+            var ioc = new IOC();
+            ServiceProvider.Configure(ioc.Resolver);
+
             base.Configuration(app); // this must come before app.UseWebApi or NHibernate won't work
             HttpConfiguration config = new HttpConfiguration();
             WebApiConfig.Register(config);

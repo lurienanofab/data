@@ -9,6 +9,7 @@ using LNF.Repository.Data;
 
 namespace Data.Controllers
 {
+    [Route("api/org/department")]
     public class ApiOrgDepartmentController : ApiController
     {
         public OrgDepartmentModel[] Get(int orgId)

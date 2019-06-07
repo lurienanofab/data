@@ -1,6 +1,5 @@
 ﻿using Data.Models.Admin;
 using LNF;
-using LNF.Data;
 using LNF.Models.Data;
 using LNF.Web.Mvc;
 using System;
@@ -142,7 +141,7 @@ namespace Data.Controllers.Admin
 
         [Route("admin/room/edit/{RoomID}")]
         [LNFAuthorize(ClientPrivilege.Administrator)]
-        public ActionResult RoomEdit(Models.Admin.RoomModel model)
+        public ActionResult RoomEdit(RoomModel model)
         {
             if (model.Command == "save")
             {

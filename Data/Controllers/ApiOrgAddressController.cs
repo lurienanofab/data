@@ -8,6 +8,7 @@ using System.Web.Http;
 
 namespace Data.Controllers
 {
+    [Route("api/org/address")]
     public class ApiOrgAddressController : ApiController
     {
         public AddressModel[] Get(int orgId)

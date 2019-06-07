@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Web.Http;
+﻿using Data.Models;
 using LNF.Repository;
 using LNF.Repository.Data;
-using Data.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.Http;
 
 namespace Data.Controllers
 {
+    [Route("api/news/{option}")]
     public class ApiNewsController : ApiController
     {
         public NewsItem[] Get(string option = "")

@@ -22,7 +22,7 @@ namespace Data.Controllers
     {
         private readonly IScriptingService _scriptingSvc = new PythonScriptService();
 
-        // feed/reports/define/{alias}
+        [Route("feed/reports/{alias}/cfg")]
         public ActionResult Configuration(string alias, string callback = null)
         {
             string content = string.Empty;
@@ -104,6 +104,7 @@ namespace Data.Controllers
             return RedirectToAction("Console", new { model.Alias });
         }
 
+        [Route("feed/reports/{alias}")]
         public ActionResult Reports(FeedModel model)
         {
             model.CurrentPage = "Feed";
@@ -159,21 +160,21 @@ namespace Data.Controllers
                 return Json(new { Success = false, Message = "Invalid command" });
         }
 
-        [Route("feed/{alias?}/{format?}/{key?}"), AllowAnonymous]
-        public ActionResult Index(string alias, string format, string key)
+        [AllowAnonymous, Route("feed/{alias?}/{format?}/{key?}")]
+        public ActionResult Index(string alias, string format, string key, string callback = null)
         {
             var model = new FeedModel()
             {
                 CurrentUser = HttpContext.CurrentUser(),
                 Alias = alias,
                 Format = format,
-                Key = key
+                Key = key,
+                Callback = callback
             };
 
             if (string.IsNullOrEmpty(model.Alias))
                 return RedirectToAction("List");
 
-            //DataFeed feed = model.GetFeed();
             ContentResult result = new ContentResult();
 
             var parameters = new Dictionary<object, object>();
@@ -270,7 +271,7 @@ namespace Data.Controllers
             return result;
         }
 
-        [LNFAuthorize]
+        [LNFAuthorize, Route("view/{alias}")]
         public ActionResult ViewHtml(FeedModel model)
         {
             //model.App = "view";

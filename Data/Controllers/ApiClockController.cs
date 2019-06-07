@@ -1,18 +1,16 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Data.Models;
+using LNF;
+using System;
+using System.Configuration;
 using System.Net;
 using System.Net.Http;
+using System.Net.WebSockets;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using System.Web.WebSockets;
-using System.Net.WebSockets;
-using System.Configuration;
-using System.Threading;
-using System.Threading.Tasks;
-using LNF;
-using Data.Models;
 
 namespace Data.Controllers
 {
@@ -24,6 +22,7 @@ namespace Data.Controllers
 
     public class ApiClockController : ApiController
     {
+        [Route("api/clock/{source}")]
         public TimeModel Get(string source = "server")
         {
             if (source == "server")
@@ -32,6 +31,7 @@ namespace Data.Controllers
                 return new TimeModel() { Current = ClockUtility.GetNetworkTime(ConfigurationManager.AppSettings["NtpServer"]), Source = source };
         }
 
+        [Route("api/clock/{source}/socket")]
         public HttpResponseMessage GetSocket(string source)
         {
             HttpContext.Current.Items["source"] = source;

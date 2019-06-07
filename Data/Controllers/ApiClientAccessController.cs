@@ -22,7 +22,7 @@ namespace Data.Controllers
 {
     public class ApiClientAccessController : ApiController
     {
-        [HttpGet]
+        [HttpGet, Route("api/client/access/check")]
         public AccessCheck Check(int id)
         {
             AccessCheck result = null;
@@ -35,6 +35,7 @@ namespace Data.Controllers
             return result;
         }
 
+        [Route("api/client/access/inlab")]
         public InLabArea[] GetInLab()
         {
             IEnumerable<Badge> query = ServiceProvider.Current.PhysicalAccess.GetCurrentlyInArea("all");
@@ -46,6 +47,7 @@ namespace Data.Controllers
             return areas.ToArray();
         }
 
+        [Route("api/client/access/inlab/socket")]
         public HttpResponseMessage GetInLabSocket()
         {
             if (HttpContext.Current.IsWebSocketRequest)

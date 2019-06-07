@@ -8,16 +8,15 @@ using System.Web.Http;
 
 namespace Data.Controllers
 {
+    [Route("api/client/account/{option}")]
     public class ApiClientAccountController : ApiController
     {
-        private IClientManager ClientManager { get; set; }
-        private IActiveLogManager ActiveLogManager { get; }
+        private IProvider Provider { get; set; }
 
         public ApiClientAccountController()
         {
             //TODO: wire-up constructor injection
-            ClientManager = ServiceProvider.Current.Data.Client;
-            ActiveLogManager = ServiceProvider.Current.Data.ActiveLog;
+            Provider = ServiceProvider.Current;
         }
 
         public AccountModel[] Get([FromUri] string option, int id)
@@ -61,12 +60,12 @@ namespace Data.Controllers
                         DA.Current.Insert(ca);
                     }
 
-                    ActiveLogManager.Enable("ClientAccount", ca.ClientAccountID);
+                    Provider.Data.ActiveLog.Enable("ClientAccount", ca.ClientAccountID);
 
                     //may need to restore physical access because there is now an active acct and other requirements are met
                     string alert;
                     var c = DA.Current.Single<ClientInfo>(ca.ClientOrg.Client.ClientID).CreateModel<IClient>();
-                    ClientManager.UpdatePhysicalAccess(c, out alert);
+                    Provider.Data.Client.UpdatePhysicalAccess(c, out alert);
 
                     result = ApiUtility.CreateAccountModel(ca.Account);
 
@@ -86,11 +85,11 @@ namespace Data.Controllers
                     ClientAccount ca = DA.Current.Query<ClientAccount>().FirstOrDefault(x => x.ClientOrg.ClientOrgID == id && x.Account.AccountID == model.AccountID);
                     if (ca != null)
                     {
-                        ActiveLogManager.Disable("ClientAccount", ca.ClientAccountID);
+                        Provider.Data.ActiveLog.Disable("ClientAccount", ca.ClientAccountID);
 
                         //may not have physical access any more if there are no more active accounts
                         var c = DA.Current.Single<ClientInfo>(ca.ClientOrg.Client.ClientID).CreateModel<IClient>();
-                        ClientManager.UpdatePhysicalAccess(c, out string alert);
+                        Provider.Data.Client.UpdatePhysicalAccess(c, out string alert);
 
                         return true;
                     }

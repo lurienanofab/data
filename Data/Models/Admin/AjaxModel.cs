@@ -5,20 +5,19 @@ using LNF.Repository;
 using LNF.Repository.Data;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 
 namespace Data.Models.Admin
 {
     public class AjaxModel
     {
-        private IClientManager ClientManager { get; }
-        private IActiveLogManager ActiveLogManager { get; }
+        protected IProvider Provider { get; }
 
         public AjaxModel()
         {
             // TODO: wire-up constructor injection
-            ClientManager = ServiceProvider.Current.Data.Client;
-            ActiveLogManager = ServiceProvider.Current.Data.ActiveLog;
+            Provider = ServiceProvider.Current;
         }
 
         public string Command { get; set; }
@@ -51,7 +50,7 @@ namespace Data.Models.Admin
                     if (OrgID == 0)
                         throw new Exception("Missing parameter OrgID");
 
-                    var query = ClientManager.SelectOrgManagers(OrgID);
+                    var query = Provider.Data.Client.SelectOrgManagers(OrgID);
 
                     return new { status = "ok", managers = query.Select(x => new { x.ClientOrgID, x.DisplayName }).ToArray() };
                 case "update-matrix":
@@ -89,7 +88,7 @@ namespace Data.Models.Admin
 
         public IEnumerable<IClient> GetManagers(int orgId)
         {
-            return ClientManager.SelectOrgManagers(orgId);
+            return Provider.Data.Client.SelectOrgManagers(orgId);
         }
 
         public void UpdateClientAccount()
@@ -126,10 +125,10 @@ namespace Data.Models.Admin
                 DA.Current.Insert(ca);
             }
 
-            ActiveLogManager.Enable("ClientAccount", ca.ClientAccountID);
+            Provider.Data.ActiveLog.Enable("ClientAccount", ca.ClientAccountID);
 
             var c = DA.Current.Single<ClientInfo>(ca.ClientOrg.Client.ClientID).CreateModel<IClient>();
-            ClientManager.UpdatePhysicalAccess(c, out string alert);
+            Provider.Data.Client.UpdatePhysicalAccess(c, out string alert);
 
             //A final check...
             if (ca.ClientOrg.ClientOrgID != UserClientOrgID)
@@ -141,12 +140,12 @@ namespace Data.Models.Admin
             ClientAccount ca = GetClientAccount();
 
             if (ca == null)
-                throw new Exception(string.Format("Could not find ClientAccount record for ClientOrgID: {0}", UserClientOrgID));
+                throw new Exception($"Could not find ClientAccount record for ClientOrgID: {UserClientOrgID}");
 
-            ActiveLogManager.Disable("ClientAccount", ca.ClientAccountID);
+            Provider.Data.ActiveLog.Disable("ClientAccount", ca.ClientAccountID);
 
             var c = DA.Current.Single<ClientInfo>(ca.ClientOrg.Client.ClientID).CreateModel<IClient>();
-            ClientManager.UpdatePhysicalAccess(c, out string alert);
+            Provider.Data.Client.UpdatePhysicalAccess(c, out string alert);
 
             return alert;
         }

@@ -1,24 +1,24 @@
-﻿using System;
-using System.Text;
-using System.Collections;
+﻿using LNF;
+using LNF.Repository;
+using LNF.Repository.Scheduler;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using System.Web.WebSockets;
-using System.Threading;
-using System.Threading.Tasks;
-using LNF;
-using LNF.Repository;
-using LNF.Repository.Scheduler;
 
 namespace Data.Controllers
 {
     public class ApiSchedulerController : ApiController
     {
+        [Route("api/scheduler/active-reservations")]
         public object[] GetActiveReservations()
         {
             IList<Reservation> query = DA.Current.Query<Reservation>().Where(x => x.IsStarted && x.IsActive && x.ActualEndDateTime == null && x.ActualBeginDateTime <= DateTime.Now).ToList();
@@ -26,6 +26,7 @@ namespace Data.Controllers
             return items;
         }
 
+        [Route("api/scheduler/active-reservations/socket")]
         public HttpResponseMessage GetActiveReservationsSocket()
         {
             if (HttpContext.Current.IsWebSocketRequest)

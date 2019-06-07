@@ -1,16 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Web.Http;
+﻿using LNF.CommonTools;
+using LNF.Models.Billing.Process;
 using LNF.Repository;
 using LNF.Repository.Billing;
-using LNF.CommonTools;
-using LNF.Models.Billing.Process;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.Http;
 
 namespace Data.Controllers
 {
+    [Route("api/subsidy")]
     public class ApiSubsidyController : ApiController
     {
         public SubsidyModel[] Get(DateTime period, int clientId = 0, bool calculate = false)

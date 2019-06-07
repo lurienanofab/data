@@ -8,14 +8,15 @@ using System.Web.Http;
 
 namespace Data.Controllers
 {
+    [Route("api/client/manager/{option}")]
     public class ApiClientManagerController : ApiController
     {
-        private IActiveLogManager ActiveLogManager { get; }
+        private IProvider Provider { get; }
 
         public ApiClientManagerController()
         {
             //TODO: wire-up constructor injection
-            ActiveLogManager = ServiceProvider.Current.Data.ActiveLog;
+            Provider = ServiceProvider.Current;
         }
 
         public ClientModel[] Get([FromUri] string option, int id)
@@ -62,7 +63,7 @@ namespace Data.Controllers
                             DA.Current.Insert(cm);
                         }
 
-                        ActiveLogManager.Enable("ClientManager", cm.ClientManagerID);
+                        Provider.Data.ActiveLog.Enable("ClientManager", cm.ClientManagerID);
 
                         result = ApiUtility.CreateClientModel(cm.ManagerOrg.CreateModel<IClient>());
                     }
@@ -84,7 +85,7 @@ namespace Data.Controllers
                     var cm = DA.Current.Query<LNF.Repository.Data.ClientManager>().FirstOrDefault(x => x.ClientOrg == co && x.ManagerOrg == mo && x.Active);
                     if (cm != null)
                     {
-                        ActiveLogManager.Disable("ClientManager", cm.ClientManagerID);
+                        Provider.Data.ActiveLog.Disable("ClientManager", cm.ClientManagerID);
 
                         //remove account access if no other manager manages the acct
                         ClientModel m = ApiUtility.CreateClientModel(co.CreateModel<IClient>());
@@ -109,7 +110,7 @@ namespace Data.Controllers
                                 ClientAccount ca = DA.Current.Query<ClientAccount>().FirstOrDefault(x => x.ClientOrg.ClientOrgID == m.ClientOrgID && x.Account.AccountID == acct.AccountID);
 
                                 if (!ca.Manager) //do not deactivate if this client is also the acct manager!
-                                    ActiveLogManager.Disable("ClientAccount", ca.ClientAccountID);
+                                    Provider.Data.ActiveLog.Disable("ClientAccount", ca.ClientAccountID);
                             }
                         }
 
