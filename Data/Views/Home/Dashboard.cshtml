@@ -1,12 +1,12 @@
-﻿@using LNF;
-@model Data.Models.DashboardModel
+﻿@using Data.Models;
+@model DashboardModel
 @{
     ViewBag.Title = "Dashboard";
     Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
 }
 <div class="container">
     <div class="page-header">
-        <h1>@Providers.Email.CompanyName Dashboard</h1>
+        <h1>@Model.CompanyName Dashboard</h1>
     </div>
     <form class="form-horizontal" role="form">
         <div class="form-group">

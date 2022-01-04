@@ -1,6 +1,6 @@
-﻿using LNF;
-using LNF.Repository;
-using LNF.Repository.Scheduler;
+﻿using Data.Controllers.Api;
+using LNF;
+using LNF.Impl.Repository.Scheduler;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,12 +16,14 @@ using System.Web.WebSockets;
 
 namespace Data.Controllers
 {
-    public class ApiSchedulerController : ApiController
+    public class ApiSchedulerController : DataApiController
     {
+        public ApiSchedulerController(IProvider provider) : base(provider) { }
+
         [Route("api/scheduler/active-reservations")]
         public object[] GetActiveReservations()
         {
-            IList<Reservation> query = DA.Current.Query<Reservation>().Where(x => x.IsStarted && x.IsActive && x.ActualEndDateTime == null && x.ActualBeginDateTime <= DateTime.Now).ToList();
+            IList<Reservation> query = DataSession.Query<Reservation>().Where(x => x.IsStarted && x.IsActive && x.ActualEndDateTime == null && x.ActualBeginDateTime <= DateTime.Now).ToList();
             var items = query.Select(GetReservation).ToArray();
             return items;
         }
@@ -52,11 +54,11 @@ namespace Data.Controllers
                         object[] items = GetActiveReservations();
 
                         var response = new { Timestamp = DateTime.Now, Count = items.Length, Items = items };
-                        buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(ServiceProvider.Current.Serialization.Json.SerializeObject(response)));
+                        buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(Provider.Utility.Serialization.Json.SerializeObject(response)));
                     }
                     catch (Exception ex)
                     {
-                        buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(ServiceProvider.Current.Serialization.Json.SerializeObject(new { Timestamp = DateTime.Now, Error = ex.Message })));
+                        buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(Provider.Utility.Serialization.Json.SerializeObject(new { Timestamp = DateTime.Now, Error = ex.Message })));
                     }
 
                     await socket.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);

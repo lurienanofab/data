@@ -1,11 +1,9 @@
-﻿using LNF.Models.Data;
-using LNF.Web.Mvc;
-using LNF.Web.Mvc.UI;
+﻿using LNF.Web.Mvc.UI;
 using System;
 
 namespace Data.Models
 {
-    public abstract class ClientBaseModel : BaseModel
+    public abstract class ClientBaseModel : DataModel
     {
         public override SubMenu GetSubMenu()
         {

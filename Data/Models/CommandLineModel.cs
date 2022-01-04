@@ -1,5 +1,4 @@
-﻿using LNF.Models.Data;
-using LNF.Web.Mvc;
+﻿using LNF.Web.Mvc;
 
 namespace Data.Models
 {

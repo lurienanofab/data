@@ -1,13 +1,17 @@
-﻿using Data.Models.Api;
+﻿using Data.Controllers.Api;
+using Data.Models.Api;
+using LNF;
+using LNF.Impl.Repository.Data;
 using LNF.Repository;
-using LNF.Repository.Data;
 using System.Web.Http;
 
 namespace Data.Controllers
 {
     [Route("api/client/address/{option}")]
-    public class ApiClientAddressController : ApiController
+    public class ApiClientAddressController : DataApiController
     {
+        public ApiClientAddressController(IProvider provider) : base(provider) { }
+
         public AddressModel[] Get([FromUri] string option, int id)
         {
             switch (option)
@@ -21,7 +25,7 @@ namespace Data.Controllers
 
         public AddressModel Post([FromBody] AddressModel model, int id = 0)
         {
-            Address addr = DA.Current.Single<Address>(model.AddressID);
+            Address addr = DataSession.Single<Address>(model.AddressID);
             AddressModel result = null;
 
             if (addr != null)
@@ -33,13 +37,13 @@ namespace Data.Controllers
                 addr.StrAddress1 = model.StreetAddress1;
                 addr.StrAddress2 = model.StreetAddress2;
                 addr.Zip = model.Zip;
-                DA.Current.SaveOrUpdate(addr);
+                DataSession.SaveOrUpdate(addr);
                 result = ApiUtility.CreateAddressModel("client", addr);
             }
             else
             {
                 //add a new address to this ClientOrg
-                ClientOrg co = DA.Current.Single<ClientOrg>(id);
+                ClientOrg co = DataSession.Single<ClientOrg>(id);
                 if (co != null)
                 {
                     addr = new Address()
@@ -53,11 +57,11 @@ namespace Data.Controllers
                         Zip = model.Zip
                     };
 
-                    DA.Current.SaveOrUpdate(addr);
+                    DataSession.SaveOrUpdate(addr);
 
                     co.ClientAddressID = addr.AddressID;
 
-                    DA.Current.SaveOrUpdate(co);
+                    DataSession.SaveOrUpdate(co);
 
                     result = ApiUtility.CreateAddressModel("client", addr);
                 }
@@ -68,15 +72,15 @@ namespace Data.Controllers
 
         public bool Delete([FromBody] AddressModel model, int id)
         {
-            Address addr = DA.Current.Single<Address>(model.AddressID);
+            Address addr = DataSession.Single<Address>(model.AddressID);
 
-            ClientOrg co = DA.Current.Single<ClientOrg>(id);
+            ClientOrg co = DataSession.Single<ClientOrg>(id);
 
             if (addr != null && co != null)
             {
-                DA.Current.Delete(addr);
+                DataSession.Delete(addr);
                 co.ClientAddressID = 0;
-                DA.Current.SaveOrUpdate(co);
+                DataSession.SaveOrUpdate(co);
 
                 return true;
             }

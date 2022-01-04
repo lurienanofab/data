@@ -11,6 +11,7 @@
 
     string errmsg = string.Empty;
     PointState pointState = null;
+    string pointName = "point";
     string p = Request.QueryString["point"];
     string d = string.IsNullOrEmpty(Request.QueryString["duration"]) ? "0" : Request.QueryString["duration"];
 
@@ -32,6 +33,7 @@
             try
             {
                 pointState = Model.GetPointState(pointId);
+                pointName = Model.GetPointName(pointId);
             }
             catch (Exception ex)
             {
@@ -97,7 +99,7 @@
                     <div class="form-group">
                         <label class="col-sm-1 control-label">Point:</label>
                         <div class="col-sm-11">
-                            <div style="line-height: 38px;">@pointState.PointName [@pointState.PointID]</div>
+                            <div style="line-height: 38px;">@pointName [@pointState.PointID]</div>
                         </div>
                     </div>
                     <div class="form-group">

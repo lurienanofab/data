@@ -1,23 +1,19 @@
-﻿using Data.Models.Api;
+﻿using Data.Controllers.Api;
+using Data.Models.Api;
 using LNF;
-using LNF.Models.Data;
+using LNF.Data;
+using LNF.Impl;
+using LNF.Impl.Repository.Data;
 using LNF.Repository;
-using LNF.Repository.Data;
 using System.Linq;
 using System.Web.Http;
 
 namespace Data.Controllers
 {
     [Route("api/client/manager/{option}")]
-    public class ApiClientManagerController : ApiController
+    public class ApiClientManagerController : DataApiController
     {
-        private IProvider Provider { get; }
-
-        public ApiClientManagerController()
-        {
-            //TODO: wire-up constructor injection
-            Provider = ServiceProvider.Current;
-        }
+        public ApiClientManagerController(IProvider provider) : base(provider) { }
 
         public ClientModel[] Get([FromUri] string option, int id)
         {
@@ -44,12 +40,12 @@ namespace Data.Controllers
             switch (option)
             {
                 case "current":
-                    ClientOrg co = DA.Current.Single<ClientOrg>(id);
-                    ClientOrg mo = DA.Current.Single<ClientOrg>(model.ClientOrgID);
+                    ClientOrg co = DataSession.Single<ClientOrg>(id);
+                    ClientOrg mo = DataSession.Single<ClientOrg>(model.ClientOrgID);
 
                     if (co != null && mo != null)
                     {
-                        var cm = DA.Current.Query<ClientManager>().FirstOrDefault(x => x.ClientOrg == co && x.ManagerOrg == mo);
+                        var cm = DataSession.Query<ClientManager>().FirstOrDefault(x => x.ClientOrg == co && x.ManagerOrg == mo);
 
                         if (cm == null)
                         {
@@ -60,10 +56,10 @@ namespace Data.Controllers
                                 ManagerOrg = mo
                             };
 
-                            DA.Current.Insert(cm);
+                            DataSession.Insert(cm);
                         }
 
-                        Provider.Data.ActiveLog.Enable("ClientManager", cm.ClientManagerID);
+                        Provider.Data.ActiveLog.Enable(cm);
 
                         result = ApiUtility.CreateClientModel(cm.ManagerOrg.CreateModel<IClient>());
                     }
@@ -80,12 +76,12 @@ namespace Data.Controllers
             switch (option)
             {
                 case "current":
-                    ClientOrg co = DA.Current.Single<ClientOrg>(id);
-                    ClientOrg mo = DA.Current.Single<ClientOrg>(model.ClientOrgID);
-                    var cm = DA.Current.Query<LNF.Repository.Data.ClientManager>().FirstOrDefault(x => x.ClientOrg == co && x.ManagerOrg == mo && x.Active);
+                    ClientOrg co = DataSession.Single<ClientOrg>(id);
+                    ClientOrg mo = DataSession.Single<ClientOrg>(model.ClientOrgID);
+                    var cm = DataSession.Query<ClientManager>().FirstOrDefault(x => x.ClientOrg == co && x.ManagerOrg == mo && x.Active);
                     if (cm != null)
                     {
-                        Provider.Data.ActiveLog.Disable("ClientManager", cm.ClientManagerID);
+                        Provider.Data.ActiveLog.Disable(cm);
 
                         //remove account access if no other manager manages the acct
                         ClientModel m = ApiUtility.CreateClientModel(co.CreateModel<IClient>());
@@ -107,10 +103,10 @@ namespace Data.Controllers
                             if (!hasManagerForAccount)
                             {
                                 //the client is assigned to an acct but does not have a manager who manages the acct
-                                ClientAccount ca = DA.Current.Query<ClientAccount>().FirstOrDefault(x => x.ClientOrg.ClientOrgID == m.ClientOrgID && x.Account.AccountID == acct.AccountID);
+                                ClientAccount ca = DataSession.Query<ClientAccount>().FirstOrDefault(x => x.ClientOrg.ClientOrgID == m.ClientOrgID && x.Account.AccountID == acct.AccountID);
 
                                 if (!ca.Manager) //do not deactivate if this client is also the acct manager!
-                                    Provider.Data.ActiveLog.Disable("ClientAccount", ca.ClientAccountID);
+                                    Provider.Data.ActiveLog.Disable(ca);
                             }
                         }
 

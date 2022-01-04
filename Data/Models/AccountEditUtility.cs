@@ -1,5 +1,6 @@
-﻿using LNF.Repository;
-using LNF.Repository.Data;
+﻿using LNF;
+using LNF.DataAccess;
+using LNF.Impl.Repository.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,9 +9,12 @@ namespace Data.Models
 {
     public static class AccountEditUtility
     {
+        public static IProvider Provider => Startup.WebApp.Context.GetInstance<IProvider>();
+        public static ISession DataSession => Provider.DataAccess.Session;
+
         public static IEnumerable<AccountManagerEdit> GetAvailableManagers(AccountEdit acctEdit)
         {
-            var availableManagers = DA.Current.Query<ClientOrgInfo>()
+            var availableManagers = DataSession.Query<ClientOrgInfo>()
                 .Where(x => x.ClientOrgActive && x.OrgID == acctEdit.OrgID && (x.IsManager || x.IsFinManager))
                 .OrderBy(x => x.LName)
                 .ThenBy(x => x.FName)
@@ -34,7 +38,7 @@ namespace Data.Models
 
         public static IEnumerable<AccountManagerEdit> GetManagerEdits(int accountId)
         {
-            var query = DA.Current.Query<ClientAccountInfo>()
+            var query = DataSession.Query<ClientAccountInfo>()
                 .Where(x => x.ClientAccountActive && x.AccountID == accountId && x.Manager)
                 .OrderBy(x => x.LName)
                 .ThenBy(x => x.FName)
@@ -52,7 +56,7 @@ namespace Data.Models
         {
             if (addressId == 0) return null;
 
-            var addr = DA.Current.Single<Address>(addressId);
+            var addr = DataSession.Single<Address>(addressId);
 
             if (addr == null) return null;
 

@@ -1,11 +1,19 @@
-﻿@using LNF.GoogleApi;
-@using Data.Models;
-
-@model GoogleModel
-@{
+﻿@{
     ViewBag.Title = "Google Data";
     Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
-    string app = "Google";
+    //string app = "Google";
+
+    string userInfoDisplayName = ViewBag.UserInfoDisplayName;
+    if (string.IsNullOrEmpty(userInfoDisplayName))
+    {
+        throw new Exception("ViewBag.UserInfoDisplayName is empty.");
+    }
+
+    string userInfoEmail = ViewBag.UserInfoEmail;
+    if (string.IsNullOrEmpty(userInfoEmail))
+    {
+        throw new Exception("ViewBag.UserInfoEmail is empty.");
+    }
 }
 
 <div class="panel panel-default">
@@ -14,7 +22,7 @@
     </div>
     <div class="panel-body">
         Welcome Google user
-        <strong>@Model.UserInfo.DisplayName [@Model.UserInfo.Emails.First().Value]</strong>
+        <strong>@userInfoDisplayName [@userInfoEmail]</strong>
         <hr />
         <h3>Files</h3>
         <table class="table table-striped">
@@ -27,7 +35,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach(var df in Model.Files)
+                @foreach (var df in Model.Files)
                 {
                     <tr>
                         <td>@df.Title</td>

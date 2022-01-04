@@ -1,8 +1,9 @@
 ﻿using Data.Models;
 using LNF;
-using LNF.Models.Data;
+using LNF.Data;
+using LNF.Impl;
+using LNF.Impl.Repository.Data;
 using LNF.Repository;
-using LNF.Repository.Data;
 using LNF.Web.Mvc;
 using System;
 using System.Collections.Generic;
@@ -13,33 +14,27 @@ using System.Web.Mvc;
 namespace Data.Controllers
 {
     [LNFAuthorize(ClientPrivilege.Administrator)]
-    public class AccountController : Controller
+    public class AccountController : DataController
     {
-        private IActiveLogManager ActiveLogManager { get; }
-
-        public AccountController()
-        {
-            // TODO: wire-up constructor injection
-            ActiveLogManager = ServiceProvider.Current.Data.ActiveLog;
-        }
+        public AccountController(IProvider provider) : base(provider) { }
 
         [Route("account/{orgId?}")]
         public ActionResult Index(int orgId = 0)
         {
             var model = new AccountModel();
 
-            var allOrgs = DA.Current.Query<Org>().OrderBy(x => x.OrgName).ToList();
+            var allOrgs = DataSession.Query<Org>().OrderBy(x => x.OrgName).ToList();
             var activeOrgs = allOrgs.Where(x => x.Active).OrderBy(x => x.OrgName).ToList();
             var currentOrg = allOrgs.FirstOrDefault(x => x.OrgID == orgId);
 
             if (currentOrg == null)
                 currentOrg = allOrgs.First(x => x.PrimaryOrg); // throw an error if there isn't one
 
-            model.ActiveOrgs = activeOrgs;
-            model.CurrentOrg = currentOrg;
+            model.ActiveOrgs = activeOrgs.CreateModels<IOrg>();
+            model.CurrentOrg = currentOrg.CreateModel<IOrg>();
 
-            var activeAccounts = DA.Current.Query<Account>().Where(x => x.Active && x.Org.OrgID == currentOrg.OrgID).OrderBy(x => x.Name).ToList();
-            model.ActiveAccounts = activeAccounts;
+            var activeAccounts = DataSession.Query<Account>().Where(x => x.Active && x.Org.OrgID == currentOrg.OrgID).OrderBy(x => x.Name).ToList();
+            model.ActiveAccounts = activeAccounts.CreateModels<IAccount>();
 
             model.IsChartFieldOrg = AccountChartFields.IsChartFieldOrg(currentOrg.CreateModel<IOrg>());
 
@@ -49,7 +44,7 @@ namespace Data.Controllers
         [Route("account/edit/{orgId}/{accountId}")]
         public ActionResult Edit(int orgId, int accountId)
         {
-            var currentOrg = DA.Current.Single<Org>(orgId);
+            var currentOrg = DataSession.Single<Org>(orgId);
 
             if (currentOrg == null)
                 return RedirectToAction("Index", new { orgId });
@@ -60,20 +55,20 @@ namespace Data.Controllers
                 CurrentOrg = currentOrg
             };
 
-            var fundingSources = DA.Current.Query<FundingSource>().OrderBy(x => x.FundingSourceName).ToList();
+            var fundingSources = DataSession.Query<FundingSource>().OrderBy(x => x.FundingSourceName).ToList();
             model.FundingSources = fundingSources;
 
-            var technicalFields = DA.Current.Query<TechnicalField>().OrderBy(x => x.TechnicalFieldName).ToList();
+            var technicalFields = DataSession.Query<TechnicalField>().OrderBy(x => x.TechnicalFieldName).ToList();
             model.TechnicalFields = technicalFields;
 
-            var specialTopics = DA.Current.Query<SpecialTopic>().OrderBy(x => x.SpecialTopicName).ToList();
+            var specialTopics = DataSession.Query<SpecialTopic>().OrderBy(x => x.SpecialTopicName).ToList();
             model.SpecialTopics = specialTopics;
 
             Account acct = null;
 
             if (accountId > 0)
             {
-                acct = DA.Current.Single<Account>(accountId);
+                acct = DataSession.Single<Account>(accountId);
 
                 if (acct == null && accountId > 0)
                     return RedirectToAction("Index", new { orgId });
@@ -111,16 +106,16 @@ namespace Data.Controllers
         [Route("account/delete/{orgId}/{accountId}")]
         public ActionResult Delete(int orgId, int accountId)
         {
-            var acct = DA.Current.Single<Account>(accountId);
+            var acct = DataSession.Single<Account>(accountId);
 
             if (acct != null)
             {
                 // disable ClientAccounts
-                var clientAccounts = DA.Current.Query<ClientAccount>().Where(x => x.Account == acct && x.Active).ToList();
+                var clientAccounts = DataSession.Query<ClientAccount>().Where(x => x.Account == acct && x.Active).ToList();
                 foreach (var ca in clientAccounts)
                 {
                     // disable access to this account
-                    ActiveLogManager.Disable("ClientAccount", ca.ClientAccountID);
+                    Provider.Data.ActiveLog.Disable(ca);
 
                     // check that all clients still have another account
                     var co = ca.ClientOrg;
@@ -135,7 +130,7 @@ namespace Data.Controllers
                     //clientDataRow["EnableAccess"] = false;
                 }
 
-                ActiveLogManager.Disable("Account", acct.AccountID);
+                Provider.Data.ActiveLog.Disable(acct);
             }
 
             return RedirectToAction("Index", new { orgId });
@@ -153,10 +148,10 @@ namespace Data.Controllers
                 bool insert = false;
 
                 if (acctEdit.AccountID > 0)
-                    acct = DA.Current.Single<Account>(acctEdit.AccountID);
+                    acct = DataSession.Single<Account>(acctEdit.AccountID);
                 else
                 {
-                    acct = new Account { Org = DA.Current.Single<Org>(orgId) };
+                    acct = new Account { Org = DataSession.Single<Org>(orgId) };
                     insert = true;
                 }
 
@@ -168,7 +163,7 @@ namespace Data.Controllers
                     acct.FundingSourceID = acctEdit.FundingSourceID;
                     acct.TechnicalFieldID = acctEdit.TechnicalFieldID;
                     acct.SpecialTopicID = acctEdit.SpecialTopicID;
-                    acct.AccountType = DA.Current.Single<AccountType>(acctEdit.AccountTypeID);
+                    acct.AccountType = DataSession.Single<AccountType>(acctEdit.AccountTypeID);
                     acct.InvoiceNumber = acctEdit.InvoiceNumber;
                     acct.InvoiceLine1 = acctEdit.InvoiceLine1;
                     acct.InvoiceLine2 = acctEdit.InvoiceLine2;
@@ -189,7 +184,7 @@ namespace Data.Controllers
                                 insertAddr = true;
                             }
                             else
-                                addr = DA.Current.Single<Address>(kvp.Value.AddressID);
+                                addr = DataSession.Single<Address>(kvp.Value.AddressID);
 
                             addr.InternalAddress = kvp.Value.Attention;
                             addr.StrAddress1 = kvp.Value.AddressLine1;
@@ -200,7 +195,7 @@ namespace Data.Controllers
                             addr.Country = kvp.Value.Country;
 
                             if (insertAddr)
-                                DA.Current.Insert(addr);
+                                DataSession.Insert(addr);
 
                             if (kvp.Key == "billing")
                                 acct.BillAddressID = addr.AddressID;
@@ -213,13 +208,13 @@ namespace Data.Controllers
                             if (kvp.Key == "billing")
                             {
                                 if (acct.BillAddressID > 0)
-                                    DA.Current.Delete(DA.Current.Single<Address>(acct.BillAddressID));
+                                    DataSession.Delete(DataSession.Single<Address>(acct.BillAddressID));
                                 acct.BillAddressID = 0;
                             }
                             if (kvp.Key == "shipping")
                             {
                                 if (acct.ShipAddressID > 0)
-                                    DA.Current.Delete(DA.Current.Single<Address>(acct.ShipAddressID));
+                                    DataSession.Delete(DataSession.Single<Address>(acct.ShipAddressID));
                                 acct.ShipAddressID = 0;
                             }
                         }
@@ -227,8 +222,8 @@ namespace Data.Controllers
 
                     if (insert)
                     {
-                        DA.Current.Insert(acct);
-                        ActiveLogManager.Enable("Account", acct.AccountID);
+                        DataSession.Insert(acct);
+                        Provider.Data.ActiveLog.Enable(acct);
                     }
 
                     // handle managers
@@ -243,27 +238,27 @@ namespace Data.Controllers
                             // check for an existing ClientAccount to make a manager and reactivate if needed
                             ClientAccount ca;
 
-                            ca = DA.Current.Query<ClientAccount>().FirstOrDefault(x => x.ClientOrg.ClientOrgID == mgr.ClientOrgID && x.Account == acct);
+                            ca = DataSession.Query<ClientAccount>().FirstOrDefault(x => x.ClientOrg.ClientOrgID == mgr.ClientOrgID && x.Account == acct);
 
                             if (ca != null)
                             {
                                 ca.Manager = true;
                                 if (!ca.Active)
-                                    ActiveLogManager.Enable("ClientAccount", ca.ClientAccountID);
+                                    Provider.Data.ActiveLog.Enable(ca);
                             }
                             else
                             {
                                 ca = new ClientAccount()
                                 {
-                                    ClientOrg = DA.Current.Single<ClientOrg>(mgr.ClientOrgID),
+                                    ClientOrg = DataSession.Single<ClientOrg>(mgr.ClientOrgID),
                                     Account = acct,
                                     Manager = true,
                                     IsDefault = false
                                 };
 
-                                DA.Current.Insert(ca);
+                                DataSession.Insert(ca);
 
-                                ActiveLogManager.Enable("ClientAccount", ca.ClientAccountID);
+                                Provider.Data.ActiveLog.Enable(ca);
                             }
 
                             currentManagers.Add(new AccountManagerEdit()
@@ -282,7 +277,7 @@ namespace Data.Controllers
                         {
                             // a current manager was deleted
 
-                            ClientAccount ca = DA.Current.Query<ClientAccount>()
+                            ClientAccount ca = DataSession.Query<ClientAccount>()
                                 .FirstOrDefault(x => x.ClientOrg.ClientOrgID == mgr.ClientOrgID && x.Account == acct);
 
                             if (ca != null)
@@ -383,10 +378,10 @@ namespace Data.Controllers
 
             bool disableAcct; // need to do this because of default account
 
-            var managed = DA.Current.Query<LNF.Repository.Data.ClientManager>().Where(x => x.ManagerOrg == mgr.ClientOrg && x.Active).ToList();
+            var managed = DataSession.Query<ClientManager>().Where(x => x.ManagerOrg == mgr.ClientOrg && x.Active).ToList();
 
             // get all the active ClientAccounts for this account, this is a mix of managers and non-managers
-            var clientAccounts = DA.Current.Query<ClientAccount>().Where(x => x.Account == mgr.Account && x.Active).ToList();
+            var clientAccounts = DataSession.Query<ClientAccount>().Where(x => x.Account == mgr.Account && x.Active).ToList();
 
             foreach (var mcm in managed) // for all clients serviced by this manager
             {
@@ -396,7 +391,7 @@ namespace Data.Controllers
                 if (ca != null) // if the client has access to this account
                 {
                     disableAcct = true;
-                    var managers = DA.Current.Query<LNF.Repository.Data.ClientManager>().Where(x => x.ClientOrg == mcm.ClientOrg && x.Active).ToList();
+                    var managers = DataSession.Query<ClientManager>().Where(x => x.ClientOrg == mcm.ClientOrg && x.Active).ToList();
                     foreach (var ccm in managers) // for all of the client's managers
                     {
                         if (clientAccounts.Any(x => x.Active && x.Manager && x.ClientOrg == ccm.ManagerOrg)) // another of this clients managers is managing this account
@@ -404,7 +399,7 @@ namespace Data.Controllers
                     }
 
                     if (disableAcct)
-                        ActiveLogManager.Disable("ClientAccount", ca.ClientAccountID);
+                        Provider.Data.ActiveLog.Disable(ca);
                 }
             }
 

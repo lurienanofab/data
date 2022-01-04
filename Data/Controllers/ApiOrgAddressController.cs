@@ -1,6 +1,7 @@
-﻿using Data.Models.Api;
-using LNF.Repository;
-using LNF.Repository.Data;
+﻿using Data.Controllers.Api;
+using Data.Models.Api;
+using LNF;
+using LNF.Impl.Repository.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,27 +10,29 @@ using System.Web.Http;
 namespace Data.Controllers
 {
     [Route("api/org/address")]
-    public class ApiOrgAddressController : ApiController
+    public class ApiOrgAddressController : DataApiController
     {
+        public ApiOrgAddressController(IProvider provider) : base(provider) { }
+
         public AddressModel[] Get(int orgId)
         {
             //always return 3 items, one for each OrgAddressType
             List<AddressModel> list = new List<AddressModel>();
-            LNF.Repository.Data.Org org = DA.Current.Single<LNF.Repository.Data.Org>(orgId);
-            list.AddRange(GetModel(OrgAddressType.Client, DA.Current.Query<Address>().Where(x => x.AddressID == org.DefClientAddressID).ToArray()));
-            list.AddRange(GetModel(OrgAddressType.Billing, DA.Current.Query<Address>().Where(x => x.AddressID == org.DefBillAddressID).ToArray()));
-            list.AddRange(GetModel(OrgAddressType.Shipping, DA.Current.Query<Address>().Where(x => x.AddressID == org.DefShipAddressID).ToArray()));
+            Org org = DataSession.Single<Org>(orgId);
+            list.AddRange(GetModel(OrgAddressType.Client, DataSession.Query<Address>().Where(x => x.AddressID == org.DefClientAddressID).ToArray()));
+            list.AddRange(GetModel(OrgAddressType.Billing, DataSession.Query<Address>().Where(x => x.AddressID == org.DefBillAddressID).ToArray()));
+            list.AddRange(GetModel(OrgAddressType.Shipping, DataSession.Query<Address>().Where(x => x.AddressID == org.DefShipAddressID).ToArray()));
             return list.OrderBy(x => x.AddressType).ThenBy(x => x.StreetAddress1).ToArray();
         }
 
         public AddressModel Post([FromBody] AddressModel model, int orgId)
         {
-            Address entity = null;
+            Address entity;
 
             if (model.AddressID > 0)
             {
                 //update existing
-                entity = DA.Current.Single<Address>(model.AddressID);
+                entity = DataSession.Single<Address>(model.AddressID);
                 entity.InternalAddress = model.Attention;
                 entity.StrAddress1 = model.StreetAddress1;
                 entity.StrAddress2 = model.StreetAddress2;
@@ -53,10 +56,10 @@ namespace Data.Controllers
                 };
             }
 
-            DA.Current.SaveOrUpdate(entity);
+            DataSession.SaveOrUpdate(entity);
 
             OrgAddressType type = (OrgAddressType)Enum.Parse(typeof(OrgAddressType), model.AddressType);
-            Org org = DA.Current.Single<Org>(orgId);
+            Org org = DataSession.Single<Org>(orgId);
             switch (type)
             {
                 case OrgAddressType.Client:
@@ -70,19 +73,19 @@ namespace Data.Controllers
                     break;
             }
 
-            DA.Current.SaveOrUpdate(org);
+            DataSession.SaveOrUpdate(org);
 
             return GetModel(type, entity);
         }
 
         public bool Delete(int orgId, int addressId, string addressType)
         {
-            var entity = DA.Current.Single<Address>(addressId);
+            var entity = DataSession.Single<Address>(addressId);
             if (entity != null)
             {
-                DA.Current.Delete(new[] { entity });
+                DataSession.Delete(new[] { entity });
                 OrgAddressType type = (OrgAddressType)Enum.Parse(typeof(OrgAddressType), addressType);
-                Org org = DA.Current.Single<Org>(orgId);
+                Org org = DataSession.Single<Org>(orgId);
                 switch (type)
                 {
                     case OrgAddressType.Billing:
@@ -96,8 +99,8 @@ namespace Data.Controllers
                         break;
                 }
 
-                DA.Current.SaveOrUpdate(org);
-                
+                DataSession.SaveOrUpdate(org);
+
                 return true;
             }
             else
@@ -121,8 +124,10 @@ namespace Data.Controllers
 
         private AddressModel GetModel(OrgAddressType type, Address entity)
         {
-            var result = new AddressModel();
-            result.AddressType = Enum.GetName(typeof(OrgAddressType), type);
+            var result = new AddressModel
+            {
+                AddressType = Enum.GetName(typeof(OrgAddressType), type)
+            };
 
             if (entity != null)
             {

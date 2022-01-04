@@ -1,7 +1,5 @@
-﻿using LNF.Models.Data;
+﻿using LNF.Impl.Repository.Data;
 using LNF.Repository;
-using LNF.Repository.Data;
-using LNF.Web.Mvc;
 using LNF.Web.Mvc.UI;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +8,7 @@ using System.Web.Mvc;
 
 namespace Data.Models.Admin
 {
-    public abstract class AdminBaseModel : BaseModel
+    public abstract class AdminBaseModel : DataModel
     {
         public string Command { get; set; }
         protected string Message { get; set; }
@@ -45,14 +43,14 @@ namespace Data.Models.Admin
         public Room[] GetRooms(bool viewInactive)
         {
             if (!viewInactive)
-                return DA.Current.Query<Room>().Where(x => x.Active).OrderBy(x => x.RoomName).ToArray();
+                return DataSession.Query<Room>().Where(x => x.Active).OrderBy(x => x.RoomName).ToArray();
             else
-                return DA.Current.Query<Room>().OrderBy(x => x.RoomName).ToArray();
+                return DataSession.Query<Room>().OrderBy(x => x.RoomName).ToArray();
         }
 
         public SelectListItem[] GetRoomParentSelectItems()
         {
-            IList<Room> rooms = DA.Current.Query<Room>()
+            IList<Room> rooms = DataSession.Query<Room>()
                 .Where(x => x.Active && x.ParentID == null && x.RoomID != RoomID).OrderBy(x => x.RoomName)
                 .ToList();
 
@@ -70,7 +68,7 @@ namespace Data.Models.Admin
             if (RoomID == 0)
                 return;
 
-            Room room = DA.Current.Single<Room>(RoomID);
+            Room room = DataSession.Single<Room>(RoomID);
             if (room == null)
             {
                 Message = string.Format("<div class=\"alert alert-danger\" role=\"alert\">Cannot find RoomID {0}</div>", RoomID);
@@ -96,12 +94,12 @@ namespace Data.Models.Admin
                 return false;
             }
 
-            Room room = null;
+            Room room;
             if (RoomID == 0)
                 room = new Room();
             else
             {
-                room = DA.Current.Single<Room>(RoomID);
+                room = DataSession.Single<Room>(RoomID);
                 if (room == null)
                 {
                     Message = string.Format("<div class=\"alert alert-danger\" role=\"alert\">Cannot find RoomID {0}</div>", RoomID);
@@ -122,7 +120,7 @@ namespace Data.Models.Admin
             room.ApportionEntryFee = ApportionEntryFee;
             room.Active = Active;
 
-            DA.Current.SaveOrUpdate(room);
+            DataSession.SaveOrUpdate(room);
 
             return true;
         }
@@ -132,9 +130,9 @@ namespace Data.Models.Admin
             IQueryable<Account> query;
 
             if (ViewInactive)
-                query = DA.Current.Query<Account>().Where(x => x.Org.OrgID == OrgID);
+                query = DataSession.Query<Account>().Where(x => x.Org.OrgID == OrgID);
             else
-                query = DA.Current.Query<Account>().Where(x => x.Org.OrgID == OrgID && x.Active);
+                query = DataSession.Query<Account>().Where(x => x.Org.OrgID == OrgID && x.Active);
 
             return query.OrderBy(x => x.Name).ToArray();
         }
@@ -142,17 +140,17 @@ namespace Data.Models.Admin
         public Room[] GetRooms()
         {
             if (!ViewInactive)
-                return DA.Current.Query<Room>().Where(x => x.Active).OrderBy(x => x.RoomName).ToArray();
+                return DataSession.Query<Room>().Where(x => x.Active).OrderBy(x => x.RoomName).ToArray();
             else
-                return DA.Current.Query<Room>().OrderBy(x => x.RoomName).ToArray();
+                return DataSession.Query<Room>().OrderBy(x => x.RoomName).ToArray();
         }
 
-        public LNF.Repository.Data.Org[] GetOrgs()
+        public Org[] GetOrgs()
         {
             if (!ViewInactive)
-                return DA.Current.Query<Org>().Where(x => x.Active).OrderBy(x => x.OrgName).ToArray();
+                return DataSession.Query<Org>().Where(x => x.Active).OrderBy(x => x.OrgName).ToArray();
             else
-                return DA.Current.Query<Org>().OrderBy(x => x.OrgName).ToArray();
+                return DataSession.Query<Org>().OrderBy(x => x.OrgName).ToArray();
         }
 
         public SelectListItem[] GetOrgSelectItems()
@@ -162,14 +160,14 @@ namespace Data.Models.Admin
                 .ToArray();
         }
 
-        public LNF.Repository.Data.Org GetPrimaryOrg()
+        public Org GetPrimaryOrg()
         {
-            return DA.Current.Query<Org>().FirstOrDefault(x => x.PrimaryOrg);
+            return DataSession.Query<Org>().FirstOrDefault(x => x.PrimaryOrg);
         }
 
         public bool IsInternalOrg()
         {
-            var org = DA.Current.Single<Org>(OrgID);
+            var org = DataSession.Single<Org>(OrgID);
 
             if (org == null)
                 return false;
@@ -182,7 +180,7 @@ namespace Data.Models.Admin
 
         public Department[] GetDepartments()
         {
-            return DA.Current.Query<Department>()
+            return DataSession.Query<Department>()
                 .Where(x => x.Org.OrgID == OrgID)
                 .OrderBy(x => x.DepartmentName)
                 .ToArray();

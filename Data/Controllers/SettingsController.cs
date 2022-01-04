@@ -1,6 +1,6 @@
-﻿using LNF.Models.Data;
+﻿using LNF;
+using LNF.Data;
 using LNF.Repository;
-using LNF.Repository.Data;
 using LNF.Web.Mvc;
 using System;
 using System.Linq;
@@ -8,8 +8,10 @@ using System.Web.Mvc;
 
 namespace Data.Controllers
 {
-    public class SettingsController : Controller
+    public class SettingsController : DataController
     {
+        public SettingsController(IProvider provider) : base(provider) { }
+
         [HttpGet, Route("settings"), LNFAuthorize(ClientPrivilege.Administrator)]
         public ActionResult Index()
         {
@@ -19,12 +21,12 @@ namespace Data.Controllers
         [HttpGet, Route("settings/ajax"), LNFAuthorize(ClientPrivilege.Administrator)]
         public ActionResult Ajax()
         {
-            var items = DA.Current.Query<GlobalSettings>().CreateGlobalSettingsItems();
+            var items = DataSession.Query<LNF.Impl.Repository.Data.GlobalSettings>();
             return Json(items, JsonRequestBehavior.AllowGet);
         }
 
         [HttpPost, Route("settings/ajax"), LNFAuthorize(ClientPrivilege.Administrator)]
-        public ActionResult Ajax(GlobalSettingsItem model)
+        public ActionResult Ajax(LNF.Impl.Repository.Data.GlobalSettings model)
         {
             try
             {
@@ -34,12 +36,12 @@ namespace Data.Controllers
                 if (model.SettingID == 0)
                 {
                     // create new
-                    var existing = DA.Current.Query<GlobalSettings>().FirstOrDefault(x => x.SettingName == model.SettingName);
+                    var existing = DataSession.Query<LNF.Impl.Repository.Data.GlobalSettings>().FirstOrDefault(x => x.SettingName == model.SettingName);
 
                     if (existing != null)
                         throw new Exception($"A setting with name '{model.SettingName}' already exists.");
 
-                    DA.Current.Insert(new GlobalSettings
+                    DataSession.Insert(new LNF.Impl.Repository.Data.GlobalSettings
                     {
                         SettingName = model.SettingName,
                         SettingValue = model.SettingValue
@@ -47,12 +49,12 @@ namespace Data.Controllers
                 }
                 else
                 {
-                    var gs = DA.Current.Single<GlobalSettings>(model.SettingID);
+                    var gs = DataSession.Single<LNF.Impl.Repository.Data.GlobalSettings>(model.SettingID);
 
                     if (gs == null)
                         throw new Exception($"Cannot find global setting with SettingID = {model.SettingID}");
 
-                    var existing = DA.Current.Query<GlobalSettings>().FirstOrDefault(x => x.SettingName == model.SettingName && x.SettingID != model.SettingID);
+                    var existing = DataSession.Query<LNF.Impl.Repository.Data.GlobalSettings>().FirstOrDefault(x => x.SettingName == model.SettingName && x.SettingID != model.SettingID);
 
                     if (existing != null)
                         throw new Exception($"A setting with name '{model.SettingName}' already exists.");
@@ -60,10 +62,10 @@ namespace Data.Controllers
                     gs.SettingName = model.SettingName;
                     gs.SettingValue = model.SettingValue;
 
-                    DA.Current.SaveOrUpdate(gs);
+                    DataSession.SaveOrUpdate(gs);
                 }
 
-                var items = DA.Current.Query<GlobalSettings>().CreateGlobalSettingsItems();
+                var items = DataSession.Query<LNF.Impl.Repository.Data.GlobalSettings>();
 
                 return Json(items);
             }
@@ -76,7 +78,7 @@ namespace Data.Controllers
                     Message = "An error has occurred.",
                     ExceptionMessage = ex.Message,
                     ExceptionType = ex.GetType().ToString(),
-                    StackTrace = ex.StackTrace
+                    ex.StackTrace
                 });
             }
         }
@@ -84,12 +86,12 @@ namespace Data.Controllers
         [HttpDelete, Route("settings/ajax"), LNFAuthorize(ClientPrivilege.Administrator)]
         public ActionResult Ajax(int id)
         {
-            var gs = DA.Current.Single<GlobalSettings>(id);
+            var gs = DataSession.Single<LNF.Impl.Repository.Data.GlobalSettings>(id);
 
             if (gs != null)
-                DA.Current.Delete(gs);
+                DataSession.Delete(gs);
 
-            var items = DA.Current.Query<GlobalSettings>().CreateGlobalSettingsItems();
+            var items = DataSession.Query<LNF.Impl.Repository.Data.GlobalSettings>();
 
             return Json(items, JsonRequestBehavior.AllowGet);
         }

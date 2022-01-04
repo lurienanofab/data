@@ -1,8 +1,7 @@
 ﻿(function ($) {
     $.fn.billing = function (options) {
-        //return this.each(function () {
         var $this = $(this);
-        
+
         var opt = $.extend({}, {
             'command': null,
             'path': null,
@@ -13,7 +12,7 @@
             'resourceId': 0,
             'roomId': 0,
             'itemId': 0,
-            'delete': false
+            'delete': true
         }, options);
 
         var getRecord = function () {
@@ -27,18 +26,19 @@
                 default:
                     return 0;
             }
-        }
+        };
 
         var getModel = function () {
             var result = {
                 ClientID: opt.clientId,
-                BillingCategory: opt.command,
+                BillingCategory: opt.command
             };
 
             switch (opt.path) {
                 case "process/data/clean":
                     result.StartDate = opt.startPeriod;
                     result.EndDate = opt.endPeriod;
+                    break;
                 case "process/data":
                     result.Period = opt.startPeriod;
                     result.Record = getRecord();
@@ -58,7 +58,7 @@
             }
 
             return result;
-        }
+        };
 
         var def = $.Deferred();
 
@@ -80,12 +80,10 @@
 
                 $this.html('<div class="api-message error">' + errmsg + '</div>');
 
-                def.reject(jqXHR, textStatus, errorThrown)
+                def.reject(jqXHR, textStatus, errorThrown);
             }
         });
 
         return def.promise();
-
-        //});
-    }
+    };
 }(jQuery));

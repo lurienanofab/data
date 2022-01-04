@@ -1,8 +1,8 @@
 ﻿using LNF;
 using LNF.Data;
-using LNF.Models.Data;
-using LNF.Repository;
-using LNF.Repository.Data;
+using LNF.DataAccess;
+using LNF.Impl;
+using LNF.Impl.Repository.Data;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -16,37 +16,38 @@ namespace Data.Models.Api
 
     public static class ApiUtility
     {
-        public static IClientManager ClientOrgManager => ServiceProvider.Current.Data.Client;
+        public static IProvider Provider => Startup.WebApp.Context.GetInstance<IProvider>();
+        public static ISession DataSession => Provider.DataAccess.Session;
 
         #region ##### Manager ###########################################################
 
         public static ClientModel[] GetCurrentManagers(ClientModel model)
         {
-            ClientOrg co = DA.Current.Single<ClientOrg>(model.ClientOrgID);
-            var query = DA.Current.Query<ClientManager>().Where(x => x.ClientOrg == co && x.Active).Select(x => x.ManagerOrg);
+            ClientOrg co = DataSession.Single<ClientOrg>(model.ClientOrgID);
+            var query = DataSession.Query<ClientManager>().Where(x => x.ClientOrg == co && x.Active).Select(x => x.ManagerOrg);
             var current = query.CreateModels();
             return current.Select(CreateClientModel).OrderBy(x => x.DisplayName).ToArray();
         }
 
         public static ClientModel[] GetCurrentManagers(AccountModel model)
         {
-            var query = DA.Current.Query<ClientAccount>().Where(x => x.Account.AccountID == model.AccountID && x.Manager && x.Active).Select(x => x.ClientOrg);
+            var query = DataSession.Query<ClientAccount>().Where(x => x.Account.AccountID == model.AccountID && x.Manager && x.Active).Select(x => x.ClientOrg);
             var current = query.CreateModels();
             return current.Select(CreateClientModel).OrderBy(x => x.DisplayName).ToArray();
         }
 
         public static ClientModel[] GetAvailableManagers(ClientModel model)
         {
-            ClientOrg co = DA.Current.Single<ClientOrg>(model.ClientOrgID);
-            ClientOrg[] current = DA.Current.Query<ClientManager>().Where(x => x.ClientOrg == co && x.Active).Select(x => x.ManagerOrg).ToArray();
-            IEnumerable<IClient> all = ClientOrgManager.SelectOrgManagers(co.Org.OrgID);
+            ClientOrg co = DataSession.Single<ClientOrg>(model.ClientOrgID);
+            ClientOrg[] current = DataSession.Query<ClientManager>().Where(x => x.ClientOrg == co && x.Active).Select(x => x.ManagerOrg).ToArray();
+            IEnumerable<IClient> all = Provider.Data.Client.SelectOrgManagers(co.Org.OrgID);
             ClientModel[] result = all.Where(a => !current.Select(c => c.ClientOrgID).Contains(a.ClientOrgID)).Select(x => CreateClientModel(x)).OrderBy(x => x.DisplayName).ToArray();
             return result;
         }
 
         public static ClientModel[] GetAllManagers(ClientModel model)
         {
-            IEnumerable<IClient> all = ClientOrgManager.SelectOrgManagers(model.OrgID);
+            IEnumerable<IClient> all = Provider.Data.Client.SelectOrgManagers(model.OrgID);
             ClientModel[] result = all.Select(x => CreateClientModel(x)).OrderBy(x => x.DisplayName).ToArray();
             return result;
         }
@@ -71,8 +72,8 @@ namespace Data.Models.Api
 
         public static AccountModel[] GetCurrentAccounts(ClientModel model)
         {
-            ClientOrg co = DA.Current.Single<ClientOrg>(model.ClientOrgID);
-            IList<ClientAccount> query = DA.Current.Query<ClientAccount>().Where(x => x.ClientOrg == co && x.Active).ToList();
+            ClientOrg co = DataSession.Single<ClientOrg>(model.ClientOrgID);
+            IList<ClientAccount> query = DataSession.Query<ClientAccount>().Where(x => x.ClientOrg == co && x.Active).ToList();
             return query.Select(x => x.Account).Select(x => CreateAccountModel(x)).OrderBy(x => x.AccountName).ToArray();
         }
 
@@ -81,7 +82,7 @@ namespace Data.Models.Api
             ClientModel[] managers = ApiUtility.GetCurrentManagers(model);
             AccountModel[] current = ApiUtility.GetCurrentAccounts(model);
             int[] ids = managers.Select(x => x.ClientOrgID).ToArray();
-            IList<ClientAccount> query = DA.Current.Query<ClientAccount>().Where(x => ids.Contains(x.ClientOrg.ClientOrgID) && x.Active && x.Manager && x.Account.Active).ToList();
+            IList<ClientAccount> query = DataSession.Query<ClientAccount>().Where(x => ids.Contains(x.ClientOrg.ClientOrgID) && x.Active && x.Manager && x.Account.Active).ToList();
             ids = current.Select(x => x.AccountID).ToArray();
             return query
                 .Where(x => !ids.Contains(x.Account.AccountID))
@@ -95,16 +96,16 @@ namespace Data.Models.Api
         {
             if (model != null)
             {
-                int[] clientOrgs = DA.Current.Query<ClientOrg>().Where(x => x.Active && x.Client.ClientID == model.ClientID).Select(x => x.ClientOrgID).ToArray();
-                int[] accts = DA.Current.Query<ClientAccount>().Where(x => x.Active && clientOrgs.Contains(x.ClientOrg.ClientOrgID)).Select(x => x.Account.AccountID).ToArray();
-                return DA.Current.Query<Account>()
+                int[] clientOrgs = DataSession.Query<ClientOrg>().Where(x => x.Active && x.Client.ClientID == model.ClientID).Select(x => x.ClientOrgID).ToArray();
+                int[] accts = DataSession.Query<ClientAccount>().Where(x => x.Active && clientOrgs.Contains(x.ClientOrg.ClientOrgID)).Select(x => x.Account.AccountID).ToArray();
+                return DataSession.Query<Account>()
                     .Where(x => x.Active && accts.Contains(x.AccountID))
                     .Select(x => CreateAccountModel(x)).OrderBy(x => x.AccountName)
                     .ToArray();
             }
             else
             {
-                return DA.Current.Query<Account>()
+                return DataSession.Query<Account>()
                     .Where(x => x.Active)
                     .Select(x => CreateAccountModel(x)).OrderBy(x => x.AccountName)
                     .ToArray();
@@ -130,10 +131,10 @@ namespace Data.Models.Api
             switch (type)
             {
                 case "client":
-                    ClientOrg co = DA.Current.Single<ClientOrg>(id);
+                    ClientOrg co = DataSession.Single<ClientOrg>(id);
                     if (co != null)
                     {
-                        IList<Address> query = DA.Current.Query<Address>().Where(x => x.AddressID == co.ClientAddressID).ToList();
+                        IList<Address> query = DataSession.Query<Address>().Where(x => x.AddressID == co.ClientAddressID).ToList();
                         return query.Select(x => CreateAddressModel(type, x)).OrderBy(x => x.State).ThenBy(x => x.StreetAddress1).ToArray();
                     }
                     break;

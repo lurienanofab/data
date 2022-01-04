@@ -1,4 +1,4 @@
-﻿@using Data.Models;
+﻿@using Data.Models.Admin;
 @model ClientModel
 @{
     Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
@@ -67,7 +67,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var c in Model.GetClientListItems())
+                                @foreach (var c in Model.GetClients())
                                 {
                                     <tr data-index="@c.PageIndex">
                                         @if (c.ClientID > 0)

@@ -1,12 +1,11 @@
 ﻿using LNF;
 using LNF.CommonTools;
 using LNF.Control;
-using LNF.Models.Data;
-using LNF.Models.Data.Utility.BillingChecks;
-using LNF.Repository;
-using LNF.Repository.Control;
-using LNF.Repository.Data;
-using LNF.Repository.Scheduler;
+using LNF.DataAccess;
+using LNF.Impl.Repository.Control;
+using LNF.Impl.Repository.Data;
+using LNF.Impl.Repository.Scheduler;
+using LNF.Util.AutoEnd;
 using LNF.Web.Mvc;
 using LNF.Web.Mvc.UI;
 using System;
@@ -19,6 +18,8 @@ namespace Data.Models
 {
     public class UtilityModel : BaseModel
     {
+        private Point _point;
+
         public int Record { get; set; }
         public string TableName { get; set; }
         public ActiveLog ActiveLog { get; set; }
@@ -55,41 +56,54 @@ namespace Data.Models
 
         public ActionInstance[] GetInstances()
         {
-            return DA.Current.Query<ActionInstance>().ToArray();
+            return DataSession.Query<ActionInstance>().ToArray();
+        }
+
+        private Point GetPoint(int pointId)
+        {
+            if (_point == null)
+                _point = DataSession.Query<Point>().First(x => x.PointID == pointId);
+            return _point;
         }
 
         public PointState GetPointState(int pointId)
         {
-            var point = DA.Current.Query<Point>().First(x => x.PointID == pointId);
+            var point = GetPoint(pointId);
             var block = point.Block;
-            BlockResponse resp = ServiceProvider.Current.Control.GetBlockState(block);
+            var resp = ServiceProvider.Current.Control.GetBlockState(block.BlockID);
             var blockState = resp.BlockState;
             var result = blockState.Points.First(x => x.PointID == point.PointID);
             return result;
         }
 
+        public string GetPointName(int pointId)
+        {
+            var point = GetPoint(pointId);
+            return point.Name;
+        }
+
         public void SetPointState(int actionId, bool state, ActionType action = ActionType.Interlock, int duration = 0)
         {
             uint d = duration > 0 ? (uint)duration : 0;
-            var inst = ActionInstanceUtility.Find(action, actionId);
+            var inst = Provider.Control.GetActionInstance(action, actionId);
 
             if (inst == null)
                 throw new Exception(string.Format("Cannot find the ActionInstance for ActionID = {0}, Action = {1}", actionId, action));
 
             var point = inst.GetPoint();
 
-            ServiceProvider.Current.Control.SetPointState(point, state, d);
+            Provider.Control.SetPointState(point.PointID, state, d);
         }
 
         public ActionInstance GetActionInstance(int pointId, ActionType actionType = ActionType.Interlock)
         {
             string actionName = Enum.GetName(typeof(ActionType), actionType);
-            return DA.Current.Query<ActionInstance>().First(x => x.Point == pointId && x.ActionName == actionName);
+            return DataSession.Query<ActionInstance>().First(x => x.Point == pointId && x.ActionName == actionName);
         }
 
         public Block GetBlock(int pointId)
         {
-            Point p = DA.Current.Single<Point>(pointId);
+            Point p = DataSession.Single<Point>(pointId);
             return p.Block;
         }
 
@@ -102,7 +116,7 @@ namespace Data.Models
             dt.Columns.Add("LabName", typeof(string));
             dt.Columns.Add("ProcessTechName", typeof(string));
 
-            ResourceInfo[] query = DA.Current.Query<ResourceInfo>().Where(x => x.ResourceIsActive).ToArray();
+            ResourceInfo[] query = DataSession.Query<ResourceInfo>().Where(x => x.ResourceIsActive).ToArray();
             foreach (var r in query)
                 dt.Rows.Add(r.ResourceID, r.ResourceName, r.BuildingName, r.LabName, r.ProcessTechName);
 
@@ -127,14 +141,14 @@ namespace Data.Models
 
         public FeeItem[] GetFeeItems()
         {
-            List<FeeItem> list = new List<FeeItem>();
-            FeeItem item = new FeeItem();
+            //List<FeeItem> list = new List<FeeItem>();
+            //FeeItem item = new FeeItem();
             throw new NotImplementedException();
         }
 
         public ClientAccount GetClientAccount(int clientAccountId)
         {
-            return DA.Current.Single<ClientAccount>(clientAccountId);
+            return DataSession.Single<ClientAccount>(clientAccountId);
         }
 
         public UserInfoItem[] GetUserInfoItems(int currentUserClientId)
@@ -148,30 +162,30 @@ namespace Data.Models
             switch (tableName)
             {
                 case "client":
-                    var client = DA.Current.Single<Client>(id);
+                    var client = DataSession.Single<Client>(id);
                     list.Add(new UserInfoItem() { Label = "Client", Text = client.DisplayName });
                     break;
                 case "account":
-                    var acct = DA.Current.Single<Account>(id);
+                    var acct = DataSession.Single<Account>(id);
                     list.Add(new UserInfoItem() { Label = "Account", Text = GetAccountName(acct) });
                     break;
                 case "org":
-                    var org = DA.Current.Single<Org>(id);
+                    var org = DataSession.Single<Org>(id);
                     list.Add(new UserInfoItem() { Label = "Org", Text = org.OrgName });
                     break;
                 case "clientaccount":
-                    var ca = DA.Current.Single<ClientAccount>(id);
+                    var ca = DataSession.Single<ClientAccount>(id);
                     list.Add(new UserInfoItem() { Label = "Client", Text = ca.ClientOrg.Client.DisplayName });
                     list.Add(new UserInfoItem() { Label = "Account", Text = GetAccountName(ca.Account) });
                     list.Add(new UserInfoItem() { Label = "Org", Text = ca.ClientOrg.Org.OrgName });
                     break;
                 case "clientorg":
-                    var co = DA.Current.Single<ClientOrg>(id);
+                    var co = DataSession.Single<ClientOrg>(id);
                     list.Add(new UserInfoItem() { Label = "Client", Text = co.Client.DisplayName });
                     list.Add(new UserInfoItem() { Label = "Org", Text = co.Org.OrgName });
                     break;
                 case "clientmanager":
-                    var cm = DA.Current.Single<ClientManager>(id);
+                    var cm = DataSession.Single<ClientManager>(id);
                     list.Add(new UserInfoItem() { Label = "Client", Text = cm.ClientOrg.Client.DisplayName });
                     list.Add(new UserInfoItem() { Label = "Manager", Text = cm.ManagerOrg.Client.DisplayName });
                     list.Add(new UserInfoItem() { Label = "Org", Text = cm.ClientOrg.Org.OrgName });
@@ -196,31 +210,31 @@ namespace Data.Models
             string tableName = !string.IsNullOrEmpty(TableName) ? TableName.ToLower() : "client";
             int id = Record != 0 ? Record : currentUserClientId;
 
-            var current = DA.Current.Query<ActiveLog>().Where(x => x.TableName.ToLower() == tableName && x.Record == id).OrderByDescending(x => x.LogID).FirstOrDefault();
+            var current = DataSession.Query<ActiveLog>().Where(x => x.TableName.ToLower() == tableName && x.Record == id).OrderByDescending(x => x.LogID).FirstOrDefault();
 
             list.Add(current);
 
             switch (tableName)
             {
                 case "clientaccount":
-                    var ca = DA.Current.Single<ClientAccount>(Record);
-                    list.Add(DA.Current.Query<ActiveLog>().Where(x => x.TableName == "ClientOrg" && x.Record == ca.ClientOrg.ClientOrgID).OrderByDescending(x => x.LogID).FirstOrDefault());
-                    list.Add(DA.Current.Query<ActiveLog>().Where(x => x.TableName == "Client" && x.Record == ca.ClientOrg.Client.ClientID).OrderByDescending(x => x.LogID).FirstOrDefault());
-                    list.Add(DA.Current.Query<ActiveLog>().Where(x => x.TableName == "Account" && x.Record == ca.Account.AccountID).OrderByDescending(x => x.LogID).FirstOrDefault());
-                    list.Add(DA.Current.Query<ActiveLog>().Where(x => x.TableName == "Org" && x.Record == ca.ClientOrg.Org.OrgID).OrderByDescending(x => x.LogID).FirstOrDefault());
+                    var ca = DataSession.Single<ClientAccount>(Record);
+                    list.Add(DataSession.Query<ActiveLog>().Where(x => x.TableName == "ClientOrg" && x.Record == ca.ClientOrg.ClientOrgID).OrderByDescending(x => x.LogID).FirstOrDefault());
+                    list.Add(DataSession.Query<ActiveLog>().Where(x => x.TableName == "Client" && x.Record == ca.ClientOrg.Client.ClientID).OrderByDescending(x => x.LogID).FirstOrDefault());
+                    list.Add(DataSession.Query<ActiveLog>().Where(x => x.TableName == "Account" && x.Record == ca.Account.AccountID).OrderByDescending(x => x.LogID).FirstOrDefault());
+                    list.Add(DataSession.Query<ActiveLog>().Where(x => x.TableName == "Org" && x.Record == ca.ClientOrg.Org.OrgID).OrderByDescending(x => x.LogID).FirstOrDefault());
                     break;
                 case "clientorg":
-                    var co = DA.Current.Single<ClientOrg>(Record);
-                    list.Add(DA.Current.Query<ActiveLog>().Where(x => x.TableName == "Client" && x.Record == co.Client.ClientID).OrderByDescending(x => x.LogID).FirstOrDefault());
-                    list.Add(DA.Current.Query<ActiveLog>().Where(x => x.TableName == "Org" && x.Record == co.Org.OrgID).OrderByDescending(x => x.LogID).FirstOrDefault());
+                    var co = DataSession.Single<ClientOrg>(Record);
+                    list.Add(DataSession.Query<ActiveLog>().Where(x => x.TableName == "Client" && x.Record == co.Client.ClientID).OrderByDescending(x => x.LogID).FirstOrDefault());
+                    list.Add(DataSession.Query<ActiveLog>().Where(x => x.TableName == "Org" && x.Record == co.Org.OrgID).OrderByDescending(x => x.LogID).FirstOrDefault());
                     break;
                 case "clientmanager":
-                    var cm = DA.Current.Single<ClientManager>(Record);
-                    list.Add(CopyActiveLog(DA.Current.Query<ActiveLog>().Where(x => x.TableName == "ClientOrg" && x.Record == cm.ClientOrg.ClientOrgID).OrderByDescending(x => x.LogID).FirstOrDefault(), "{0} (User)"));
-                    list.Add(CopyActiveLog(DA.Current.Query<ActiveLog>().Where(x => x.TableName == "ClientOrg" && x.Record == cm.ManagerOrg.ClientOrgID).OrderByDescending(x => x.LogID).FirstOrDefault(), "{0} (Manager)"));
-                    list.Add(CopyActiveLog(DA.Current.Query<ActiveLog>().Where(x => x.TableName == "Client" && x.Record == cm.ClientOrg.Client.ClientID).OrderByDescending(x => x.LogID).FirstOrDefault(), "{0} (User)"));
-                    list.Add(CopyActiveLog(DA.Current.Query<ActiveLog>().Where(x => x.TableName == "Client" && x.Record == cm.ManagerOrg.Client.ClientID).OrderByDescending(x => x.LogID).FirstOrDefault(), "{0} (Manager)"));
-                    list.Add(CopyActiveLog(DA.Current.Query<ActiveLog>().Where(x => x.TableName == "Org" && x.Record == cm.ClientOrg.Org.OrgID).OrderByDescending(x => x.LogID).FirstOrDefault(), "{0} (Both)"));
+                    var cm = DataSession.Single<ClientManager>(Record);
+                    list.Add(CopyActiveLog(DataSession.Query<ActiveLog>().Where(x => x.TableName == "ClientOrg" && x.Record == cm.ClientOrg.ClientOrgID).OrderByDescending(x => x.LogID).FirstOrDefault(), "{0} (User)"));
+                    list.Add(CopyActiveLog(DataSession.Query<ActiveLog>().Where(x => x.TableName == "ClientOrg" && x.Record == cm.ManagerOrg.ClientOrgID).OrderByDescending(x => x.LogID).FirstOrDefault(), "{0} (Manager)"));
+                    list.Add(CopyActiveLog(DataSession.Query<ActiveLog>().Where(x => x.TableName == "Client" && x.Record == cm.ClientOrg.Client.ClientID).OrderByDescending(x => x.LogID).FirstOrDefault(), "{0} (User)"));
+                    list.Add(CopyActiveLog(DataSession.Query<ActiveLog>().Where(x => x.TableName == "Client" && x.Record == cm.ManagerOrg.Client.ClientID).OrderByDescending(x => x.LogID).FirstOrDefault(), "{0} (Manager)"));
+                    list.Add(CopyActiveLog(DataSession.Query<ActiveLog>().Where(x => x.TableName == "Org" && x.Record == cm.ClientOrg.Org.OrgID).OrderByDescending(x => x.LogID).FirstOrDefault(), "{0} (Both)"));
                     break;
             }
 

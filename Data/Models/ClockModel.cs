@@ -1,5 +1,4 @@
-﻿using LNF.Models.Data;
-using LNF.Web.Mvc;
+﻿using LNF.Web.Mvc;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
@@ -9,7 +8,7 @@ namespace Data.Models
 {
     public class ClockModel : BaseModel
     {
-        private List<ClockItem> items;
+        private readonly List<ClockItem> items;
 
         public string Option { get; set; }
         public string Room { get; set; }

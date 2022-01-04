@@ -1,6 +1,5 @@
-﻿using LNF.Models.Data;
-using LNF.Repository;
-using LNF.Repository.Data;
+﻿using LNF.DataAccess;
+using LNF.Impl.Repository.Data;
 using LNF.Web.Mvc;
 using LNF.Web.Mvc.UI;
 using System;
@@ -34,7 +33,7 @@ namespace Data.Models
             IList<Client> query;
 
             if (string.IsNullOrEmpty(Search))
-                query = DA.Current.Query<Client>().ToList();
+                query = DataSession.Query<Client>().ToList();
             else
             {
                 query = new List<Client>();
@@ -42,7 +41,7 @@ namespace Data.Models
                     return query.ToArray();
                 else
                 {
-                    query = DA.Current.Query<Client>().Where(x =>
+                    query = DataSession.Query<Client>().Where(x =>
                         x.ClientID.ToString() == Search
                         || x.UserName.ToLower().Contains(Search.ToLower())
                         || x.LName.ToLower().Contains(Search.ToLower())
@@ -59,7 +58,7 @@ namespace Data.Models
         {
             IList<ClientOrg> query = new List<ClientOrg>();
             if (string.IsNullOrEmpty(Search))
-                query = DA.Current.Query<ClientOrg>().ToList();
+                query = DataSession.Query<ClientOrg>().ToList();
             else
             {
                 if (GetSingle<ClientOrg>("co", query))
@@ -70,7 +69,7 @@ namespace Data.Models
                     return query.ToArray();
                 else
                 {
-                    query = DA.Current.Query<ClientOrg>().Where(x =>
+                    query = DataSession.Query<ClientOrg>().Where(x =>
                         x.ClientOrgID.ToString() == Search
                         || x.Client.UserName.ToLower().Contains(Search.ToLower())
                         || x.Client.LName.ToLower().Contains(Search.ToLower())
@@ -89,18 +88,18 @@ namespace Data.Models
         {
             IList<ClientAccount> query = new List<ClientAccount>();
             if (string.IsNullOrEmpty(Search))
-                query = DA.Current.Query<ClientAccount>().ToList();
+                query = DataSession.Query<ClientAccount>().ToList();
             else
             {
-                if (GetSingle<ClientAccount>("ca", query))
+                if (GetSingle("ca", query))
                     return query.ToArray();
-                else if (GetMultiple<ClientAccount>("co", query, id => x => x.ClientOrg.ClientOrgID == id))
+                else if (GetMultiple("co", query, id => x => x.ClientOrg.ClientOrgID == id))
                     return query.ToArray();
-                else if (GetMultiple<ClientAccount>("acct", query, id => x => x.Account.AccountID == id))
+                else if (GetMultiple("acct", query, id => x => x.Account.AccountID == id))
                     return query.ToArray();
                 else
                 {
-                    query = DA.Current.Query<ClientAccount>().Where(x =>
+                    query = DataSession.Query<ClientAccount>().Where(x =>
                         x.ClientAccountID.ToString() == Search
                         || x.ClientOrg.Client.UserName.ToLower().Contains(Search.ToLower())
                         || x.ClientOrg.Client.LName.ToLower().Contains(Search.ToLower())
@@ -118,22 +117,22 @@ namespace Data.Models
             return query.ToArray();
         }
 
-        public LNF.Repository.Data.ClientManager[] ClientManagerSearch()
+        public ClientManager[] ClientManagerSearch()
         {
-            var query = new List<LNF.Repository.Data.ClientManager>();
+            var query = new List<ClientManager>();
             if (string.IsNullOrEmpty(Search))
-                query = DA.Current.Query<LNF.Repository.Data.ClientManager>().ToList();
+                query = DataSession.Query<ClientManager>().ToList();
             else
             {
-                if (GetSingle<LNF.Repository.Data.ClientManager>("cm", query))
+                if (GetSingle("cm", query))
                     return query.ToArray();
-                else if (GetMultiple<LNF.Repository.Data.ClientManager>("co", query, id => x => x.ClientOrg.ClientOrgID == id))
+                else if (GetMultiple("co", query, id => x => x.ClientOrg.ClientOrgID == id))
                     return query.ToArray();
-                else if (GetMultiple<LNF.Repository.Data.ClientManager>("mo", query, id => x => x.ManagerOrg.ClientOrgID == id))
+                else if (GetMultiple("mo", query, id => x => x.ManagerOrg.ClientOrgID == id))
                     return query.ToArray();
                 else
                 {
-                    query = DA.Current.Query<LNF.Repository.Data.ClientManager>().Where(x =>
+                    query = DataSession.Query<ClientManager>().Where(x =>
                         x.ClientManagerID.ToString() == Search
                         || x.ClientOrg.Client.UserName.ToLower().Contains(Search.ToLower())
                         || x.ClientOrg.Client.LName.ToLower().Contains(Search.ToLower())
@@ -153,18 +152,18 @@ namespace Data.Models
             return query.ToArray();
         }
 
-        public LNF.Repository.Data.Org[] OrgSearch()
+        public Org[] OrgSearch()
         {
             IList<Org> query = new List<Org>();
             if (string.IsNullOrEmpty(Search))
-                query = DA.Current.Query<Org>().ToList();
+                query = DataSession.Query<Org>().ToList();
             else
             {
-                if (GetSingle<Org>("org", query))
+                if (GetSingle("org", query))
                     return query.ToArray();
                 else
                 {
-                    query = DA.Current.Query<Org>().Where(x =>
+                    query = DataSession.Query<Org>().Where(x =>
                         x.OrgID.ToString() == Search
                         || x.OrgName.ToLower().Contains(Search.ToLower())
                         || x.OrgType.OrgTypeName.ToLower().Contains(Search.ToLower())).ToArray();
@@ -178,16 +177,16 @@ namespace Data.Models
         {
             IList<Account> query = new List<Account>();
             if (string.IsNullOrEmpty(Search))
-                query = DA.Current.Query<Account>().ToList();
+                query = DataSession.Query<Account>().ToList();
             else
             {
-                if (GetSingle<Account>("acct", query))
+                if (GetSingle("acct", query))
                     return query.ToArray();
-                else if (GetMultiple<Account>("org", query, id => x => x.Org.OrgID == id))
+                else if (GetMultiple("org", query, id => x => x.Org.OrgID == id))
                     return query.ToArray();
                 else
                 {
-                    query = DA.Current.Query<Account>().Where(x =>
+                    query = DataSession.Query<Account>().Where(x =>
                         x.AccountID.ToString() == Search
                         || x.Name.ToLower().Contains(Search.ToLower())
                         || x.Number.ToLower().Contains(Search.ToLower())
@@ -201,12 +200,12 @@ namespace Data.Models
 
         public bool GetMultiple<T>(string prefix, IList<T> query, Func<int, Expression<Func<T, bool>>> search) where T : class, IDataItem
         {
-            prefix = prefix + ":";
+            prefix += ":";
             if (Search.StartsWith(prefix))
             {
                 if (int.TryParse(Search.Substring(prefix.Length), out int id))
                 {
-                    IList<T> items = DA.Current.Query<T>().Where(search(id)).ToList();
+                    IList<T> items = DataSession.Query<T>().Where(search(id)).ToList();
                     foreach (T i in items)
                         query.Add(i);
                 }
@@ -219,12 +218,12 @@ namespace Data.Models
 
         public bool GetSingle<T>(string prefix, IList<T> query) where T : class, IDataItem
         {
-            prefix = prefix + ":";
+            prefix += ":";
             if (Search.StartsWith(prefix))
             {
                 if (int.TryParse(Search.Substring(prefix.Length), out int id))
                 {
-                    T item = DA.Current.Single<T>(id);
+                    T item = DataSession.Single<T>(id);
                     if (item != null)
                         query.Add(item);
                 }
@@ -285,7 +284,7 @@ namespace Data.Models
 
             if (!string.IsNullOrEmpty(tableName))
             {
-                IList<ActiveLog> query = DA.Current.Query<ActiveLog>().Where(x => x.TableName == tableName && x.Record == History).ToList();
+                IList<ActiveLog> query = DataSession.Query<ActiveLog>().Where(x => x.TableName == tableName && x.Record == History).ToList();
                 return query.ToArray();
             }
 

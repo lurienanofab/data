@@ -1,8 +1,8 @@
 ﻿using Data.Controllers;
 using Data.Models.Admin;
-using LNF.Models.Data;
+using LNF.Data;
+using LNF.Impl.Repository.Data;
 using LNF.Repository;
-using LNF.Repository.Data;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhino.Mocks;
 using System;
@@ -21,14 +21,14 @@ namespace Data.Tests.Admin
         [TestMethod]
         public void OrgTests_CanGetOrg()
         {
-            var org = DA.Current.Single<Org>(17);
+            var org = DataSession.Single<Org>(17);
             Assert.AreEqual("University of Michigan", org.OrgName);
         }
 
         [TestMethod]
         public void CanSaveOrg()
         {
-            IClient currentUser = new LNF.Models.Data.ClientItem
+            IClient currentUser = new LNF.Data.ClientItem
             {
                 ClientID = 1301,
                 UserName = "jgett",
@@ -49,7 +49,7 @@ namespace Data.Tests.Admin
             Assert.IsNull(message);
             Assert.IsTrue(result);
 
-            var alog = DA.Current.Query<ActiveLog>().FirstOrDefault(x => x.TableName == "Org" && x.Record == model.OrgID);
+            var alog = DataSession.Query<ActiveLog>().FirstOrDefault(x => x.TableName == "Org" && x.Record == model.OrgID);
 
             Assert.IsNotNull(alog);
             Assert.AreEqual(alog.EnableDate, DateTime.Now.Date);
@@ -66,28 +66,12 @@ namespace Data.Tests.Admin
             routes.MapMvcAttributeRoutes(Assembly.GetAssembly(typeof(HomeController)));
 
             var helper = routes.CreateMockUrlHelper("/drybox");
-            
+
             var actionUrl = helper.Action("OrgEdit", "Admin", new { OrgID = 0 });
 
             string expected = "/drybox/admin/org/edit/0";
 
             Assert.AreEqual(expected, actionUrl);
-        }
-
-        private static System.Web.HttpContext GetHttpContext(string url)
-        {
-            var request = new System.Web.HttpRequest("", url, "");
-            var writer = new System.IO.StringWriter();
-            var response = new System.Web.HttpResponse(writer);
-            var context = new System.Web.HttpContext(request, response);
-            return context;
-        }
-
-        private static IViewDataContainer GetViewDataContainer(ViewDataDictionary viewData)
-        {
-            var mockContainer = MockRepository.GenerateStub<IViewDataContainer>();
-            mockContainer.ViewData = viewData;
-            return mockContainer;
         }
     }
 
@@ -156,8 +140,7 @@ namespace Data.Tests.Admin
             viewContext.HttpContext = httpContext;
             viewContext.RequestContext = new RequestContext(httpContext, routeData);
             viewContext.RouteData = routeData;
-            viewContext.ViewData = new ViewDataDictionary();
-            viewContext.ViewData.Model = null;
+            viewContext.ViewData = new ViewDataDictionary { Model = null };
 
             var helper = new HtmlHelper(viewContext, new ViewPage(), routeCollection);
 

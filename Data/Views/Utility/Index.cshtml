@@ -74,9 +74,12 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="col-sm-1 control-label">Delete</label>
-                        <div class="col-sm-11" style="padding-top: 4px;">
-                            @Html.CheckBox("Delete", true, new { @class = "delete" })
+                        <div class="col-sm-offset-1 col-sm-11">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="Delete" class="delete" checked /> Delete existing records (applies to Billing Step 1 only)
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -222,7 +225,7 @@
             <div class="criteria-value">
                 <ul>
                     <li>
-                        <a href="#" class="email-link" data-email-type="apportionment">Send User Apportionment Emails</a>
+                        <a href="#" class="email-link" data-email-type="user-apportionment">Send User Apportionment Emails</a>
                         <div class="info" style="display: none; margin-top: 5px;"></div>
                     </li>
                     <li>
@@ -240,8 +243,8 @@
 </div>
 
 @section scripts{
-    <script src="@Url.Content("~/Scripts/jquery.billing.js?v=20160302")"></script>
-    <script src="@Url.Content("~/Scripts/jquery.utility/jquery.utility.js?v=20171002")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.billing.js?v=20191205")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.utility/jquery.utility.js?v=20191205")"></script>
     <script>
         $(".data-utility").utility();
     </script>

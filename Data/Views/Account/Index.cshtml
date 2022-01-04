@@ -34,7 +34,7 @@
                         </tr>
                     </thead>
                     <tbody style="visibility: hidden;">
-                        @foreach (var cf in Model.ActiveAccounts.Select(x => AccountChartFields.Create(x)))
+                        @foreach (var cf in Model.ActiveAccounts.Select(x => new AccountChartFields(x)))
                         {
                             <tr>
                                 <td>@cf.AccountName</td>
@@ -72,8 +72,8 @@
                         @foreach (var acct in Model.ActiveAccounts)
                         {
                             <tr>
-                                <td>@acct.Name</td>
-                                <td>@acct.Number</td>
+                                <td>@acct.AccountName</td>
+                                <td>@acct.AccountNumber</td>
                                 <td style="text-align: right;">
                                     <a href="@Url.Action("Edit", new { orgId = Model.CurrentOrg.OrgID, accountId = acct.AccountID })"><img src="~/Content/images/im_edit.gif" /></a>
                                     <a href="@Url.Action("Delete", new { orgId = Model.CurrentOrg.OrgID, accountId = acct.AccountID })" style="margin-left: 3px;"><img src="~/Content/images/im_delete.gif" /></a>

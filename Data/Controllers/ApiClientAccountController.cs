@@ -1,23 +1,18 @@
-﻿using Data.Models.Api;
+﻿using Data.Controllers.Api;
+using Data.Models.Api;
 using LNF;
-using LNF.Models.Data;
+using LNF.Data;
+using LNF.Impl.Repository.Data;
 using LNF.Repository;
-using LNF.Repository.Data;
 using System.Linq;
 using System.Web.Http;
 
 namespace Data.Controllers
 {
     [Route("api/client/account/{option}")]
-    public class ApiClientAccountController : ApiController
+    public class ApiClientAccountController : DataApiController
     {
-        private IProvider Provider { get; set; }
-
-        public ApiClientAccountController()
-        {
-            //TODO: wire-up constructor injection
-            Provider = ServiceProvider.Current;
-        }
+        public ApiClientAccountController(IProvider provider) : base(provider) { }
 
         public AccountModel[] Get([FromUri] string option, int id)
         {
@@ -44,27 +39,27 @@ namespace Data.Controllers
             switch (option)
             {
                 case "current":
-                    ClientAccount ca = DA.Current.Query<ClientAccount>().FirstOrDefault(x => x.ClientOrg.ClientOrgID == id && x.Account.AccountID == model.AccountID);
+                    var ca = DataSession.Query<ClientAccount>().FirstOrDefault(x => x.ClientOrg.ClientOrgID == id && x.Account.AccountID == model.AccountID);
 
                     if (ca == null)
                     {
                         //no existing ClientAccount record so create a new one
                         ca = new ClientAccount()
                         {
-                            ClientOrg = DA.Current.Single<ClientOrg>(id),
-                            Account = DA.Current.Single<Account>(model.AccountID),
+                            ClientOrg = DataSession.Single<ClientOrg>(id),
+                            Account = DataSession.Single<Account>(model.AccountID),
                             IsDefault = false,
                             Manager = false
                         };
 
-                        DA.Current.Insert(ca);
+                        DataSession.Insert(ca);
                     }
 
-                    Provider.Data.ActiveLog.Enable("ClientAccount", ca.ClientAccountID);
+                    Provider.Data.ActiveLog.Enable(ca);
 
                     //may need to restore physical access because there is now an active acct and other requirements are met
                     string alert;
-                    var c = DA.Current.Single<ClientInfo>(ca.ClientOrg.Client.ClientID).CreateModel<IClient>();
+                    IClient c = DataSession.Single<ClientInfo>(ca.ClientOrg.Client.ClientID);
                     Provider.Data.Client.UpdatePhysicalAccess(c, out alert);
 
                     result = ApiUtility.CreateAccountModel(ca.Account);
@@ -82,13 +77,13 @@ namespace Data.Controllers
             switch (option)
             {
                 case "current":
-                    ClientAccount ca = DA.Current.Query<ClientAccount>().FirstOrDefault(x => x.ClientOrg.ClientOrgID == id && x.Account.AccountID == model.AccountID);
+                    ClientAccount ca = DataSession.Query<ClientAccount>().FirstOrDefault(x => x.ClientOrg.ClientOrgID == id && x.Account.AccountID == model.AccountID);
                     if (ca != null)
                     {
-                        Provider.Data.ActiveLog.Disable("ClientAccount", ca.ClientAccountID);
+                        Provider.Data.ActiveLog.Disable(ca);
 
                         //may not have physical access any more if there are no more active accounts
-                        var c = DA.Current.Single<ClientInfo>(ca.ClientOrg.Client.ClientID).CreateModel<IClient>();
+                        IClient c = DataSession.Single<ClientInfo>(ca.ClientOrg.Client.ClientID);
                         Provider.Data.Client.UpdatePhysicalAccess(c, out string alert);
 
                         return true;

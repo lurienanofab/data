@@ -40,6 +40,11 @@ namespace Data.Controllers
             return new HttpResponseMessage(HttpStatusCode.SwitchingProtocols);
         }
 
+        private string Serialize(object obj)
+        {
+            return Startup.WebApp.Context.GetInstance<IProvider>().Utility.Serialization.Json.SerializeObject(obj);
+        }
+
         private async Task ProcessSocket(AspNetWebSocketContext context)
         {
             WebSocket socket = context.WebSocket;
@@ -49,11 +54,9 @@ namespace Data.Controllers
                 if (socket.State == WebSocketState.Open)
                 {
                     string source = context.Items["source"].ToString();
-
-                    ArraySegment<byte> buffer = new ArraySegment<byte>(new byte[2048]);
                     var response = Get(source);
 
-                    buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(ServiceProvider.Current.Serialization.Json.SerializeObject(response)));
+                    ArraySegment<byte> buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(Serialize(response)));
                     await socket.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
                     await Task.Delay(1000);
                 }

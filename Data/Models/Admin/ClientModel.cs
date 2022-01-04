@@ -1,6 +1,5 @@
-﻿using LNF.Models.Data;
-using LNF.Repository;
-using LNF.Repository.Data;
+﻿using LNF.Billing;
+using LNF.Impl.Repository.Data;
 using LNF.Web.Mvc.UI;
 using System;
 using System.Collections.Generic;
@@ -31,9 +30,9 @@ namespace Data.Models.Admin
         public int Communities { get; set; }
         public int TechnicalFieldID { get; set; }
         public int DemCitizenID { get; set; }
-        public int DemGenderID { get; set; }
-        public int DemRaceID { get; set; }
         public int DemEthnicID { get; set; }
+        public int DemRaceID { get; set; }
+        public int DemGenderID { get; set; }
         public int DemDisabilityID { get; set; }
 
         //ClientOrg
@@ -47,28 +46,32 @@ namespace Data.Models.Admin
         public DateTime? SubsidyStartDate { get; set; }
         public DateTime? NewFacultyStartDate { get; set; }
 
+        public int BillingTypeID { get; set; }
+        public IEnumerable<IBillingType> BillingTypes { get; set; }
+
         //ClientAccount
         public int ManagerClientOrgID { get; set; }
 
+        public bool HasPriv(CheckBoxListItem item)
+        {
+            int i = Convert.ToInt32(item.Value);
+            return (PrivFlag & i) > 0;
+        }
+
+        public bool HasCommunity(CheckBoxListItem item)
+        {
+            int i = Convert.ToInt32(item.Value);
+            return (Communities & i) > 0;
+        }
+
         public SelectListItem[] GetDepartmentSelectItems()
         {
-            string path = "";
-            System.Xml.Linq.XDocument Output = new System.Xml.Linq.XDocument();
-
-            using (XmlTextWriter writer = (XmlTextWriter)XmlWriter.Create(path, new XmlWriterSettings() { OmitXmlDeclaration = true, ConformanceLevel = ConformanceLevel.Fragment }))
-            {
-                writer.Formatting = Formatting.Indented;
-                Output.WriteTo(writer);
-                writer.Flush();
-                writer.Close();
-            }
-
             return GetDepartments().Select(x => new SelectListItem() { Text = x.DepartmentName, Value = x.DepartmentID.ToString() }).ToArray();
         }
 
         public IEnumerable<SelectListItem> GetRoleSelectItems()
         {
-            return DA.Current.Query<Role>().Select(x => new SelectListItem() { Text = x.RoleName, Value = x.RoleID.ToString() });
+            return DataSession.Query<Role>().Select(x => new SelectListItem() { Text = x.RoleName, Value = x.RoleID.ToString() });
         }
 
         public ClientListItem[] GetClients()
@@ -76,9 +79,9 @@ namespace Data.Models.Admin
             IQueryable<DryBoxClient> query = null;
 
             if (ViewInactive)
-                query = DA.Current.Query<DryBoxClient>().Where(x => x.OrgID == OrgID);
+                query = DataSession.Query<DryBoxClient>().Where(x => x.OrgID == OrgID);
             else
-                query = DA.Current.Query<DryBoxClient>().Where(x => x.OrgID == OrgID && x.ClientOrgActive);
+                query = DataSession.Query<DryBoxClient>().Where(x => x.OrgID == OrgID && x.ClientOrgActive);
 
             //ToArray is needed because of GetDisplayName
             var group = query.ToArray().GroupBy(x => new
@@ -129,24 +132,24 @@ namespace Data.Models.Admin
             if (ClientOrgID == 0)
                 return string.Empty;
             else
-                return DA.Current.Single<Org>(OrgID).OrgName;
+                return DataSession.Single<Org>(OrgID).OrgName;
         }
 
         public SelectListItem[] GetTechnicalFieldSelectItems()
         {
-            var query = DA.Current.Query<TechnicalField>().ToArray();
+            var query = DataSession.Query<TechnicalField>().ToArray();
             return query.Select(x => new SelectListItem() { Text = x.TechnicalFieldName, Value = x.TechnicalFieldID.ToString() }).ToArray();
         }
 
         public CheckBoxListItem[] GetPrivCheckBoxListItems()
         {
-            var query = DA.Current.Query<Priv>();
+            var query = DataSession.Query<Priv>();
             return query.Select(x => new CheckBoxListItem(Convert.ToInt32(x.PrivFlag).ToString(), x.PrivType)).ToArray();
         }
 
         public CheckBoxListItem[] GetCommunityCheckBoxListItems()
         {
-            var query = DA.Current.Query<Community>();
+            var query = DataSession.Query<LNF.Impl.Repository.Data.Community>();
             return query.Select(x => new CheckBoxListItem(x.CommunityFlag.ToString(), x.CommunityName)).ToArray();
         }
 
@@ -155,15 +158,15 @@ namespace Data.Models.Admin
             switch (type)
             {
                 case DemographicType.Citizen:
-                    return DA.Current.Query<DemCitizen>().Select(x => new SelectListItem() { Text = x.DemCitizenValue, Value = x.DemCitizenID.ToString() }).ToArray();
+                    return DataSession.Query<DemCitizen>().Select(x => new SelectListItem() { Text = x.DemCitizenValue, Value = x.DemCitizenID.ToString() }).ToArray();
                 case DemographicType.Gender:
-                    return DA.Current.Query<DemGender>().Select(x => new SelectListItem() { Text = x.DemGenderValue, Value = x.DemGenderID.ToString() }).ToArray();
+                    return DataSession.Query<DemGender>().Select(x => new SelectListItem() { Text = x.DemGenderValue, Value = x.DemGenderID.ToString() }).ToArray();
                 case DemographicType.Race:
-                    return DA.Current.Query<DemRace>().Select(x => new SelectListItem() { Text = x.DemRaceValue, Value = x.DemRaceID.ToString() }).ToArray();
+                    return DataSession.Query<DemRace>().Select(x => new SelectListItem() { Text = x.DemRaceValue, Value = x.DemRaceID.ToString() }).ToArray();
                 case DemographicType.Ethnic:
-                    return DA.Current.Query<DemEthnic>().Select(x => new SelectListItem() { Text = x.DemEthnicValue, Value = x.DemEthnicID.ToString() }).ToArray();
+                    return DataSession.Query<DemEthnic>().Select(x => new SelectListItem() { Text = x.DemEthnicValue, Value = x.DemEthnicID.ToString() }).ToArray();
                 case DemographicType.Disability:
-                    return DA.Current.Query<DemDisability>().Select(x => new SelectListItem() { Text = x.DemDisabilityValue, Value = x.DemDisabilityID.ToString() }).ToArray();
+                    return DataSession.Query<DemDisability>().Select(x => new SelectListItem() { Text = x.DemDisabilityValue, Value = x.DemDisabilityID.ToString() }).ToArray();
                 default:
                     throw new ArgumentException("type");
             }
@@ -179,7 +182,7 @@ namespace Data.Models.Admin
                 return;
             }
 
-            Org org = DA.Current.Single<Org>(OrgID);
+            Org org = DataSession.Single<Org>(OrgID);
 
             if (org == null)
             {
@@ -187,7 +190,7 @@ namespace Data.Models.Admin
             }
             else
             {
-                Client c = DA.Current.Single<Client>(ClientID);
+                Client c = DataSession.Single<Client>(ClientID);
                 if (c == null)
                 {
                     Active = true;
@@ -201,15 +204,10 @@ namespace Data.Models.Admin
                     MName = c.MName;
                     PrivFlag = Convert.ToInt32(c.Privs);
                     Communities = c.Communities;
-                    TechnicalFieldID = c.TechnicalFieldID;
-                    DemCitizenID = c.DemCitizenID;
-                    DemGenderID = c.DemGenderID;
-                    DemRaceID = c.DemRaceID;
-                    DemEthnicID = c.DemEthnicID;
-                    DemDisabilityID = c.DemDisabilityID;
+                    TechnicalFieldID = c.TechnicalInterestID;
                     Active = c.Active;
 
-                    ClientOrg co = DA.Current.Query<ClientOrg>().FirstOrDefault(x => x.Client.ClientID == ClientID && x.Org.OrgID == OrgID);
+                    ClientOrg co = DataSession.Query<ClientOrg>().FirstOrDefault(x => x.Client.ClientID == ClientID && x.Org.OrgID == OrgID);
                     if (co != null)
                     {
                         ClientOrgID = co.ClientOrgID;
@@ -228,7 +226,7 @@ namespace Data.Models.Admin
 
         public IEnumerable<SelectListItem> GetClientSelectItems()
         {
-            return DA.Current.Query<Client>()
+            return DataSession.Query<Client>()
                 .Where(x => x.Active)
                 .ToArray()
                 .OrderBy(x => x.DisplayName)

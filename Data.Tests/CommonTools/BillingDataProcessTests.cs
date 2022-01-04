@@ -1,7 +1,8 @@
-﻿using LNF;
-using LNF.CommonTools;
+﻿using LNF.Impl.Billing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Configuration;
+using System.Data.SqlClient;
 
 namespace Data.Tests.CommonTools
 {
@@ -11,34 +12,49 @@ namespace Data.Tests.CommonTools
         [TestMethod]
         public void Step4Subsidy_CanPopulateSubsidyBilling()
         {
-            //Dehui Zhang   => 2838
-            //James Ricker  => 1419
+            //Dehui Zhang    => 2838
+            //James Ricker   => 1419
+            //David Pellinen => 189
 
-            //BillingDataProcessStep4Subsidy.PopulateSubsidyBilling(DateTime.Parse("2015-09-01"), 2838);
-
-            var step4 = new BillingDataProcessStep4Subsidy(new LNF.Models.Billing.Process.BillingProcessStep4Command
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["cnSselData"].ConnectionString))
             {
-                ClientID = 1419,
-                Command = "subsidy",
-                Period = DateTime.Parse("2015-09-01")
-            });
+                conn.Open();
 
-            step4.PopulateSubsidyBilling();
+                var step4 = new BillingDataProcessStep4Subsidy(new Step4Config
+                {
+                    Connection = conn,
+                    ClientID = 1419,
+                    Period = DateTime.Parse("2015-09-01"),
+                    Context = "Data.Tests.CommonTools.BillingDataProcessTests.Step4Subsidy_CanPopulateSubsidyBilling"
+                });
+
+                step4.PopulateSubsidyBilling();
+
+                conn.Close();
+            }
         }
 
         [TestMethod]
         public void Step1_CanPopulateRoomBilling()
         {
-            var step1 = new BillingDataProcessStep1(DateTime.Now, ServiceProvider.Current);
-            step1.PopulateRoomBilling(DateTime.Parse("2015-09-01"), 2838, false);
-        }
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["cnSselData"].ConnectionString))
+            {
+                conn.Open();
 
-        [TestMethod]
-        public void Step1_CanPopulatToolBilling()
-        {
-            //David Pellinen => 189
-            var step1 = new BillingDataProcessStep1(DateTime.Now, ServiceProvider.Current);
-            step1.PopulateToolBilling(DateTime.Parse("2015-05-01"), 189, false);
+                var step1 = new BillingDataProcessStep1(new Step1Config
+                {
+                    Connection = conn,
+                    Period = DateTime.Parse("2015-09-01"),
+                    ClientID = 2838,
+                    IsTemp = false,
+                    Now = DateTime.Now,
+                    Context = "Data.Tests.CommonTools.BillingDataProcessTests.Step1_CanPopulateRoomBilling"
+                });
+
+                step1.PopulateRoomBilling();
+
+                conn.Close();
+            }
         }
     }
 }

@@ -1,11 +1,13 @@
 ﻿@using LNF.Web.Mvc;
 @using Data.Models;
+
 @model ClientAccessModel
 @{
     string app = string.Empty;
     ViewBag.Title = "Access";
     object routeVals = string.IsNullOrEmpty(app) ? null : new { app };
 }
+
 <div class="page">
     <h2>Access</h2>
     @Html.CreateSubMenu(Model.GetSubMenu())

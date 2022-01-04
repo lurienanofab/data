@@ -1,13 +1,11 @@
 ﻿@using Data.Models;
-@using LNF.Cache;
 @using LNF.Web.Mvc;
-
 @model UtilityModel
 @{
     ViewBag.Title = "ActiveLog";
     Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
     string cancelUrl = (Request.UrlReferrer == null) ? string.Empty : Request.UrlReferrer.ToString();
-    int currentUserClientId = CacheManager.Current.CurrentUser.ClientID;
+    int currentUserClientId = Model.CurrentUser.ClientID;
     bool showMenu = Html.ShowMenu();
 }
 

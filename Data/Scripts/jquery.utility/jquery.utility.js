@@ -103,7 +103,7 @@
                     "url": opts.apiUrl + "email/" + emailType,
                     "method": "POST",
                     "data": model
-                }).done(function (data, textStatus, jqXHR) {
+                }).done(function (data) {
                     target.html($("<div/>", { "class": "api-message success" }).html("Emails sent: " + data));
                 }).fail(function (jqXHR, textStatus, errorThrown) {
                     var errmsg = errorThrown;

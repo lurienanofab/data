@@ -1,44 +1,43 @@
-﻿using LNF;
-using LNF.Impl.DependencyInjection.Web;
-using LNF.Web;
+﻿using LNF.Web;
 using Microsoft.Owin;
 using Owin;
+using System.Linq;
+using System.Reflection;
+using System.Web.Compilation;
 using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Routing;
+using LNF.Impl.DependencyInjection;
 
 [assembly: OwinStartup(typeof(Data.Startup))]
 
 namespace Data
 {
-    public class Startup : OwinStartup
+    public class Startup
     {
-        public override void Configuration(IAppBuilder app)
-        {
-            var ioc = new IOC();
-            ServiceProvider.Configure(ioc.Resolver);
+        public static WebApp WebApp { get; private set; }
 
-            base.Configuration(app); // this must come before app.UseWebApi or NHibernate won't work
+        public void Configuration(IAppBuilder app)
+        {
+            var assemblies = BuildManager.GetReferencedAssemblies().Cast<Assembly>().ToArray();
+
+            WebApp = new WebApp();
+
+            var wcc = new WebContainerConfiguration(WebApp.Context);
+            wcc.RegisterAllTypes();
+
+            WebApp.BootstrapMvc(assemblies);
+
+            app.UseDataAccess(WebApp.Context);
+
+            AreaRegistration.RegisterAllAreas();
+            RouteConfig.RegisterRoutes(RouteTable.Routes);
+            FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
+
             HttpConfiguration config = new HttpConfiguration();
             WebApiConfig.Register(config);
+
             app.UseWebApi(config);
-        }
-
-        public override void ConfigureAuth(IAppBuilder app)
-        {
-            //use FormsAuthentication
-        }
-
-        public override void ConfigureFilters(GlobalFilterCollection filters)
-        {
-            FilterConfig.RegisterGlobalFilters(filters);
-        }
-
-        public override void ConfigureRoutes(RouteCollection routes)
-        {
-            AreaRegistration.RegisterAllAreas();
-            routes.RouteExistingFiles = false;
-            RouteConfig.RegisterRoutes(routes);
         }
     }
 }

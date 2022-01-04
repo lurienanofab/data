@@ -1,4 +1,4 @@
-﻿using LNF.Repository.Data;
+﻿using LNF.Impl.Repository.Data;
 using System.Collections.Generic;
 
 namespace Data.Models

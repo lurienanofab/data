@@ -1,6 +1,4 @@
-﻿using LNF;
-using LNF.Models.Data;
-using LNF.Models.PhysicalAccess;
+﻿using LNF.PhysicalAccess;
 using System;
 using System.Collections.Generic;
 using System.Web;
@@ -16,20 +14,20 @@ namespace Data.Models
 
         public IEnumerable<Badge> GetBadges()
         {
-            return ServiceProvider.Current.PhysicalAccess.GetBadge();
+            return Provider.PhysicalAccess.GetBadge();
         }
 
         public IEnumerable<Card> GetCards()
         {
             if (ExpireCutoff.HasValue)
-                return ServiceProvider.Current.PhysicalAccess.GetExpiringCards(ExpireCutoff.Value);
+                return Provider.PhysicalAccess.GetExpiringCards(ExpireCutoff.Value);
             else
-                return ServiceProvider.Current.PhysicalAccess.GetCards();
+                return Provider.PhysicalAccess.GetCards();
         }
 
         public IEnumerable<Event> GetEvents()
         {
-            return ServiceProvider.Current.PhysicalAccess.GetEvents(StartDate.Value, EndDate.Value.AddDays(1));
+            return Provider.PhysicalAccess.GetEvents(StartDate.Value, EndDate.Value.AddDays(1));
         }
 
         public string DaysSinceLastAccess(Card c)

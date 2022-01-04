@@ -1,13 +1,15 @@
 ﻿using LNF;
-using LNF.Models.Billing.Reports;
-using OnlineServices.Api.Scheduler;
+using LNF.Billing.Reports;
+using LNF.PhysicalAccess;
 using System;
 using System.Web.Http;
 
 namespace Data.Controllers.Api
 {
-    public class UtilityController : ApiController
+    public class UtilityController : DataApiController
     {
+        public UtilityController(IProvider provider) : base(provider) { }
+
         [Route("utility/api")]
         public string Get()
         {
@@ -20,7 +22,7 @@ namespace Data.Controllers.Api
             if (options == null)
                 throw new ArgumentNullException("options");
 
-            var result = ServiceProvider.Current.Billing.Report.SendFinancialManagerReport(options);
+            var result = Provider.Billing.Report.SendFinancialManagerReport(options);
 
             return result.TotalEmailsSent;
         }
@@ -28,13 +30,13 @@ namespace Data.Controllers.Api
         [HttpPost, Route("utility/api/email/card-expiration")]
         public int SendCardExpirationEmails()
         {
-            var client = new SchedulerServiceClient();
-            var result = client.SendExpiringCardsEmail();
-            return result;
+            RoomAccessExpirationCheck roomAccessExpirationCheck = new RoomAccessExpirationCheck();
+            int count = roomAccessExpirationCheck.Run();
+            return count;
         }
 
-        [HttpPost, Route("utility/api/email/apportionment")]
-        public int SenApportionmentEmails([FromBody] UserApportionmentReportOptions options)
+        [HttpPost, Route("utility/api/email/user-apportionment")]
+        public int SendApportionmentEmails([FromBody] UserApportionmentReportOptions options)
         {
             if (options == null)
                 throw new ArgumentNullException("options");

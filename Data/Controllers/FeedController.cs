@@ -1,10 +1,8 @@
 ﻿using Data.Models;
 using LNF;
 using LNF.Data;
-using LNF.Models.Data;
-using LNF.Repository.Data;
+using LNF.Impl.Repository.Data;
 using LNF.Scripting;
-using LNF.Web;
 using LNF.Web.Mvc;
 using System;
 using System.Collections;
@@ -18,17 +16,22 @@ using System.Web.Mvc;
 
 namespace Data.Controllers
 {
-    public class FeedController : Controller
+    public class FeedController : DataController
     {
-        private readonly IScriptingService _scriptingSvc = new PythonScriptService();
+        private readonly IScriptEngine _engine;
+
+        public FeedController(IProvider provider) : base(provider)
+        {
+            _engine = new PythonScriptService();
+        }
 
         [Route("feed/reports/{alias}/cfg")]
         public ActionResult Configuration(string alias, string callback = null)
         {
-            string content = string.Empty;
+            string content;
 
             if (string.IsNullOrEmpty(alias))
-                content = ServiceProvider.Current.Serialization.Json.SerializeObject(new { error = true, errorMessage = "Missing parameter: alias" });
+                content = Provider.Utility.Serialization.Json.SerializeObject(new { error = true, errorMessage = "Missing parameter: alias" });
             else
             {
                 string filePath = Path.Combine(Server.MapPath("~/Content/json"), string.Format("{0}.json", alias));
@@ -36,7 +39,7 @@ namespace Data.Controllers
                 if (System.IO.File.Exists(filePath))
                     content = System.IO.File.ReadAllText(filePath);
                 else
-                    content = ServiceProvider.Current.Serialization.Json.SerializeObject(new { error = true, errorMessage = string.Format("Cannot find report configuration: {0}.json", alias) });
+                    content = Provider.Utility.Serialization.Json.SerializeObject(new { error = true, errorMessage = string.Format("Cannot find report configuration: {0}.json", alias) });
             }
 
             if (!string.IsNullOrEmpty(callback))
@@ -49,6 +52,7 @@ namespace Data.Controllers
         public ActionResult List(FeedModel model)
         {
             ViewBag.UsePills = true;
+            model.Provider = Provider;
             model.ViewInactive = ViewInactive();
             model.CurrentPage = "Feed";
             model.CurrentSubMenuItem = "list";
@@ -58,6 +62,7 @@ namespace Data.Controllers
         [HttpGet, Route("feed/console/{alias?}"), LNFAuthorize(ClientPrivilege.Administrator)]
         public ActionResult Console(FeedModel model)
         {
+            model.Provider = Provider;
             model.CurrentPage = "Feed";
             model.CurrentSubMenuItem = "console";
 
@@ -91,6 +96,8 @@ namespace Data.Controllers
         [HttpPost, Route("feed/console/save"), LNFAuthorize]
         public ActionResult Save(FeedModel model)
         {
+            model.Provider = Provider;
+
             var result = model.SaveFeed();
 
             Session.Remove("SaveFeedMessage");
@@ -107,6 +114,7 @@ namespace Data.Controllers
         [Route("feed/reports/{alias}")]
         public ActionResult Reports(FeedModel model)
         {
+            model.Provider = Provider;
             model.CurrentPage = "Feed";
             model.CurrentSubMenuItem = "reports";
             return View(model);
@@ -115,7 +123,7 @@ namespace Data.Controllers
         [Route("feed/delete/{alias}"), LNFAuthorize(ClientPrivilege.Administrator)]
         public ActionResult Delete(string alias)
         {
-            var model = new FeedModel() { Alias = alias, CurrentUser = HttpContext.CurrentUser() };
+            var model = new FeedModel() { Provider = Provider, Alias = alias, CurrentUser = CurrentUser };
             model.DeleteFeed();
             return RedirectToAction("Index", new { Alias = "", Format = "" });
         }
@@ -123,6 +131,8 @@ namespace Data.Controllers
         [HttpPost, Route("feed/ajax"), LNFAuthorize]
         public ActionResult Ajax(FeedModel model)
         {
+            model.Provider = Provider;
+
             if (model.Command == "run-script")
             {
                 string query = string.Empty;
@@ -139,9 +149,9 @@ namespace Data.Controllers
                 var dict = new Dictionary<object, object>();
                 DataFeedItem.ApplyDefaultParameters(model.DefaultParameters, dict);
 
-                var parameters = Parameters.Create(dict);
+                var parameters = ScriptParameters.Create(dict);
 
-                Result result = _scriptingSvc.Run(query, parameters);
+                var result = _engine.Run(query, parameters);
 
                 if (result.Exception != null)
                     error = result.Exception.Message;
@@ -150,7 +160,7 @@ namespace Data.Controllers
                 html = result.Html.ToString();
                 if (result.DataSet.Count > 0)
                 {
-                    foreach (KeyValuePair<string, LNF.Scripting.Data> kvp in result.DataSet)
+                    foreach (KeyValuePair<string, ScriptData> kvp in result.DataSet)
                         data.Add(kvp.Key, new { Headers = kvp.Value.GetHeaders().Select(x => x.DisplayText).ToArray(), Items = kvp.Value.GetItems() });
                 }
 
@@ -163,9 +173,10 @@ namespace Data.Controllers
         [AllowAnonymous, Route("feed/{alias?}/{format?}/{key?}")]
         public ActionResult Index(string alias, string format, string key, string callback = null)
         {
-            var model = new FeedModel()
+            var model = new FeedModel
             {
-                CurrentUser = HttpContext.CurrentUser(),
+                Provider = Provider,
+                CurrentUser = CurrentUser,
                 Alias = alias,
                 Format = format,
                 Key = key,
@@ -190,24 +201,24 @@ namespace Data.Controllers
                     throw new Exception("Could not find feed: " + model.Alias);
                 else if (feedResult.Deleted)
                     throw new Exception("Could not find feed: " + model.Alias);
-                else if (!feedResult.Active && !DataFeedItem.CanViewInactiveFeeds(HttpContext.CurrentUser()))
+                else if (!feedResult.Active && !DataFeedItem.CanViewInactiveFeeds(CurrentUser))
                     throw new Exception("Could not find feed: " + model.Alias);
                 else
                 {
                     switch (model.Format)
                     {
                         case "xml":
-                            result.Content = util.XmlFeedContent(feedResult, model.Key);
+                            result.Content = util.XmlFeedContent(feedResult);
                             result.ContentType = "text/xml";
                             break;
                         case "rss":
-                            result.Content = util.RssFeedContent(feedResult, model.Key);
+                            result.Content = util.RssFeedContent(feedResult, model.Key, Request.Url, Request.Path);
                             result.ContentType = "application/rss+xml";
                             break;
                         case "html":
                             return View("Feed", model);
                         case "table":
-                            result.Content = util.HtmlFeedContent(feedResult, model.Key, model.Format);
+                            result.Content = util.HtmlFeedContent(feedResult, model.Format);
                             result.ContentType = "text/html";
                             break;
                         case "json":
@@ -219,7 +230,7 @@ namespace Data.Controllers
                             result.ContentType = "application/json";
                             break;
                         case "ical":
-                            result.Content = util.IcalFeedContent(feedResult, model.Key);
+                            result.Content = util.IcalFeedContent(feedResult, model.Key, Request.ServerVariables["LOCAL_ADDR"]);
                             result.ContentType = "text/calendar";
                             Response.Charset = string.Empty;
                             Response.AddHeader("Content-Disposition", string.Format("attachment;filename={0}-{1}.ics", feedResult.Alias, DateTime.Now.ToString("yyyyMMddHHmmss")));
@@ -275,6 +286,7 @@ namespace Data.Controllers
         public ActionResult ViewHtml(FeedModel model)
         {
             //model.App = "view";
+            model.Provider = Provider;
             model.CurrentPage = "Feed";
             model.CurrentSubMenuItem = "list";
 
@@ -285,7 +297,7 @@ namespace Data.Controllers
                 {
                     try
                     {
-                        Result result = _scriptingSvc.Run(feed.FeedQuery, GetParameters(feed));
+                        var result = _engine.Run(feed.FeedQuery, GetParameters(feed));
                         if (result.Exception != null)
                             throw result.Exception;
 
@@ -329,14 +341,14 @@ namespace Data.Controllers
             return result;
         }
 
-        private Parameters GetParameters(DataFeed feed)
+        private ScriptParameters GetParameters(DataFeed feed)
         {
             var dict = new Dictionary<object, object>();
             Merge(dict, Request.QueryString);
             Merge(dict, Request.Form);
             feed.ApplyDefaultParameters(dict);
 
-            var result = Parameters.Create(dict);
+            var result = ScriptParameters.Create(dict);
 
             return result;
         }

@@ -1,10 +1,9 @@
 ﻿using LNF;
-using LNF.Models.Data;
+using LNF.Impl.Repository.Data;
 using LNF.Repository;
-using LNF.Repository.Data;
 using LNF.Web.Mvc;
 using LNF.Web.Mvc.UI;
-using OnlineServices.Api.Scheduler;
+using LNF.Worker;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,11 +20,11 @@ namespace Data.Models
 
         public void InitLog()
         {
-            if (LogStartDate == default(DateTime))
+            if (LogStartDate == default)
                 LogStartDate = DateTime.Now.Date;
-            if (LogEndDate == default(DateTime))
+            if (LogEndDate == default)
                 LogEndDate = DateTime.Now.Date;
-            if (PurgeLogDate == default(DateTime))
+            if (PurgeLogDate == default)
                 PurgeLogDate = DateTime.Now.Date;
         }
 
@@ -39,7 +38,7 @@ namespace Data.Models
         {
             DateTime sd = LogStartDate;
             DateTime ed = LogEndDate.AddDays(1);
-            IList<ServiceLog> result = DA.Current.Query<ServiceLog>().Where(x => x.ServiceName == service && x.LogDateTime >= sd && x.LogDateTime < ed).OrderBy(x => x.LogDateTime).ToList();
+            IList<ServiceLog> result = DataSession.Query<ServiceLog>().Where(x => x.ServiceName == service && x.LogDateTime >= sd && x.LogDateTime < ed).OrderBy(x => x.LogDateTime).ToList();
             return result;
         }
 
@@ -48,43 +47,25 @@ namespace Data.Models
             if (Task == "interlock-test")
                 return HandleInterlockTest();
 
-            var ssc = new SchedulerServiceClient();
-
-            string command = "task-" + Task;
-            GenericResult result = new GenericResult();
-            bool taskResult = true;
-
-            switch (command)
+            try
             {
-                case "task-5min":
-                    var fiveMinuteTaskResult = ssc.RunFiveMinuteTask();
-                    break;
-                case "task-daily":
-                    var dailyTaskResult = ssc.RunDailyTask();
-                    break;
-                case "task-monthly":
-                    var monthlyTaskResult = ssc.RunMonthlyTask();
-                    break;
-                default:
-                    result.Success = false;
-                    result.Message = "Invalid Command";
-                    result.Data = command;
-                    return result;
+                var req = new WorkerRequest { Command = "RunTask", Args = new[] { Task } };
+                string message = Provider.Worker.Execute(req);
+                return new GenericResult
+                {
+                    Success = true,
+                    Message = message,
+                    Data = $"task-{Task}"
+                };
             }
-
-            if (taskResult)
+            catch(Exception ex)
             {
-                result.Success = true;
-                result.Message = command;
+                return new GenericResult
+                {
+                    Success = false,
+                    Message = ex.Message
+                };
             }
-            else
-            {
-                result.Success = false;
-                result.Message = "Service did not respond.";
-                result.Data = command;
-            }
-
-            return result;
         }
 
         public GenericResult HandleInterlockTest()
@@ -95,8 +76,7 @@ namespace Data.Models
                 {
                     if (HttpContext.Current.Request != null)
                     {
-                        int id;
-                        if (int.TryParse(HttpContext.Current.Request.QueryString["id"], out id))
+                        if (int.TryParse(HttpContext.Current.Request.QueryString["id"], out int id))
                         {
                             string state = HttpContext.Current.Request.QueryString["state"];
                             if (!string.IsNullOrEmpty(state))

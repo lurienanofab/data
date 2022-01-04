@@ -1,5 +1,4 @@
-﻿using LNF.Models.Data;
-using System;
+﻿using System;
 
 namespace Data.Models.Admin
 {

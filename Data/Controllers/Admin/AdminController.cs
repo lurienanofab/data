@@ -1,21 +1,17 @@
 ﻿using Data.Models.Admin;
 using LNF;
-using LNF.Models.Data;
+using LNF.Billing;
+using LNF.Data;
 using LNF.Web.Mvc;
 using System;
+using System.Collections.Generic;
 using System.Web.Mvc;
 
 namespace Data.Controllers.Admin
 {
-    public class AdminController : BaseController
+    public class AdminController : DataController
     {
-        private IOrgManager OrgManager { get; }
-
-        public AdminController()
-        {
-            // TODO: wire-up constructor injection
-            OrgManager = ServiceProvider.Current.Data.Org;
-        }
+        public AdminController(IProvider provider) : base(provider) { }
 
         [Route("admin")]
         [LNFAuthorize(ClientPrivilege.Administrator)]
@@ -29,8 +25,10 @@ namespace Data.Controllers.Admin
 
         [Route("admin/client")]
         [LNFAuthorize(ClientPrivilege.Administrator)]
-        public ActionResult Client(Models.Admin.ClientModel model)
+        public ActionResult Client(ClientModel model)
         {
+            model.Provider = Provider;
+            model.BillingTypes = Provider.Billing.BillingType.GetBillingTypes();
             SetOrg(model);
             SetViewInactive(model);
             return View(model);
@@ -38,8 +36,11 @@ namespace Data.Controllers.Admin
 
         [Route("admin/client/edit/{OrgID}/{ClientID}")]
         [LNFAuthorize(ClientPrivilege.Administrator)]
-        public ActionResult ClientEdit(Models.Admin.ClientModel model)
+        public ActionResult ClientEdit(ClientModel model)
         {
+            model.Provider = Provider;
+            model.BillingTypes = Provider.Billing.BillingType.GetBillingTypes();
+
             if (model.Command == "save")
             {
                 bool adding = model.ClientID == 0;
@@ -63,24 +64,31 @@ namespace Data.Controllers.Admin
 
         [Route("admin/assign-accounts/{OrgID?}")]
         [LNFAuthorize(ClientPrivilege.Administrator)]
-        public ActionResult AssignAccounts(Models.Admin.ClientModel model)
+        public ActionResult AssignAccounts(ClientModel model)
         {
+            model.Provider = Provider;
+            model.BillingTypes = Provider.Billing.BillingType.GetBillingTypes();
+
             if (model.OrgID == 0)
-                model.OrgID = OrgManager.GetPrimaryOrg().OrgID;
+                model.OrgID = Provider.Data.Org.GetPrimaryOrg().OrgID;
+
             return View(model);
         }
 
         [Route("admin/password-reset/{UserName?}")]
         [LNFAuthorize(ClientPrivilege.Administrator)]
-        public ActionResult PasswordReset(Models.Admin.ClientModel model)
+        public ActionResult PasswordReset(ClientModel model)
         {
+            model.Provider = Provider;
+            model.BillingTypes = Provider.Billing.BillingType.GetBillingTypes();
             return View(model);
         }
 
         [Route("admin/account")]
         [LNFAuthorize(ClientPrivilege.Administrator)]
-        public ActionResult Account(Models.Admin.AccountModel model)
+        public ActionResult Account(AccountModel model)
         {
+            model.Provider = Provider;
             SetOrg(model);
             SetViewInactive(model);
             return View(model);
@@ -88,23 +96,26 @@ namespace Data.Controllers.Admin
 
         [Route("admin/account/edit/{AccountID}")]
         [LNFAuthorize(ClientPrivilege.Administrator)]
-        public ActionResult AccountEdit(Models.Admin.AccountModel model)
+        public ActionResult AccountEdit(AccountModel model)
         {
+            model.Provider = Provider;
             throw new NotImplementedException();
         }
 
         [Route("admin/org")]
         [LNFAuthorize(ClientPrivilege.Administrator)]
-        public ActionResult Org(Models.Admin.OrgModel model)
+        public ActionResult Org(OrgModel model)
         {
+            model.Provider = Provider;
             SetViewInactive(model);
             return View(model);
         }
 
         [Route("admin/org/edit/{OrgID}")]
         [LNFAuthorize(ClientPrivilege.Administrator)]
-        public ActionResult OrgEdit(Models.Admin.OrgModel model)
+        public ActionResult OrgEdit(OrgModel model)
         {
+            model.Provider = Provider;
             if (model.Command == "save")
             {
                 bool adding  = false;
@@ -133,8 +144,9 @@ namespace Data.Controllers.Admin
 
         [Route("admin/room")]
         [LNFAuthorize(ClientPrivilege.Administrator)]
-        public ActionResult Room(Models.Admin.RoomModel model)
+        public ActionResult Room(RoomModel model)
         {
+            model.Provider = Provider;
             SetViewInactive(model);
             return View(model);
         }
@@ -143,6 +155,7 @@ namespace Data.Controllers.Admin
         [LNFAuthorize(ClientPrivilege.Administrator)]
         public ActionResult RoomEdit(RoomModel model)
         {
+            model.Provider = Provider;
             if (model.Command == "save")
             {
                 if (model.SaveRoom())
@@ -160,13 +173,13 @@ namespace Data.Controllers.Admin
         [LNFAuthorize(ClientPrivilege.Administrator)]
         public ActionResult Ajax(AjaxModel model)
         {
+            model.Provider = Provider;
             return Json(model.HandleCommand());
         }
 
         private void SetViewInactive(AdminBaseModel model)
         {
-            bool result;
-            if (bool.TryParse(Request.QueryString["inactive"], out result))
+            if (bool.TryParse(Request.QueryString["inactive"], out bool result))
                 model.ViewInactive = result;
             else
                 model.ViewInactive = false;
@@ -176,8 +189,7 @@ namespace Data.Controllers.Admin
         {
             if (model.OrgID == 0)
             {
-                int orgId;
-                if (int.TryParse(Request.QueryString["OrgID"], out orgId) && orgId > 0)
+                if (int.TryParse(Request.QueryString["OrgID"], out int orgId) && orgId > 0)
                     model.OrgID = orgId;
                 else
                     model.OrgID = model.GetPrimaryOrg().OrgID;

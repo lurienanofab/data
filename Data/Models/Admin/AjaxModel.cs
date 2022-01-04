@@ -1,8 +1,7 @@
-﻿using LNF;
+﻿using LNF.Data;
 using LNF.Data.ClientAccountMatrix;
-using LNF.Models.Data;
+using LNF.Impl.Repository.Data;
 using LNF.Repository;
-using LNF.Repository.Data;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -10,16 +9,8 @@ using System.Linq;
 
 namespace Data.Models.Admin
 {
-    public class AjaxModel
+    public class AjaxModel : DataModel
     {
-        protected IProvider Provider { get; }
-
-        public AjaxModel()
-        {
-            // TODO: wire-up constructor injection
-            Provider = ServiceProvider.Current;
-        }
-
         public string Command { get; set; }
         public string Action { get; set; }
         public string UserName { get; set; }
@@ -35,7 +26,7 @@ namespace Data.Models.Admin
                 case "password-reset":
                     if (!string.IsNullOrEmpty(UserName))
                     {
-                        var client = DA.Current.Query<Client>().FirstOrDefault(x => x.UserName == UserName);
+                        var client = DataSession.Query<Client>().FirstOrDefault(x => x.UserName == UserName);
                         if (client != null)
                         {
                             client.ResetPassword();
@@ -106,7 +97,7 @@ namespace Data.Models.Admin
             }
         }
 
-        public void EnableClientAccount()
+        public string EnableClientAccount()
         {
             ClientAccount ca = GetClientAccount();
 
@@ -115,24 +106,26 @@ namespace Data.Models.Admin
                 //No record exists yet so this must be the first association of this client and account.
                 ca = new ClientAccount
                 {
-                    ClientOrg = DA.Current.Single<ClientOrg>((int)UserClientOrgID),
-                    Account = DA.Current.Single<Account>((int)AccountID),
+                    ClientOrg = DataSession.Single<ClientOrg>((int)UserClientOrgID),
+                    Account = DataSession.Single<Account>((int)AccountID),
                     Manager = false,
                     IsDefault = false
                 };
 
                 // Need to save to get the ClientAccountID.
-                DA.Current.Insert(ca);
+                DataSession.Insert(ca);
             }
 
-            Provider.Data.ActiveLog.Enable("ClientAccount", ca.ClientAccountID);
+            Provider.Data.ActiveLog.Enable(ca);
 
-            var c = DA.Current.Single<ClientInfo>(ca.ClientOrg.Client.ClientID).CreateModel<IClient>();
+            IClient c = DataSession.Single<ClientInfo>(ca.ClientOrg.Client.ClientID);
             Provider.Data.Client.UpdatePhysicalAccess(c, out string alert);
 
             //A final check...
             if (ca.ClientOrg.ClientOrgID != UserClientOrgID)
                 throw new Exception(string.Format("EnableClientAccount failed. Expected ClientOrgID: {0}, Actual ClientOrgID: {1}", UserClientOrgID, ca.ClientOrg.ClientOrgID));
+
+            return alert;
         }
 
         public string DisableClientAccount()
@@ -142,9 +135,9 @@ namespace Data.Models.Admin
             if (ca == null)
                 throw new Exception($"Could not find ClientAccount record for ClientOrgID: {UserClientOrgID}");
 
-            Provider.Data.ActiveLog.Disable("ClientAccount", ca.ClientAccountID);
+            Provider.Data.ActiveLog.Disable(ca);
 
-            var c = DA.Current.Single<ClientInfo>(ca.ClientOrg.Client.ClientID).CreateModel<IClient>();
+            IClient c = DataSession.Single<ClientInfo>(ca.ClientOrg.Client.ClientID);
             Provider.Data.Client.UpdatePhysicalAccess(c, out string alert);
 
             return alert;
@@ -153,7 +146,7 @@ namespace Data.Models.Admin
         public ClientAccount GetClientAccount()
         {
             if (UserClientOrgID != 0 && AccountID != 0)
-                return DA.Current.Query<ClientAccount>().FirstOrDefault(x => x.ClientOrg.ClientOrgID == UserClientOrgID && x.Account.AccountID == AccountID);
+                return DataSession.Query<ClientAccount>().FirstOrDefault(x => x.ClientOrg.ClientOrgID == UserClientOrgID && x.Account.AccountID == AccountID);
             else
                 return null;
         }

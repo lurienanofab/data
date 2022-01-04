@@ -1,31 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Data.Controllers.Api;
+using LNF;
+using LNF.Impl.Repository.Data;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Web.Http;
-using LNF.Repository;
-using LNF.Repository.Data;
 
 namespace Data.Controllers
 {
     [Route("api/org/department")]
-    public class ApiOrgDepartmentController : ApiController
+    public class ApiOrgDepartmentController : DataApiController
     {
+        public ApiOrgDepartmentController(IProvider provider) : base(provider) { }
+
         public OrgDepartmentModel[] Get(int orgId)
         {
-            var query = DA.Current.Query<Department>().Where(x => x.Org.OrgID == orgId);
+            var query = DataSession.Query<Department>().Where(x => x.Org.OrgID == orgId);
             return query.OrderBy(x => x.Org.OrgID).ThenBy(x => x.DepartmentName).Select(GetModel).ToArray();
         }
 
         public OrgDepartmentModel Post([FromBody] OrgDepartmentModel model, int orgId)
         {
-            Department entity = null;
+            Department entity;
 
             if (model.DepartmentID > 0)
             {
                 //update existing
-                entity = DA.Current.Single<Department>(model.DepartmentID);
+                entity = DataSession.Single<Department>(model.DepartmentID);
                 entity.DepartmentName = model.DepartmentName;
             }
             else
@@ -34,18 +33,18 @@ namespace Data.Controllers
                 entity = new Department()
                 {
                     DepartmentName = model.DepartmentName,
-                    Org = DA.Current.Single<LNF.Repository.Data.Org>(orgId)
+                    Org = DataSession.Single<Org>(orgId)
                 };
             }
 
-            DA.Current.SaveOrUpdate(entity);
+            DataSession.SaveOrUpdate(entity);
             return GetModel(entity);
         }
 
         public void Delete(int departmentId)
         {
-            var entity = DA.Current.Single<Department>(departmentId);
-            DA.Current.Delete(new Department[] { entity });
+            var entity = DataSession.Single<Department>(departmentId);
+            DataSession.Delete(new Department[] { entity });
         }
 
         private OrgDepartmentModel GetModel(Department entity)

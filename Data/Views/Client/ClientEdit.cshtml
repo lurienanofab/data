@@ -1,6 +1,5 @@
-﻿@using LNF.Data;
-@using LNF.PhysicalAccess;
-@model Data.Models.zClientModel
+﻿@using Data.Models.Admin;
+@model ClientModel
 @{
     Layout = "~/Views/Shared/_LayoutBootstrap.cshtml";
 
@@ -18,10 +17,12 @@
     }
 
     int privItemsPerRow = 4;
-    var privItems = Model.GetPrivItems().ToList();
+    var privItems = Model.GetPrivCheckBoxListItems();
 
     var commItemsPerRow = 4;
-    var commItems = Model.GetCommunityItems().ToList();
+    var commItems = Model.GetCommunityCheckBoxListItems();
+
+    string saveErrorMessage = string.Empty;
 }
 
 @section styles{
@@ -37,16 +38,16 @@
             }
             else
             {
-                <h1>Configure Client <span style="color: #0033ff;">@Model.GetClientDisplayName()</span></h1>
+                <h1>Configure Client <span style="color: #0033ff;">@Model.GetDisplayName()</span></h1>
             }
         </div>
         @using (Html.BeginForm("ClientEdit", "Client", new { ClientOrgID = Model.ClientOrgID }, FormMethod.Post, new { @role = "form" }))
         {
             <div class="row">
-                @if (!string.IsNullOrEmpty(Model.SaveErrorMessage))
+                @if (!string.IsNullOrEmpty(saveErrorMessage))
                 {
                     <div class="col-md-12">
-                        <div class="alert alert-danger" role="alert">@Html.Raw(Model.SaveErrorMessage)</div>
+                        <div class="alert alert-danger" role="alert">@Html.Raw(saveErrorMessage)</div>
                     </div>
                 }
                 <div class="col-md-12">
@@ -121,36 +122,36 @@
                             <div class="row">
                                 <div class="col-md-4">
                                     <h5 style="border-bottom: solid 2px #ccc; padding-bottom: 5px;">US citizen or permanent resident</h5>
-                                    @foreach (var item in Model.GetDemCitizenItems())
+                                    @foreach (var item in Model.GetDemographicSelectListItems(DemographicType.Citizen))
                                     {
                                         <div>
                                             <label>
-                                                @Html.RadioButtonFor(x => x.DemCitizenID, item.DemCitizenID)
-                                                @item.DemCitizenValue
+                                                @Html.RadioButtonFor(x => x.DemCitizenID, item.Value)
+                                                @item.Text
                                             </label>
                                         </div>
                                     }
                                 </div>
                                 <div class="col-md-4">
                                     <h5 style="border-bottom: solid 2px #ccc; padding-bottom: 5px;">Ethnicity</h5>
-                                    @foreach (var item in Model.GetDemEthnicItems())
+                                    @foreach (var item in Model.GetDemographicSelectListItems(DemographicType.Ethnic))
                                     {
                                         <div>
                                             <label>
-                                                @Html.RadioButtonFor(x => x.DemEthnicID, item.DemEthnicID)
-                                                @item.DemEthnicValue
+                                                @Html.RadioButtonFor(x => x.DemEthnicID, item.Value)
+                                                @item.Text
                                             </label>
                                         </div>
                                     }
                                 </div>
                                 <div class="col-md-4">
                                     <h5 style="border-bottom: solid 2px #ccc; padding-bottom: 5px;">Race</h5>
-                                    @foreach (var item in Model.GetDemRaceItems())
+                                    @foreach (var item in Model.GetDemographicSelectListItems(DemographicType.Race))
                                     {
                                         <div>
                                             <label>
-                                                @Html.RadioButtonFor(x => x.DemRaceID, item.DemRaceID)
-                                                @item.DemRaceValue
+                                                @Html.RadioButtonFor(x => x.DemRaceID, item.Value)
+                                                @item.Text
                                             </label>
                                         </div>
                                     }
@@ -159,24 +160,24 @@
                             <div class="row">
                                 <div class="col-md-4">
                                     <h5 style="border-bottom: solid 2px #ccc; padding-bottom: 5px;">Gender</h5>
-                                    @foreach (var item in Model.GetDemGenderItems())
+                                    @foreach (var item in Model.GetDemographicSelectListItems(DemographicType.Gender))
                                     {
                                         <div>
                                             <label style="white-space: nowrap;">
-                                                @Html.RadioButtonFor(x => x.DemGenderID, item.DemGenderID)
-                                                @item.DemGenderValue
+                                                @Html.RadioButtonFor(x => x.DemGenderID, item.Value)
+                                                @item.Text
                                             </label>
                                         </div>
                                     }
                                 </div>
                                 <div class="col-md-4">
                                     <h5 style="border-bottom: solid 2px #ccc; padding-bottom: 5px;">Disability</h5>
-                                    @foreach (var item in Model.GetDemDisabilityItems())
+                                    @foreach (var item in Model.GetDemographicSelectListItems(DemographicType.Disability))
                                     {
                                         <div>
                                             <label style="white-space: nowrap;">
-                                                @Html.RadioButtonFor(x => x.DemDisabilityID, item.DemDisabilityID)
-                                                @item.DemDisabilityValue
+                                                @Html.RadioButtonFor(x => x.DemDisabilityID, item.Value)
+                                                @item.Text
                                             </label>
                                         </div>
                                     }
@@ -194,7 +195,7 @@
                             <h3 class="panel-title">Privileges</h3>
                         </div>
                         <div class="panel-body">
-                            @Html.Hidden("Privs", (int)Model.Privs, new { @class = "privs" })
+                            @Html.Hidden("Privs", Model.PrivFlag, new { @class = "privs" })
                             <div class="priv-table">
                                 <div class="row">
                                     @for (int i = 0; i < privItems.Count(); i++)
@@ -202,8 +203,8 @@
                                         @Html.Raw((i % privItemsPerRow == 0 && i > 0) ? "</div><div class=\"row\">" : string.Empty)
                                         <div class="col-sm-3">
                                             <label style="white-space: nowrap;">
-                                                <input type="checkbox" class="priv-checkbox" @Html.Raw(Model.HasPriv(privItems[i]) ? "checked" : "") value="@Convert.ToInt32(privItems[i].PrivFlag)" />
-                                                @privItems[i].PrivType
+                                                <input type="checkbox" class="priv-checkbox" @Html.Raw(Model.HasPriv(privItems[i]) ? "checked" : "") value="@Convert.ToInt32(privItems[i].Value)" />
+                                                @privItems[i].Text
                                             </label>
                                         </div>
                                     }
@@ -238,8 +239,8 @@
                                         @Html.Raw((i % commItemsPerRow == 0 && i > 0) ? "</div><div class=\"row\">" : string.Empty)
                                         <div class="col-sm-3">
                                             <label style="white-space: nowrap;">
-                                                <input type="checkbox" class="community-checkbox" @Html.Raw(Model.HasCommunity(commItems[i]) ? "checked" : "") value="@Convert.ToInt32(commItems[i].CommunityFlag)" />
-                                                @commItems[i].CommunityName
+                                                <input type="checkbox" class="community-checkbox" @Html.Raw(Model.HasCommunity(commItems[i]) ? "checked" : "") value="@Convert.ToInt32(commItems[i].Value)" />
+                                                @commItems[i].Text
                                             </label>
                                         </div>
                                     }
@@ -331,26 +332,16 @@
                                 <div class="form-group">
                                     <label for="" class="control-label">Subsidy Start Date</label>
                                     <div class="row">
-                                        <div class="col-sm-2">
-                                            <label for="SubsidyStartDateYear" class="sr-only">Subsidy Start Date (Year)</label>
-                                            @Html.DropDownListFor(x => x.SubsidyStartDateYear, new SelectListItem[] { new SelectListItem() { Value = "2003", Text = "2003" } }, new { @style = "margin-bottom: 5px;", @class = "form-control" })
-                                        </div>
-                                        <div class="col-sm-2">
-                                            <label for="SubsidyStartDateMonth" class="sr-only">Subsidy Start Date (Month)</label>
-                                            @Html.DropDownListFor(x => x.SubsidyStartDateMonth, new SelectListItem[] { new SelectListItem() { Value = "1", Text = "January" } }, new { @style = "margin-bottom: 5px;", @class = "form-control" })
+                                        <div class="col-sm-4">
+                                            @Html.TextBoxFor(x => x.SubsidyStartDate, new { placeholder = "YYYY-MM-DD" })
                                         </div>
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="" class="control-label">New Faculty Start Date</label>
                                     <div class="row">
-                                        <div class="col-sm-2">
-                                            <label for="NewFacultyStartDateYear" class="sr-only">New Faculty Start Date (Year)</label>
-                                            @Html.DropDownListFor(x => x.NewFacultyStartDateYear, new SelectListItem[] { new SelectListItem() { Value = "2003", Text = "2003" } }, new { @style = "margin-bottom: 5px;", @class = "form-control" })
-                                        </div>
-                                        <div class="col-sm-2">
-                                            <label for="NewFacultyStartDateMonth" class="sr-only">New Faculty Start Date (Month)</label>
-                                            @Html.DropDownListFor(x => x.NewFacultyStartDateMonth, new SelectListItem[] { new SelectListItem() { Value = "1", Text = "January" } }, new { @style = "margin-bottom: 5px;", @class = "form-control" })
+                                        <div class="col-sm-4">
+                                            @Html.TextBoxFor(x => x.NewFacultyStartDate, new { placeholder = "YYYY-MM-DD" })
                                         </div>
                                     </div>
                                     <div style="color: #777;">
@@ -360,7 +351,7 @@
                                 <div class="form-group">
                                     <label for="asdf" class="control-label">Billing Type</label>
                                     <div>
-                                        @foreach (var bt in Model.GetBillingTypes())
+                                        @foreach (var bt in Model.BillingTypes)
                                         {
                                             <label style="margin-right: 10px;">
                                                 @Html.RadioButton("BillingTypeID", bt.BillingTypeID, bt.BillingTypeID == Model.BillingTypeID)
@@ -707,7 +698,7 @@
                     "canEdit": false,
                     "header": { "controls": { "width": "60px" } },
                     "footer": { "button": { "className": "btn btn-xs btn-primary" } },
-                    "nodata": "@Model.GetClientDisplayName() has no managers",
+                    "nodata": "@Model.GetDisplayName() has no managers",
                     "complete": function (table, data) {
                         table.footable();
                     },
@@ -754,7 +745,7 @@
                     "canEdit": false,
                     "header": { "controls": { "width": "60px" } },
                     "footer": { "button": { "className": "btn btn-xs btn-primary" } },
-                    "nodata": "@Model.GetClientDisplayName() has no accounts",
+                    "nodata": "@Model.GetDisplayName() has no accounts",
                     "complete": function (table, data) {
                         table.footable();
                     },

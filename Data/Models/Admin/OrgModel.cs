@@ -1,9 +1,6 @@
 ﻿using Data.Models.Api;
-using LNF;
-using LNF.Data;
-using LNF.Models.Data;
+using LNF.Impl.Repository.Data;
 using LNF.Repository;
-using LNF.Repository.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,16 +10,6 @@ namespace Data.Models.Admin
 {
     public class OrgModel : AdminBaseModel
     {
-        private IOrgManager OrgManager { get; }
-        private IActiveLogManager ActiveLogManager { get; }
-
-        public OrgModel()
-        {
-            // TODO: wire-up constructor injection
-            OrgManager = ServiceProvider.Current.Data.Org;
-            ActiveLogManager = ServiceProvider.Current.Data.ActiveLog;
-        }
-
         public int OrgTypeID { get; set; }
         public string OrgName { get; set; }
         public bool NNINOrg { get; set; }
@@ -36,7 +23,7 @@ namespace Data.Models.Admin
 
         public SelectListItem[] GetOrgTypeSelectItems()
         {
-            IList<OrgType> orgTypes = DA.Current.Query<OrgType>()
+            IList<OrgType> orgTypes = DataSession.Query<OrgType>()
                 .OrderBy(x => x.OrgTypeName)
                 .ToList();
 
@@ -57,7 +44,7 @@ namespace Data.Models.Admin
                 return;
             }
 
-            Org org = DA.Current.Single<Org>(OrgID);
+            Org org = DataSession.Single<Org>(OrgID);
 
             if (org == null)
             {
@@ -84,7 +71,7 @@ namespace Data.Models.Admin
                 errors++;
             }
 
-            Org existingOrg = DA.Current.Query<Org>().Where(x => x.OrgName == OrgName).FirstOrDefault();
+            Org existingOrg = DataSession.Query<Org>().Where(x => x.OrgName == OrgName).FirstOrDefault();
 
             //three possibilities: 1) no org with this name exists, 2) existing is the same as this org, 3) existing is different
             if (existingOrg != null && existingOrg.OrgID != OrgID)
@@ -102,7 +89,7 @@ namespace Data.Models.Admin
             }
             else
             {
-                orgType = DA.Current.Single<OrgType>(OrgTypeID);
+                orgType = DataSession.Single<OrgType>(OrgTypeID);
                 if (orgType == null)
                 {
                     Message += GetAlert("No record found for OrgTypeID {0}", OrgTypeID);
@@ -150,14 +137,14 @@ namespace Data.Models.Admin
                     NNINOrg = NNINOrg,
                     OrgName = OrgName,
                     OrgType = orgType,
-                    PrimaryOrg = CanEditPrimaryOrg() ? PrimaryOrg : false
+                    PrimaryOrg = CanEditPrimaryOrg() && PrimaryOrg
                 };
 
-                DA.Current.Insert(org); // gets a new OrgID
+                DataSession.Insert(org); // gets a new OrgID
             }
             else
             {
-                org = DA.Current.Single<Org>(OrgID);
+                org = DataSession.Single<Org>(OrgID);
 
                 if (org == null)
                 {
@@ -176,22 +163,23 @@ namespace Data.Models.Admin
             if (originalActive != Active)
             {
                 if (Active)
-                    ActiveLogManager.Enable("Org", org.OrgID);
+                    Provider.Data.ActiveLog.Enable(org);
                 else
                 {
-                    ActiveLogManager.Disable("Org", org.OrgID);
+                    Provider.Data.ActiveLog.Disable(org);
 
                     //need to disable any clients where this was the only active org
-                    var clientOrgs = OrgManager.GetClientOrgs(org.OrgID).Where(x => x.ClientActive);
+                    var clientOrgs = Provider.Data.Client.GetClientOrgs(org.OrgID).Where(x => x.ClientActive);
 
                     foreach (var co in clientOrgs)
                     {
                         //does this ClientOrg have any other active associations?
-                        bool hasAnotherActiveClientOrg = DA.Current.Query<ClientOrg>().Any(x => x.Active && x.Client.ClientID == co.ClientID && x.Org.OrgID != co.OrgID);
+                        bool hasAnotherActiveClientOrg = DataSession.Query<ClientOrg>().Any(x => x.Active && x.Client.ClientID == co.ClientID && x.Org.OrgID != co.OrgID);
                         if (!hasAnotherActiveClientOrg)
                         {
                             //no other active ClientOrgs so disable the Client record also
-                            ActiveLogManager.Disable("Client", co.ClientID);
+                            var c = DataSession.Single<Client>(co.ClientID);
+                            Provider.Data.ActiveLog.Disable(c);
                         }
                     }
                 }
@@ -200,7 +188,7 @@ namespace Data.Models.Admin
             if (CanEditPrimaryOrg() && PrimaryOrg && primary != null)
             {
                 primary.PrimaryOrg = false;
-                DA.Current.SaveOrUpdate(primary);
+                DataSession.SaveOrUpdate(primary);
             }
 
             OrgID = org.OrgID;
@@ -212,10 +200,10 @@ namespace Data.Models.Admin
         {
             //always return 3 items, one for each OrgAddressType
             List<AddressModel> list = new List<AddressModel>();
-            Org org = DA.Current.Single<Org>(OrgID);
-            list.AddRange(GetAddressModels(OrgAddressType.Client, DA.Current.Query<Address>().Where(x => x.AddressID == org.DefClientAddressID).ToArray()));
-            list.AddRange(GetAddressModels(OrgAddressType.Billing, DA.Current.Query<Address>().Where(x => x.AddressID == org.DefBillAddressID).ToArray()));
-            list.AddRange(GetAddressModels(OrgAddressType.Shipping, DA.Current.Query<Address>().Where(x => x.AddressID == org.DefShipAddressID).ToArray()));
+            Org org = DataSession.Single<Org>(OrgID);
+            list.AddRange(GetAddressModels(OrgAddressType.Client, DataSession.Query<Address>().Where(x => x.AddressID == org.DefClientAddressID).ToArray()));
+            list.AddRange(GetAddressModels(OrgAddressType.Billing, DataSession.Query<Address>().Where(x => x.AddressID == org.DefBillAddressID).ToArray()));
+            list.AddRange(GetAddressModels(OrgAddressType.Shipping, DataSession.Query<Address>().Where(x => x.AddressID == org.DefShipAddressID).ToArray()));
             return list.OrderBy(x => x.AddressType).ThenBy(x => x.StreetAddress1).ToArray();
         }
 

@@ -1,9 +1,5 @@
-﻿using LNF;
-using LNF.Data;
-using LNF.Models.Data;
-using LNF.Repository;
-using LNF.Repository.Data;
-using LNF.Scripting;
+﻿using LNF.Data;
+using LNF.Impl.Repository.Data;
 using LNF.Web.Mvc;
 using LNF.Web.Mvc.UI;
 using System;
@@ -40,19 +36,19 @@ namespace Data.Models
         public DataFeed[] GetFeeds()
         {
             if (ViewInactive)
-                return DA.Current.Query<DataFeed>().Where(x => !x.Deleted).OrderBy(x => x.FeedName).ToArray();
+                return DataSession.Query<DataFeed>().Where(x => !x.Deleted).OrderBy(x => x.FeedName).ToArray();
             else
-                return DA.Current.Query<DataFeed>().Where(x => x.Active && !x.Deleted).OrderBy(x => x.FeedName).ToArray();
+                return DataSession.Query<DataFeed>().Where(x => x.Active && !x.Deleted).OrderBy(x => x.FeedName).ToArray();
         }
 
         public DataFeed GetFeed()
         {
-            return DA.Current.Query<DataFeed>().FirstOrDefault(x => x.FeedAlias == Alias);
+            return DataSession.Query<DataFeed>().FirstOrDefault(x => x.FeedAlias == Alias);
         }
 
         public DataFeed GetFeedByGuid()
         {
-            DataFeed result = DA.Current.Query<DataFeed>().FirstOrDefault(x => x.FeedGUID == new Guid(Guid));
+            DataFeed result = DataSession.Query<DataFeed>().FirstOrDefault(x => x.FeedGUID == new Guid(Guid));
             return result;
         }
 
@@ -110,8 +106,8 @@ namespace Data.Models
         {
             return base.GetSubMenu().Clear()
                 .Add(new SubMenu.MenuItem() { LinkText = "List", ActionName = "List", ControllerName = "Feed" })
-                .Add(new SubMenu.MenuItem() { LinkText = "Console", ActionName = "Console", ControllerName = "Feed" })
-                .Add(new SubMenu.MenuItem() { LinkText = "Reports", ActionName = "Reports", ControllerName = "Feed" });
+                .Add(new SubMenu.MenuItem() { LinkText = "Console", ActionName = "Console", ControllerName = "Feed" });
+                //.Add(new SubMenu.MenuItem() { LinkText = "Reports", ActionName = "Reports", ControllerName = "Feed" });
         }
 
         public DataSet ExecuteQuery(DataFeed feed, HttpRequestBase request)
@@ -121,9 +117,9 @@ namespace Data.Models
             foreach(var key in request.QueryString.AllKeys)
                 parameters.Add(key, request.QueryString[key]);
 
-            var util = new DataFeedUtility(ServiceProvider.Current);
+            var util = new DataFeedUtility(Provider);
             feed.ApplyDefaultParameters(parameters);
-            return util.ExecuteQuery(feed, Parameters.Create(parameters));
+            return util.ExecuteQuery(feed, ScriptParameters.Create(parameters));
         }
 
         public DataTable[] GetTables(DataSet ds)
@@ -159,7 +155,7 @@ namespace Data.Models
                         FeedQuery = Query
                     };
 
-                    DA.Current.SaveOrUpdate(feed);
+                    DataSession.SaveOrUpdate(feed);
                 }
                 else
                 {
@@ -194,7 +190,7 @@ namespace Data.Models
                     feed.FeedQuery = Query;
                     feed.DefaultParameters = DefaultParameters;
 
-                    DA.Current.SaveOrUpdate(feed);
+                    DataSession.SaveOrUpdate(feed);
                 }
 
                 return true;
@@ -214,7 +210,7 @@ namespace Data.Models
             {
                 string alias = Path.GetFileNameWithoutExtension(f);
                 string json = File.ReadAllText(f);
-                var def = ServiceProvider.Current.Serialization.Json.DeserializeAnonymous(json, new { title = "" });
+                var def = Provider.Utility.Serialization.Json.DeserializeAnonymous(json, new { title = "" });
                 yield return new ReportItem() { Alias = alias, Title = def.title };
             }
         }

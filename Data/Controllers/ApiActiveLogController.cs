@@ -1,25 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
+﻿using Data.Controllers.Api;
+using LNF;
+using LNF.Impl.Repository.Data;
+using System;
 using System.Web.Http;
-using LNF.Repository;
-using LNF.Repository.Data;
 
 namespace Data.Controllers
 {
     [Route("api/activelog")]
-    public class ApiActiveLogController : ApiController
+    public class ApiActiveLogController : DataApiController
     {
+        public ApiActiveLogController(IProvider provider) : base(provider) { }
+
         public ActiveLogModel Post([FromBody] ActiveLogModel model)
         {
-            ActiveLog alog = DA.Current.Single<ActiveLog>(model.LogID);
+            ActiveLog alog = DataSession.Single<ActiveLog>(model.LogID);
 
             if (alog == null) return null;
 
             alog.EnableDate = model.EnableDate;
-            DA.Current.SaveOrUpdate(alog);
+            DataSession.SaveOrUpdate(alog);
 
             return new ActiveLogModel() { LogID = alog.LogID, EnableDate = alog.EnableDate };
         }

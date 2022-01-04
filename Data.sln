@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27703.2000
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31424.327
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Data", "Data\Data.csproj", "{E4774D22-483D-4869-9910-CEBBA9589A31}"
 EndProject
@@ -13,11 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LNF.Web", "..\LNF\LNF.Web\L
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Data.Tests", "Data.Tests\Data.Tests.csproj", "{9FF1F362-A8AE-4E7B-A230-A694E0FB3078}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnlineServices.Api", "..\lnf\OnlineServices.Api\OnlineServices.Api.csproj", "{D0C76FE8-7233-4DA5-B106-8E4F51A32AD2}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LNF.WebApi", "..\lnf\LNF.WebApi\LNF.WebApi.csproj", "{85BE7662-47C8-4E82-8090-3F2BD61CC0F7}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LNF.Models", "..\lnf\LNF.Models\LNF.Models.csproj", "{98C7F73D-EF9D-4A87-8B79-A1208085CFBD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LNF.Scripting", "..\lnf\LNF.Scripting\LNF.Scripting.csproj", "{9A06D3AB-B920-44CA-B880-ED6E955E9F71}"
 EndProject
@@ -58,24 +54,12 @@ Global
 		{9FF1F362-A8AE-4E7B-A230-A694E0FB3078}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9FF1F362-A8AE-4E7B-A230-A694E0FB3078}.Release2x|Any CPU.ActiveCfg = Release|Any CPU
 		{9FF1F362-A8AE-4E7B-A230-A694E0FB3078}.Release2x|Any CPU.Build.0 = Release|Any CPU
-		{D0C76FE8-7233-4DA5-B106-8E4F51A32AD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D0C76FE8-7233-4DA5-B106-8E4F51A32AD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D0C76FE8-7233-4DA5-B106-8E4F51A32AD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D0C76FE8-7233-4DA5-B106-8E4F51A32AD2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D0C76FE8-7233-4DA5-B106-8E4F51A32AD2}.Release2x|Any CPU.ActiveCfg = Release|Any CPU
-		{D0C76FE8-7233-4DA5-B106-8E4F51A32AD2}.Release2x|Any CPU.Build.0 = Release|Any CPU
 		{85BE7662-47C8-4E82-8090-3F2BD61CC0F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{85BE7662-47C8-4E82-8090-3F2BD61CC0F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{85BE7662-47C8-4E82-8090-3F2BD61CC0F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{85BE7662-47C8-4E82-8090-3F2BD61CC0F7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{85BE7662-47C8-4E82-8090-3F2BD61CC0F7}.Release2x|Any CPU.ActiveCfg = Release|Any CPU
 		{85BE7662-47C8-4E82-8090-3F2BD61CC0F7}.Release2x|Any CPU.Build.0 = Release|Any CPU
-		{98C7F73D-EF9D-4A87-8B79-A1208085CFBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{98C7F73D-EF9D-4A87-8B79-A1208085CFBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{98C7F73D-EF9D-4A87-8B79-A1208085CFBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{98C7F73D-EF9D-4A87-8B79-A1208085CFBD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{98C7F73D-EF9D-4A87-8B79-A1208085CFBD}.Release2x|Any CPU.ActiveCfg = Release|Any CPU
-		{98C7F73D-EF9D-4A87-8B79-A1208085CFBD}.Release2x|Any CPU.Build.0 = Release|Any CPU
 		{9A06D3AB-B920-44CA-B880-ED6E955E9F71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9A06D3AB-B920-44CA-B880-ED6E955E9F71}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9A06D3AB-B920-44CA-B880-ED6E955E9F71}.Release|Any CPU.ActiveCfg = Release|Any CPU

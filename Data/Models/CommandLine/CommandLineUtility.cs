@@ -1,12 +1,16 @@
 ﻿using LNF;
-using LNF.CommonTools;
-using LNF.Models.Billing.Reports;
-using LNF.Models.Data;
-using LNF.Repository;
-using LNF.Repository.Data;
+using LNF.Billing.Reports;
+using LNF.Data;
+using LNF.DataAccess;
+using LNF.Impl;
+using LNF.Impl.Billing;
+using LNF.Impl.Repository.Data;
+using LNF.PhysicalAccess;
 using LNF.Scripting;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Data.SqlClient;
 using System.Linq;
 
 namespace Data.Models.CommandLine
@@ -15,6 +19,9 @@ namespace Data.Models.CommandLine
     {
         private static readonly ScriptHost host;
         private static readonly List<ScriptHost.Command> commands;
+
+        public static IProvider Provider => Startup.WebApp.Context.GetInstance<IProvider>();
+        public static ISession DataSession => Provider.DataAccess.Session;
 
         static CommandLineUtility()
         {
@@ -138,7 +145,7 @@ namespace Data.Models.CommandLine
 
         public static ScriptHost.Result Execute(string cmd)
         {
-            ScriptHost.Result scriptResult = null;
+            ScriptHost.Result scriptResult;
 
             try
             {
@@ -161,7 +168,8 @@ namespace Data.Models.CommandLine
         {
             ScriptHost.Result result = new ScriptHost.Result();
 
-            Client c = DA.Current.Single<Client>(id);
+            Client c = DataSession.Single<Client>(id);
+
             if (c != null)
             {
                 c.SetPassword(c.UserName);
@@ -181,12 +189,9 @@ namespace Data.Models.CommandLine
         {
             ScriptHost.Result result = new ScriptHost.Result();
 
-            var wd = new WriteData();
-
-            DateTime sd = DateTime.Now;
-            DateTime ed = DateTime.Now;
-            DateTime period = DateTime.Now;
-            bool delete = queryParams.GetValue("Delete", true);
+            DateTime sd;
+            DateTime ed;
+            DateTime period;
 
             void getDates(bool startRequired, bool endRequired, bool periodRequired)
             {
@@ -204,62 +209,70 @@ namespace Data.Models.CommandLine
                 period = queryParams.GetValue("Period", DateTime.Now);
             }
 
-            switch (task)
+            var context = "Data.Models.CommandLine.CommandLineUtility.BillingTask";
+            var clientId = queryParams.GetValue("ClientID", 0);
+
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["cnSselData"].ConnectionString))
             {
-                case "ToolDataClean":
-                    getDates(true, true, false);
-                    new WriteToolDataCleanProcess(sd, ed, queryParams.GetValue("ClientID", 0)).Start();
-                    result.Success = true;
-                    result.Message = null;
-                    result.Data = ServiceProvider.Current.Log.Current;
-                    break;
-                case "ToolData":
-                    getDates(true, true, false);
-                    new WriteToolDataProcess(sd, queryParams.GetValue("ClientID", 0), queryParams.GetValue("ResourceID", 0)).Start();
-                    result.Success = true;
-                    result.Message = null;
-                    result.Data = ServiceProvider.Current.Log.Current;
-                    break;
-                case "RoomDataClean":
-                    getDates(true, true, false);
-                    new WriteRoomDataCleanProcess(sd, ed, queryParams.GetValue("ClientID", 0)).Start();
-                    result.Success = true;
-                    result.Message = null;
-                    result.Data = ServiceProvider.Current.Log.Current;
-                    break;
-                case "RoomData":
-                    getDates(true, true, false);
-                    new WriteRoomDataProcess(sd, queryParams.GetValue("ClientID", 0), queryParams.GetValue("RoomID", 0)).Start();
-                    result.Success = true;
-                    result.Message = null;
-                    result.Data = ServiceProvider.Current.Log.Current;
-                    break;
-                case "StoreDataClean":
-                    getDates(true, true, false);
-                    new WriteStoreDataCleanProcess(sd, ed, queryParams.GetValue("ClientID", 0)).Start();
-                    result.Success = true;
-                    result.Message = null;
-                    result.Data = ServiceProvider.Current.Log.Current;
-                    break;
-                case "StoreData":
-                    getDates(true, true, false);
-                    new WriteStoreDataProcess(sd, queryParams.GetValue("ClientID", 0), queryParams.GetValue("ItemID", 0)).Start();
-                    result.Success = true;
-                    result.Message = null;
-                    result.Data = ServiceProvider.Current.Log.Current;
-                    break;
-                case "ToolBillingStep1":
-                    getDates(false, false, true);
-                    var step1 = new BillingDataProcessStep1(DateTime.Now, ServiceProvider.Current);
-                    step1.PopulateToolBilling(period, queryParams.GetValue("ClientID", 0), queryParams.GetValue("IsTemp", false));
-                    result.Success = true;
-                    result.Message = null;
-                    result.Data = ServiceProvider.Current.Log.Current;
-                    break;
-                default:
-                    result.Success = false;
-                    result.Message = "Unknown task: " + task;
-                    break;
+                conn.Open();
+                switch (task)
+                {
+                    case "ToolDataClean":
+                        getDates(true, true, false);
+                        var writeToolDataCleanResult = new WriteToolDataCleanProcess(new WriteToolDataCleanConfig { Connection = conn, StartDate = sd, EndDate = ed, ClientID = clientId, Context = context }).Start();
+                        result.Success = true;
+                        result.Message = null;
+                        result.Data = writeToolDataCleanResult.LogText;
+                        break;
+                    case "ToolData":
+                        getDates(true, true, false);
+                        var writeToolDataResult = new WriteToolDataProcess(new WriteToolDataConfig { Connection = conn, Period = sd, ClientID = clientId, ResourceID = queryParams.GetValue("ResourceID", 0), Context = context }).Start();
+                        result.Success = true;
+                        result.Message = null;
+                        result.Data = writeToolDataResult.LogText;
+                        break;
+                    case "RoomDataClean":
+                        getDates(true, true, false);
+                        var writeRoomDataCleanResult = new WriteRoomDataCleanProcess(new WriteRoomDataCleanConfig { Connection = conn, StartDate = sd, EndDate = ed, ClientID = clientId, Context = context }).Start();
+                        result.Success = true;
+                        result.Message = null;
+                        result.Data = writeRoomDataCleanResult.LogText;
+                        break;
+                    case "RoomData":
+                        getDates(true, true, false);
+                        var writeRoomDataResult = new WriteRoomDataProcess(new WriteRoomDataConfig { Connection = conn, Period = sd, ClientID = clientId, RoomID = queryParams.GetValue("RoomID", 0), Context = context }).Start();
+                        result.Success = true;
+                        result.Message = null;
+                        result.Data = writeRoomDataResult.LogText;
+                        break;
+                    case "StoreDataClean":
+                        getDates(true, true, false);
+                        var writeStoreDataCleanResult = new WriteStoreDataCleanProcess(new WriteStoreDataCleanConfig { Connection = conn, StartDate = sd, EndDate = ed, ClientID = clientId, Context = context }).Start();
+                        result.Success = true;
+                        result.Message = null;
+                        result.Data = writeStoreDataCleanResult.LogText;
+                        break;
+                    case "StoreData":
+                        getDates(true, true, false);
+                        var writeStoreDataResult = new WriteStoreDataProcess(new WriteStoreDataConfig { Connection = conn, Period = sd, ClientID = clientId, ItemID = queryParams.GetValue("ItemID", 0), Context = context }).Start();
+                        result.Success = true;
+                        result.Message = null;
+                        result.Data = writeStoreDataResult.LogText;
+                        break;
+                    case "ToolBillingStep1":
+                        getDates(false, false, true);
+                        var step1 = new BillingDataProcessStep1(new Step1Config { Connection = conn, Period = period, ClientID = clientId, IsTemp = queryParams.GetValue("IsTemp", false), Now = DateTime.Now, Context = context });
+                        var step1Result = step1.PopulateToolBilling();
+                        result.Success = true;
+                        result.Message = null;
+                        result.Data = step1Result.LogText;
+                        break;
+                    default:
+                        result.Success = false;
+                        result.Message = "Unknown task: " + task;
+                        break;
+                }
+                conn.Close();
             }
 
             return result;
@@ -290,7 +303,7 @@ namespace Data.Models.CommandLine
         {
             ScriptHost.Result result = new ScriptHost.Result();
 
-            var c = DA.Current.Single<LNF.Repository.Data.ClientInfo>(id).CreateModel<IClient>();
+            var c = DataSession.Single<LNF.Impl.Repository.Data.ClientInfo>(id).CreateModel<IClient>();
 
             if (c == null)
             {
@@ -299,10 +312,11 @@ namespace Data.Models.CommandLine
             }
             else
             {
-                LNF.Models.PhysicalAccess.Badge b = ServiceProvider.Current.PhysicalAccess.GetBadge(c.ClientID).FirstOrDefault();
+                Badge b = Provider.PhysicalAccess.GetBadge(c.ClientID).FirstOrDefault();
+
                 if (b == null)
                 {
-                    ServiceProvider.Current.PhysicalAccess.AddClient(c);
+                    Provider.PhysicalAccess.AddClient(new AddClientRequest { ClientID = c.ClientID, UserName = c.UserName, FName = c.FName, LName = c.LName, MName = c.MName });
                     result.Success = true;
                     result.Message = "ok";
                 }
@@ -324,7 +338,8 @@ namespace Data.Models.CommandLine
 
             if (search is int)
             {
-                var single = DA.Current.Single<Account>(Convert.ToInt32(search));
+                var single = DataSession.Single<Account>(Convert.ToInt32(search));
+
                 if (single != null)
                 {
                     c = new Account[] { single }.Select(x => new AccountInfo()
@@ -340,8 +355,8 @@ namespace Data.Models.CommandLine
                 string s = search.ToString();
                 List<Account> query = new List<Account>();
 
-                query.AddRange(DA.Current.Query<Account>().Where(x => x.Name.Contains(s)));
-                query.AddRange(DA.Current.Query<Account>().Where(x => x.ShortCode.Contains(s)));
+                query.AddRange(DataSession.Query<Account>().Where(x => x.Name.Contains(s)));
+                query.AddRange(DataSession.Query<Account>().Where(x => x.ShortCode.Contains(s)));
 
                 c = query.Select(x => new AccountInfo()
                 {
@@ -367,9 +382,9 @@ namespace Data.Models.CommandLine
             return result;
         }
 
-        public static ReservationInfoCollection ReservationInfo(object serach)
+        public static ReservationInfoCollection ReservationInfo(object search)
         {
-            return null;
+            throw new NotImplementedException();
         }
 
         public static ClientInfoCollection ClientInfo(object search)
@@ -378,7 +393,8 @@ namespace Data.Models.CommandLine
 
             if (search is int)
             {
-                var single = DA.Current.Single<Client>(Convert.ToInt32(search));
+                var single = DataSession.Single<Client>(Convert.ToInt32(search));
+
                 if (single != null)
                 {
                     c = new Client[] { single }.Select(x => new ClientInfo()
@@ -394,7 +410,7 @@ namespace Data.Models.CommandLine
             else
             {
                 string s = search.ToString();
-                IList<Client> query = DA.Current.Query<Client>().Where(x => x.UserName.Contains(s) || x.LName.Contains(s) || x.FName.Contains(s)).ToList();
+                IList<Client> query = DataSession.Query<Client>().Where(x => x.UserName.Contains(s) || x.LName.Contains(s) || x.FName.Contains(s)).ToList();
 
                 c = query.Select(x => new ClientInfo()
                 {
@@ -413,7 +429,7 @@ namespace Data.Models.CommandLine
         {
             ScriptHost.Result result = new ScriptHost.Result();
 
-            string sql = string.Empty;
+            string sql;
 
             switch (task)
             {
@@ -440,7 +456,7 @@ namespace Data.Models.CommandLine
                     return result;
             }
 
-            var query = DA.Current.SqlQuery(sql).List<TaskCheck>();
+            var query = DataSession.SqlQuery(sql).List<TaskCheck>();
 
             result.Success = true;
             result.Message = null;
@@ -466,7 +482,7 @@ namespace Data.Models.CommandLine
                 Message = queryParams.GetValue("Message", string.Empty)
             };
 
-            var processResult = LNF.Billing.FinancialManagerUtility.SendMonthlyUserUsageEmails(opt);
+            var processResult = Provider.Billing.Report.SendFinancialManagerReport(opt);
             var count = processResult.TotalEmailsSent;
 
             result.Success = true;

@@ -1,6 +1,6 @@
-﻿using LNF.Repository;
-using LNF.Repository.Data;
-using Data.Models;
+﻿using Data.Models;
+using LNF;
+using LNF.Impl.Repository.Data;
 using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
@@ -10,8 +10,10 @@ using System.Web.Mvc;
 
 namespace Data.Controllers
 {
-    public class AjaxController : Controller
+    public class AjaxController : DataController
     {
+        public AjaxController(IProvider provider) : base(provider) { }
+
         [Route("ajax/account/edit")]
         public ActionResult AccountEdit()
         {
@@ -172,7 +174,7 @@ namespace Data.Controllers
 
                 var managers = acctEdit.Managers.ToList();
 
-                var mgr = DA.Current.Single<ClientOrgInfo>(clientOrgId);
+                var mgr = DataSession.Single<ClientOrgInfo>(clientOrgId);
 
                 if (mgr != null)
                 {

@@ -1,5 +1,6 @@
-﻿using LNF.Repository;
-using LNF.Repository.Data;
+﻿using Data.Controllers.Api;
+using LNF;
+using LNF.Impl.Repository.Data;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
@@ -7,11 +8,13 @@ using System.Web.Http;
 namespace Data.Controllers
 {
     [Route("api/client")]
-    public class ApiClientController : ApiController
+    public class ApiClientController : DataApiController
     {
+        public ApiClientController(IProvider provider) : base(provider) { }
+
         public IEnumerable<ClientItem> Get()
         {
-            return DA.Current.Query<Client>().Select(x => new ClientItem
+            return DataSession.Query<Client>().Select(x => new ClientItem
             {
                 ClientID = x.ClientID,
                 DisplayName = x.DisplayName,
