@@ -377,12 +377,12 @@
     <Content Include="Views\Shared\_Layout2.cshtml" />
     <Content Include="Views\Account\Edit.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
+    <None Include="Properties\PublishProfiles\Production %28Apps%29.pubxml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Properties\PublishProfiles\Production %28Apps%29.pubxml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Shared\_PageMenuPartial.cshtml" />
     <Content Include="Views\Shared\_SubMenuPartial.cshtml" />
