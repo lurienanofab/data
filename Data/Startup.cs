@@ -8,6 +8,7 @@ using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Routing;
 using LNF.Impl.DependencyInjection;
+using SimpleInjector.Integration.WebApi;
 
 [assembly: OwinStartup(typeof(Data.Startup))]
 
@@ -34,7 +35,11 @@ namespace Data
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
 
-            HttpConfiguration config = new HttpConfiguration();
+            HttpConfiguration config = new HttpConfiguration
+            {
+                DependencyResolver = new SimpleInjectorWebApiDependencyResolver(WebApp.GetContainer())
+            };
+
             WebApiConfig.Register(config);
 
             app.UseWebApi(config);

@@ -7,9 +7,9 @@ using System.Web.Http;
 namespace Data.Controllers
 {
     [Route("api/org/department")]
-    public class ApiOrgDepartmentController : DataApiController
+    public class OrgDepartmentController : DataApiController
     {
-        public ApiOrgDepartmentController(IProvider provider) : base(provider) { }
+        public OrgDepartmentController(IProvider provider) : base(provider) { }
 
         public OrgDepartmentModel[] Get(int orgId)
         {
