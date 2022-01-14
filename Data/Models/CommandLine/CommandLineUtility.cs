@@ -1,5 +1,6 @@
 ﻿using LNF;
 using LNF.Billing.Reports;
+using LNF.CommonTools;
 using LNF.Data;
 using LNF.DataAccess;
 using LNF.Impl;
@@ -172,9 +173,9 @@ namespace Data.Models.CommandLine
 
             if (c != null)
             {
-                c.SetPassword(c.UserName);
+                Provider.Data.Client.AuthUtility().ResetPassword(c.ClientID);
                 result.Success = true;
-                result.Message = string.Format("Password set to {0}", c.UserName);
+                result.Message = string.Format("{0} password reset.", c.UserName);
             }
             else
             {

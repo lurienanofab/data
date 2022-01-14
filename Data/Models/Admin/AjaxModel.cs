@@ -1,4 +1,5 @@
-﻿using LNF.Data;
+﻿using LNF.CommonTools;
+using LNF.Data;
 using LNF.Data.ClientAccountMatrix;
 using LNF.Impl.Repository.Data;
 using LNF.Repository;
@@ -29,7 +30,7 @@ namespace Data.Models.Admin
                         var client = DataSession.Query<Client>().FirstOrDefault(x => x.UserName == UserName);
                         if (client != null)
                         {
-                            client.ResetPassword();
+                            Provider.Data.Client.AuthUtility().ResetPassword(client.ClientID);
                             return new { status = "ok" };
                         }
                         else
