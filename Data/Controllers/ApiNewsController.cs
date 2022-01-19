@@ -1,7 +1,7 @@
 ﻿using Data.Controllers.Api;
 using Data.Models;
 using LNF;
-using LNF.Impl.Repository.Data;
+using LNF.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,7 +39,7 @@ namespace Data.Controllers
             return new NewsItem()
             {
                 NewsID = news.NewsID,
-                CreatedByClientID = news.NewsCreatedByClient.ClientID,
+                CreatedByClientID = news.NewsCreatedByClientID,
                 UpdatedByClientID = news.NewsUpdatedByClientID,
                 ImageFileName = news.NewsImageFileName,
                 ImageContentType = news.NewsImageContentType,
