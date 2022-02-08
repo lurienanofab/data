@@ -30,9 +30,8 @@ namespace Data.Controllers.Api
         [HttpPost, Route("utility/api/email/card-expiration")]
         public int SendCardExpirationEmails()
         {
-            RoomAccessExpirationCheck roomAccessExpirationCheck = new RoomAccessExpirationCheck();
-            int count = roomAccessExpirationCheck.Run();
-            return count;
+            var result = Provider.Billing.Report.SendCardExpirationReport();
+            return result.TotalEmailsSent;
         }
 
         [HttpPost, Route("utility/api/email/user-apportionment")]
@@ -41,7 +40,7 @@ namespace Data.Controllers.Api
             if (options == null)
                 throw new ArgumentNullException("options");
 
-            var result = ServiceProvider.Current.Billing.Report.SendUserApportionmentReport(options);
+            var result = Provider.Billing.Report.SendUserApportionmentReport(options);
 
             return result.TotalEmailsSent;
         }
