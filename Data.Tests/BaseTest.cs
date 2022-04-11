@@ -21,7 +21,8 @@ namespace Data.Tests
         [TestInitialize]
         public void Setup()
         {
-            Context = ContainerContextFactory.Current.NewThreadScopedContext();
+            ContainerContextFactory.Current.NewThreadScopedContext();
+            Context = ContainerContextFactory.Current.GetContext();
             var cfg = new ThreadStaticContainerConfiguration(Context);
             cfg.RegisterAllTypes();
             ServiceProvider.Setup(Provider);
