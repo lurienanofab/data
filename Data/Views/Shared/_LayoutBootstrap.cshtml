@@ -1,5 +1,9 @@
 ﻿@using LNF.Web.Mvc;
 @model BaseModel
+@{ 
+    var obj = Context.Session["return-to"];
+    var returnTo = (obj != null) ? obj.ToString() : string.Empty;
+}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -72,6 +76,13 @@
         }
         else
         {
+            if (!string.IsNullOrEmpty(returnTo))
+            {
+                <div style="margin: 20px 0 20px 0;">
+                    <strong><a href="@returnTo">&larr; Return to Main Page</a></strong>
+                </div>
+            }
+
             <div class="row" style="margin-top: 20px;">
                 <div class="col-sm-12">
                     @RenderBody()
